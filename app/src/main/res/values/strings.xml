@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Move</string>
+    <string name="explore_name">Explore</string>
+    <string name="home_name">Home</string>
 </resources>

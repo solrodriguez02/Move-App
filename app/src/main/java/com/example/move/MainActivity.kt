@@ -3,10 +3,11 @@ package com.example.move
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,13 +19,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -37,8 +38,8 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,13 +50,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.annotation.ExperimentalCoilApi
@@ -335,9 +334,18 @@ fun Routine() {
         Exercise("Squat Jacks", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/squat-jack.jpg", 0, 15)
     )
 
+    val exercises1 :List<Exercise> = listOf(
+        Exercise("Switch Kick", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/switch-kick.jpg", 30, 0),
+        Exercise("Windmill", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/windmill.jpg", 45, 0),
+        Exercise("Rest", "", 15, 0),
+        Exercise("Jump rope", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/jump-rope-hop.jpg", 15, 0),
+        Exercise("Pivoting", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/pivoting-upper-cut.jpg", 30, 15),
+    )
+
     val cycles :List<Cycle> = listOf(
         Cycle("Warm up", exercises, 1),
-        Cycle("Cycle 1", exercises, 2),
+        Cycle("Cycle 1", exercises1, 2),
+        Cycle("Cycle 2", exercises, 3),
         Cycle("Cooling", exercises, 1)
     )
 
@@ -365,253 +373,274 @@ fun Routine() {
 
     val cyclesOptions = listOf(R.drawable.warm_up, R.drawable.exercise, R.drawable.cooling)
 
-    /////////////////// Routine header ///////////////////////
-    Column(
+
+    Box(
         modifier = Modifier.background(Color.White)
     ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 20.dp, horizontal = 10.dp)
-        ) {
-            Icon(
-                Icons.Filled.KeyboardArrowLeft,
-                contentDescription = "back icon",
-                tint = Color.Gray,
-                modifier = Modifier.size(30.dp)
-            )
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.time),
-                    contentDescription = stringResource(R.string.time_icon),
-                    tint = Color(0xFF5370F8),
-                    modifier = Modifier
-                        .size(30.dp)
-                        .padding(end = 5.dp)
-                )
-                Text(
-                    text = routine.time.toString() + " min",
-                    color = Color(0xFF5370F8),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            Icon(
-                Icons.Filled.MoreVert,
-                contentDescription = "details icon",
-                tint = Color.Gray,
-                modifier = Modifier.size(25.dp)
-            )
-        }
 
         /////////////////// Routine image ///////////////////////
-        Box(
+        val state = rememberScrollState()
+        LaunchedEffect(Unit) { state.animateScrollTo(100) }
+
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(250.dp)
-                .padding(bottom = 20.dp)
+                .verticalScroll(state)
+                .padding(top = 60.dp)
         ) {
-            Image(
-                painter = rememberImagePainter(
-                    data = routine.imageUrl
-                ),
-                contentDescription = "routine image",
-                modifier = Modifier
-                    .clip(
-                        RoundedCornerShape(
-                            topStart = 15.dp,
-                            topEnd = 15.dp,
-                            bottomStart = 0.dp,
-                            bottomEnd = 0.dp
-                        )
-                    )
-                    .fillMaxWidth()
-                    .height(250.dp),
-                contentScale = ContentScale.FillBounds,
-            )
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        Brush.verticalGradient(listOf(Color.Transparent, Color.White)),
-                    )
-                    .align(Alignment.BottomCenter)
-                    .height(50.dp)
-            )
-        }
-
-        /////////////////// Routine filters detail ///////////////////////
-        Column(
-            modifier = Modifier
-                .background(
-                    color = Color(0xFFE4E4E4),
-                    shape = RoundedCornerShape(40.dp)
-                )
-                .fillMaxSize()
-                .padding(vertical = 25.dp, horizontal = 30.dp)
-        ) {
-            Text(
-                text = routine.title,
-                fontSize = 25.sp,
-                modifier = Modifier.padding(horizontal = 10.dp)
-            )
-
-            Column(
-                modifier = Modifier.padding(vertical = 20.dp)
+                    .height(250.dp)
+                    .padding(bottom = 20.dp)
             ) {
-                for (filter in filters) {
-                    Row(
-                        modifier = Modifier.padding(vertical = 5.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = filter.icon),
-                            contentDescription = "item icon",
-                            tint = Color.DarkGray,
-                            modifier = Modifier.padding(start = 5.dp, end = 10.dp)
+                Image(
+                    painter = rememberImagePainter(
+                        data = routine.imageUrl
+                    ),
+                    contentDescription = "routine image",
+                    modifier = Modifier
+                        .clip(
+                            RoundedCornerShape(
+                                topStart = 15.dp,
+                                topEnd = 15.dp,
+                                bottomStart = 0.dp,
+                                bottomEnd = 0.dp
+                            )
                         )
-                        Text(
-                            text = filter.detail,
-                            color = Color.DarkGray
+                        .fillMaxWidth()
+                        .height(250.dp),
+                    contentScale = ContentScale.FillBounds,
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Brush.verticalGradient(listOf(Color.Transparent, Color.White)),
                         )
-                    }
-                    Divider(
-                        color = Color(0x32777777),
-                        thickness = 1.dp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 2.dp)
-                    )
-                }
+                        .align(Alignment.BottomCenter)
+                        .height(50.dp)
+                )
             }
 
-            /////////////////// Routine description ///////////////////////
-
-            Row (
-                verticalAlignment = Alignment.CenterVertically
+            /////////////////// Routine filters detail ///////////////////////
+            Column(
+                modifier = Modifier
+                    .background(
+                        color = Color(0xFFE4E4E4),
+                        shape = RoundedCornerShape(40.dp)
+                    )
+                    .fillMaxSize()
+                    .padding(vertical = 25.dp, horizontal = 30.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.description_name)
+                    text = routine.title,
+                    fontSize = 25.sp,
+                    modifier = Modifier.padding(horizontal = 10.dp)
                 )
 
-                Button(
-                    onClick = { showDescription = !showDescription },
-                    contentPadding = PaddingValues(0.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = Color(0xFFE4E4E4),
-                    ),
-                    modifier = Modifier.width(40.dp)
-                ){
-                    Icon(
-                        descriptionIcon,
-                        contentDescription = stringResource(R.string.description_name),
-                        tint = Color.Black
-                    )
+                Column(
+                    modifier = Modifier.padding(vertical = 20.dp)
+                ) {
+                    for (filter in filters) {
+                        Row(
+                            modifier = Modifier.padding(vertical = 5.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = filter.icon),
+                                contentDescription = "item icon",
+                                tint = Color.DarkGray,
+                                modifier = Modifier.padding(start = 5.dp, end = 10.dp)
+                            )
+                            Text(
+                                text = filter.detail,
+                                color = Color.DarkGray
+                            )
+                        }
+                        Divider(
+                            color = Color(0x32777777),
+                            thickness = 1.dp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 2.dp)
+                        )
+                    }
                 }
 
-            }
-            if (showDescription) {
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth()
+                /////////////////// Routine description ///////////////////////
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = routine.description,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(10.dp)
+                        text = stringResource(R.string.description_name)
                     )
-                }
-            }
 
-            /////////////////// Cycles ///////////////////////
-            Text(
-                text = stringResource(R.string.cycles_name),
-                modifier = Modifier.padding(vertical = 10.dp)
-            )
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(30.dp),
-                    color = Color.LightGray,
-                    modifier = Modifier.width(400.dp)
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(5.dp)
+                    Button(
+                        onClick = { showDescription = !showDescription },
+                        contentPadding = PaddingValues(0.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = Color(0xFFE4E4E4),
+                        ),
+                        modifier = Modifier.width(40.dp)
                     ) {
-                        for ((index, option) in cyclesOptions.withIndex()) {
-                            Button(
-                                onClick = { cycleIndex = index },
-                                contentPadding = PaddingValues(0.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = if(cycleIndex == index) Color.White else Color.Transparent
-                                ),
-                                modifier = Modifier
-                                    .width(110.dp)
-                                    .height(30.dp)
+                        Icon(
+                            descriptionIcon,
+                            contentDescription = stringResource(R.string.description_name),
+                            tint = Color.Black
+                        )
+                    }
+                }
+                if (showDescription) {
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = Color.White,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = routine.description,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(10.dp)
+                        )
+                    }
+                }
+
+                /////////////////// Cycles ///////////////////////
+                Text(
+                    text = stringResource(R.string.cycles_name),
+                    modifier = Modifier.padding(vertical = 10.dp)
+                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(30.dp),
+                        color = Color.LightGray,
+                        modifier = Modifier.width(400.dp)
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(5.dp)
+                        ) {
+                            for ((index, option) in cyclesOptions.withIndex()) {
+                                Button(
+                                    onClick = { cycleIndex = index },
+                                    contentPadding = PaddingValues(0.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (cycleIndex == index) Color.White else Color.Transparent
+                                    ),
+                                    modifier = Modifier
+                                        .width(110.dp)
+                                        .height(30.dp)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = option),
+                                        contentDescription = null,
+                                        tint = if (cycleIndex == index) Color(0xFF5370F8) else Color.Black
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+
+                /////////////////// Cycle exercises ///////////////////////
+                for ((index, cycle) in routine.cycles.withIndex()) {
+                    if (cycleIndex == 0 && index == 0 ||
+                        cycleIndex == 1 && index > 0 && index < routine.cycles.size - 1 ||
+                        cycleIndex == 2 && index == routine.cycles.size - 1
+                    ) {
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(vertical = 15.dp)
+                        ) {
+                            Text(
+                                text = cycle.name,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(end = 10.dp)
+                            )
+                            Surface(
+                                color = Color.White,
+                                shape = RoundedCornerShape(8.dp),
                             ) {
-                                Icon(
-                                    painter = painterResource(id = option),
-                                    contentDescription = null,
-                                    tint = if(cycleIndex == index) Color(0xFF5370F8) else Color.Black
+                                Text(
+                                    text = "X " + cycle.reps,
+                                    color = Color(0xFF5370F8),
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                )
+                            }
+                        }
+
+                        for (exercise in cycle.exercises) {
+                            if (exercise.title == "Rest") {
+                                RestExercise(title = exercise.title, secs = exercise.secs)
+                            } else {
+                                ExerciseBox(
+                                    title = exercise.title,
+                                    secs = exercise.secs,
+                                    reps = exercise.reps,
+                                    imgUrl = exercise.imageUrl
                                 )
                             }
                         }
                     }
                 }
             }
+        }
 
-
-            /////////////////// Cycle exercises ///////////////////////
-            for((index, cycle) in routine.cycles.withIndex()) {
-                if( cycleIndex == 0 && index == 0 ||
-                    cycleIndex == 1 && index > 0 && index < routine.cycles.size-1 ||
-                    cycleIndex == 2 && index == routine.cycles.size-1 ) {
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 15.dp)
-                    ) {
-                        Text(
-                            text = cycle.name,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(end = 10.dp)
-                        )
-                        Surface(
-                            color = Color.White,
-                            shape = RoundedCornerShape(8.dp),
-                        ) {
-                            Text(
-                                text = "X " + cycle.reps,
-                                color = Color(0xFF5370F8),
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                            )
-                        }
-                    }
-
-                    for(exercise in cycle.exercises) {
-                        if(exercise.title == "Rest") {
-                            RestExercise(title = exercise.title, secs = exercise.secs)
-                        }
-                        else {
-                            ExerciseBox(
-                                title = exercise.title,
-                                secs = exercise.secs,
-                                reps = exercise.reps,
-                                imgUrl = exercise.imageUrl
-                            )
-                        }
-                    }
+        /////////////////// Routine header ///////////////////////
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .background(
+                    Brush.verticalGradient(listOf(Color.White, Color.White, Color.Transparent)),
+                )
+                .height(80.dp)
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 20.dp, horizontal = 10.dp)
+            ) {
+                Icon(
+                    Icons.Filled.KeyboardArrowLeft,
+                    contentDescription = "back icon",
+                    tint = Color.Gray,
+                    modifier = Modifier.size(30.dp)
+                )
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.time),
+                        contentDescription = stringResource(R.string.time_icon),
+                        tint = Color(0xFF5370F8),
+                        modifier = Modifier
+                            .size(30.dp)
+                            .padding(end = 5.dp)
+                    )
+                    Text(
+                        text = routine.time.toString() + " min",
+                        color = Color(0xFF5370F8),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
+                Icon(
+                    Icons.Filled.MoreVert,
+                    contentDescription = "details icon",
+                    tint = Color.Gray,
+                    modifier = Modifier.size(25.dp)
+                )
             }
         }
     }

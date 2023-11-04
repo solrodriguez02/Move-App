@@ -2,4 +2,12 @@
     <string name="app_name">Move</string>
     <string name="explore_name">Explore</string>
     <string name="home_name">Home</string>
+    <string name="description_name">Description</string>
+    <string name="show_more">Show more</string>
+    <string name="show_less">Show less</string>
+    <string name="cycles_name">Cycles</string>
+    <string name="exercise_image">Exercise image</string>
+    <string name="time_icon">Time icon</string>
+    <string name="seconds">s</string>
+    <string name="repetitions">x</string>
 </resources>

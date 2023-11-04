@@ -5,9 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.rememberScrollableState
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,16 +23,23 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,6 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,6 +62,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.PopupProperties
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.move.ui.theme.MoveTheme
@@ -357,11 +363,17 @@ fun Routine() {
     var showDescription by remember { mutableStateOf(false) }
     var descriptionIcon = if(showDescription) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
     var cycleIndex by remember { mutableStateOf(0) }
+    var showPopUp by remember { mutableStateOf(false) }
 
     data class FilterDetail (
         val title :String,
         val detail :String,
         val icon :Int,
+    )
+
+    data class showPopUpOption (
+        val label :String,
+        val icon :ImageVector
     )
 
     val filters = arrayListOf(
@@ -373,6 +385,11 @@ fun Routine() {
 
     val cyclesOptions = listOf(R.drawable.warm_up, R.drawable.exercise, R.drawable.cooling)
 
+    val showPopUpOptions :List<showPopUpOption> = listOf(
+        showPopUpOption(stringResource(id = R.string.add_favourite), Icons.Default.FavoriteBorder),
+        showPopUpOption(stringResource(id = R.string.rate_routine), Icons.Default.Star),
+        showPopUpOption(stringResource(id = R.string.share), Icons.Default.Share),
+    )
 
     Box(
         modifier = Modifier.background(Color.White)
@@ -635,12 +652,41 @@ fun Routine() {
                         fontWeight = FontWeight.Bold
                     )
                 }
-                Icon(
-                    Icons.Filled.MoreVert,
-                    contentDescription = "details icon",
-                    tint = Color.Gray,
-                    modifier = Modifier.size(25.dp)
-                )
+                IconButton (
+                    onClick = { showPopUp = true } ) {
+                    Icon(
+                        Icons.Filled.MoreVert,
+                        contentDescription = stringResource(id = R.string.show_more),
+                        tint = Color.Gray,
+                        modifier = Modifier.size(25.dp)
+                    )
+                }
+            }
+
+            /////////////////// Show More Pop Up ///////////////////////
+
+            Box(
+                modifier = Modifier.fillMaxSize().padding(start = 1000.dp)
+            ) {
+                DropdownMenu(
+                    expanded = showPopUp,
+                    onDismissRequest = { showPopUp = false },
+                    modifier = Modifier.padding(horizontal = 10.dp)
+                ) {
+                    for (option in showPopUpOptions) {
+                        DropdownMenuItem(
+                            text = { Text(text = option.label, color = Color.Black) },
+                            onClick = { /* Handle edit! */ },
+                            leadingIcon = {
+                                Icon(
+                                    option.icon,
+                                    contentDescription = null,
+                                    tint = Color.Black
+                                )
+                            }
+                        )
+                    }
+                }
             }
         }
     }

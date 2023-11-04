@@ -10,4 +10,7 @@
     <string name="time_icon">Time icon</string>
     <string name="seconds">s</string>
     <string name="repetitions">x</string>
+    <string name="add_favourite">Add to favourites</string>
+    <string name="share">Share</string>
+    <string name="rate_routine">Rate this routine</string>
 </resources>

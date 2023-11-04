@@ -13,4 +13,8 @@
     <string name="add_favourite">Add to favourites</string>
     <string name="share">Share</string>
     <string name="rate_routine">Rate this routine</string>
+    <string name="start_routine">Start</string>
+    <string name="mode_dialog_title">Execution mode</string>
+    <string name="detail_mode">Detailed</string>
+    <string name="list_mode">List</string>
 </resources>

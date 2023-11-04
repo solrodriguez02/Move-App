@@ -3,6 +3,7 @@ package com.example.move
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -10,16 +11,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -29,19 +34,24 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -53,15 +63,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.PopupProperties
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
@@ -301,6 +314,11 @@ fun Menu() {
     }
 }
 
+
+
+/// ROUTINE PAGE //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun Routine() {
@@ -361,9 +379,17 @@ fun Routine() {
 /// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     var showDescription by remember { mutableStateOf(false) }
-    var descriptionIcon = if(showDescription) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
     var cycleIndex by remember { mutableStateOf(0) }
-    var showPopUp by remember { mutableStateOf(false) }
+    var detailMode by remember { mutableStateOf(true) }
+    var showModeDialog by remember { mutableStateOf(false) }
+
+    var descriptionIcon = if(showDescription) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
+    var modeIcon = if(detailMode) painterResource(id = R.drawable.detail_mode) else painterResource(id = R.drawable.list_mode)
+
+    data class ModeOption (
+        val label :String,
+        val icon :Painter
+    )
 
     data class FilterDetail (
         val title :String,
@@ -371,9 +397,9 @@ fun Routine() {
         val icon :Int,
     )
 
-    data class showPopUpOption (
-        val label :String,
-        val icon :ImageVector
+    val modeOptions :List<ModeOption> = listOf(
+        ModeOption(stringResource(id = R.string.detail_mode), painterResource(id = R.drawable.detail_mode)),
+        ModeOption(stringResource(id = R.string.list_mode), painterResource(id = R.drawable.list_mode)),
     )
 
     val filters = arrayListOf(
@@ -384,12 +410,6 @@ fun Routine() {
     )
 
     val cyclesOptions = listOf(R.drawable.warm_up, R.drawable.exercise, R.drawable.cooling)
-
-    val showPopUpOptions :List<showPopUpOption> = listOf(
-        showPopUpOption(stringResource(id = R.string.add_favourite), Icons.Default.FavoriteBorder),
-        showPopUpOption(stringResource(id = R.string.rate_routine), Icons.Default.Star),
-        showPopUpOption(stringResource(id = R.string.share), Icons.Default.Share),
-    )
 
     Box(
         modifier = Modifier.background(Color.White)
@@ -621,72 +641,212 @@ fun Routine() {
                 )
                 .height(80.dp)
         ) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 20.dp, horizontal = 10.dp)
+            RoutineMenu(routine.time)
+        }
+
+        /////////////////// Start Routine Button ///////////////////////
+        Box(
+            contentAlignment = Alignment.BottomCenter,
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 20.dp)
+        ){
+            Button(
+                onClick = {  },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF5370F8),
+                    contentColor = Color.Transparent,
+                ),
+                modifier = Modifier.height(50.dp)
             ) {
-                Icon(
-                    Icons.Filled.KeyboardArrowLeft,
-                    contentDescription = "back icon",
-                    tint = Color.Gray,
-                    modifier = Modifier.size(30.dp)
+                Text(
+                    text = stringResource(id = R.string.start_routine),
+                    color = Color.Black,
+                    fontSize = 18.sp,
                 )
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.time),
-                        contentDescription = stringResource(R.string.time_icon),
-                        tint = Color(0xFF5370F8),
-                        modifier = Modifier
-                            .size(30.dp)
-                            .padding(end = 5.dp)
-                    )
-                    Text(
-                        text = routine.time.toString() + " min",
-                        color = Color(0xFF5370F8),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                IconButton (
-                    onClick = { showPopUp = true } ) {
-                    Icon(
-                        Icons.Filled.MoreVert,
-                        contentDescription = stringResource(id = R.string.show_more),
-                        tint = Color.Gray,
-                        modifier = Modifier.size(25.dp)
-                    )
-                }
+                Icon(
+                    Icons.Filled.PlayArrow,
+                    contentDescription = stringResource(id = R.string.start_routine),
+                    tint = Color.Black,
+                    modifier = Modifier.padding(start = 5.dp)
+                )
             }
+        }
 
-            /////////////////// Show More Pop Up ///////////////////////
+        /////////////////// Mode Button ///////////////////////
+        Box(
+            contentAlignment = Alignment.BottomEnd,
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 20.dp, end = 40.dp)
 
-            Box(
-                modifier = Modifier.fillMaxSize().padding(start = 1000.dp)
+        ){
+            Button(
+                onClick = { showModeDialog = true },
+                shape = CircleShape,
+                contentPadding = PaddingValues(0.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFACACAC),
+                    contentColor = Color.Transparent,
+                ),
+                modifier = Modifier
+                    .height(50.dp)
+                    .width(50.dp)
+
+            ){
+                Icon(
+                    painter = modeIcon,
+                    contentDescription = null,
+                    tint = Color.Black
+                )
+            }
+        }
+
+        /////////////////// Mode Dialog ///////////////////////
+        if (showModeDialog) {
+            Dialog(
+                onDismissRequest = { showModeDialog = false },
             ) {
-                DropdownMenu(
-                    expanded = showPopUp,
-                    onDismissRequest = { showPopUp = false },
-                    modifier = Modifier.padding(horizontal = 10.dp)
+                Surface(
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .wrapContentHeight()
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    shape = MaterialTheme.shapes.large,
+                    tonalElevation = AlertDialogDefaults.TonalElevation,
+                    color = Color.White
                 ) {
-                    for (option in showPopUpOptions) {
-                        DropdownMenuItem(
-                            text = { Text(text = option.label, color = Color.Black) },
-                            onClick = { /* Handle edit! */ },
-                            leadingIcon = {
-                                Icon(
-                                    option.icon,
-                                    contentDescription = null,
-                                    tint = Color.Black
-                                )
-                            }
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.mode_dialog_title),
+                            fontWeight = FontWeight.Bold
                         )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row {
+                            for(option in modeOptions) {
+                                var modeMatches = detailMode && option.label == stringResource(id = R.string.detail_mode) || !detailMode && option.label == stringResource(id = R.string.list_mode)
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Surface(
+                                        shape = RoundedCornerShape(20.dp),
+                                        color = if (modeMatches) Color.LightGray else Color.Transparent,
+                                        border = if (modeMatches) BorderStroke(1.dp, Color.LightGray) else BorderStroke(1.dp, Color(0xFFACACAC)),
+                                        modifier = Modifier.height(100.dp).width(100.dp).padding(10.dp)
+                                    ) {
+                                        IconButton(
+                                            onClick = { if(!modeMatches) detailMode = !detailMode }
+                                        ) {
+                                            Icon(
+                                                painter = option.icon,
+                                                contentDescription = option.label,
+                                                modifier = Modifier.padding(25.dp)
+                                            )
+                                        }
+                                    }
+                                    Text(
+                                        text = option.label
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun RoutineMenu(time :Int) {
+
+    data class PopUpOption (
+        val label :String,
+        val icon :ImageVector
+    )
+
+    val popUpOptions :List<PopUpOption> = listOf(
+        PopUpOption(stringResource(id = R.string.add_favourite), Icons.Default.FavoriteBorder),
+        PopUpOption(stringResource(id = R.string.rate_routine), Icons.Default.Star),
+        PopUpOption(stringResource(id = R.string.share), Icons.Default.Share),
+    )
+
+    var showPopUp by remember { mutableStateOf(false) }
+
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 20.dp, horizontal = 10.dp)
+    ) {
+        Icon(
+            Icons.Filled.KeyboardArrowLeft,
+            contentDescription = "back icon",
+            tint = Color.Gray,
+            modifier = Modifier.size(30.dp)
+        )
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.time),
+                contentDescription = stringResource(R.string.time_icon),
+                tint = Color(0xFF5370F8),
+                modifier = Modifier
+                    .size(30.dp)
+                    .padding(end = 5.dp)
+            )
+            Text(
+                text = "$time min",
+                color = Color(0xFF5370F8),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        IconButton (
+            onClick = { showPopUp = true } ) {
+            Icon(
+                Icons.Filled.MoreVert,
+                contentDescription = stringResource(id = R.string.show_more),
+                tint = Color.Gray,
+                modifier = Modifier.size(25.dp)
+            )
+        }
+    }
+
+    /////////////////// Show More Pop Up ///////////////////////
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(start = 1000.dp)
+    ) {
+        DropdownMenu(
+            expanded = showPopUp,
+            onDismissRequest = { showPopUp = false },
+            modifier = Modifier.padding(horizontal = 10.dp)
+        ) {
+            for (option in popUpOptions) {
+                DropdownMenuItem(
+                    text = { Text(text = option.label, color = Color.Black) },
+                    onClick = { /* Handle edit! */ },
+                    leadingIcon = {
+                        Icon(
+                            option.icon,
+                            contentDescription = null,
+                            tint = Color.Black
+                        )
+                    }
+                )
             }
         }
     }

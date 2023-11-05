@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -28,6 +29,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -38,10 +41,8 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
@@ -51,7 +52,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -68,14 +68,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.PopupProperties
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.move.ui.theme.MoveTheme
@@ -93,8 +91,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MyApp(modifier: Modifier = Modifier) {
-     //Menu()
-    Routine()
+    Menu()
 }
 
 @Preview()
@@ -106,7 +103,7 @@ fun MyPreview(modifier: Modifier = Modifier) {
             .background(Color.White)
             .fillMaxSize()
     ){
-        Routine()
+        MyApp()
     }
 
 }
@@ -116,7 +113,7 @@ fun MyPreview(modifier: Modifier = Modifier) {
 fun RoutinePreview(imageUrl: String, title: String, time: Int, modifier: Modifier = Modifier) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(start = 10.dp, end = 10.dp, bottom = 30.dp)
+        modifier = Modifier.padding(bottom = 30.dp)
     ) {
         Surface(
             color = Color(0x00FFFFFF),
@@ -193,22 +190,330 @@ fun ExploreScreen() {
         RoutineItemData("https://hips.hearstapps.com/hmg-prod/images/12-ejercicios-para-abdominales-elle-1632239590.jpg", "Abs routine 3", 25),
         RoutineItemData("https://hips.hearstapps.com/hmg-prod/images/12-ejercicios-para-abdominales-elle-1632239590.jpg", "Abs routine 4", 40),
         RoutineItemData("https://hips.hearstapps.com/hmg-prod/images/12-ejercicios-para-abdominales-elle-1632239590.jpg", "Abs routine 5", 60),
+    )
 
-        )
+    data class FilterDetail (
+        val title :String,
+        val options :List<String>,
+        val icon :Int,
+    )
 
-    Column {
-        Header(title = stringResource(R.string.explore_name))
-        Column (
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(horizontal = 20.dp)
-        ) {
-            LazyVerticalGrid(columns = GridCells.Fixed(2)) {
-                items(routineData) { routine ->
-                    RoutinePreview(
-                        imageUrl = routine.imageUrl,
-                        title = routine.title,
-                        time = routine.time
+    val difficultyOptions = listOf(stringResource(id = R.string.d_easy), stringResource(id = R.string.d_medium), stringResource(id = R.string.d_difficult))
+
+    val approachOptions = listOf(
+        stringResource(id = R.string.a_aerobic), stringResource(id = R.string.a_calisthenics), stringResource(id = R.string.a_cardio),
+        stringResource(id = R.string.a_flex), stringResource(id = R.string.a_crossfit), stringResource(id = R.string.a_functional),
+        stringResource(id = R.string.a_hiit), stringResource(id = R.string.a_pilates), stringResource(id = R.string.a_resistance),
+        stringResource(id = R.string.a_streching), stringResource(id = R.string.a_strength), stringResource(id = R.string.a_weight), stringResource(id = R.string.a_yoga)
+    )
+
+    val elementsOptions = listOf(
+        stringResource(id = R.string.e_none), stringResource(id = R.string.e_ankle), stringResource(id = R.string.e_band),
+        stringResource(id = R.string.e_dumbell), stringResource(id = R.string.e_kettlebell), stringResource(id = R.string.e_mat),
+        stringResource(id = R.string.e_roller), stringResource(id = R.string.e_rope), stringResource(id = R.string.e_step)
+    )
+
+    val spaceOptions = listOf(stringResource(id = R.string.s_reduced), stringResource(id = R.string.s_some), stringResource(id = R.string.s_much))
+
+    var difficultyExpanded by remember { mutableStateOf(false) }
+    var elementsExpanded by remember { mutableStateOf(false) }
+    var approachExpanded by remember { mutableStateOf(false) }
+    var spaceExpanded by remember { mutableStateOf(false) }
+
+    var filtersSelected = remember { mutableListOf<String>() }
+
+    Column (
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(horizontal = 30.dp)
+    ) {
+        LazyColumn {
+
+            item {
+                Spacer(modifier = Modifier.height(230.dp))
+            }
+
+            if(filtersSelected.isNotEmpty()) {
+                item {
+                    Column {
+                        Text(
+                            text = stringResource(id = R.string.filters_selected),
+                            modifier = Modifier.padding(vertical = 10.dp)
+                        )
+                    }
+                    Row {
+                        for (option in filtersSelected) {
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = Color.LightGray,
+                                modifier = Modifier.height(30.dp).padding(10.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = option
+                                    )
+                                    IconButton(onClick = { filtersSelected.remove(option) }) {
+                                        Icon (
+                                            Icons.Filled.Clear,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(20.dp))
+            }
+
+            /////////////////// Explore Routines ///////////////////////
+
+            val routineCount = routineData.size
+            if(routineCount != 0) {
+                for ((index, routine) in routineData.withIndex()) {
+                    if(index % 2 == 0) {
+                        if(index == routineCount-1) {
+                            item {
+                                RoutinePreview(
+                                    imageUrl = routine.imageUrl,
+                                    title = routine.title,
+                                    time = routine.time
+                                )
+                            }
+                        }
+                    }
+                    else {
+                        item {
+                            Row {
+                                RoutinePreview(
+                                    imageUrl = routineData[index-1].imageUrl,
+                                    title = routineData[index-1].title,
+                                    time = routineData[index-1].time
+                                )
+                                Spacer(modifier = Modifier.width(30.dp))
+                                RoutinePreview(
+                                    imageUrl = routine.imageUrl,
+                                    title = routine.title,
+                                    time = routine.time
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                item {
+                    Column (
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .padding(top = 150.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Row {
+                            Icon(
+                                painter = painterResource(id = R.drawable.not_found),
+                                contentDescription = null,
+                                tint = Color.Gray
+                            )
+                            Text(
+                                text = stringResource(id = R.string.no_results),
+                                color = Color.Gray
+                            )
+                        }
+                    }
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(100.dp))
+            }
+        }
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(260.dp)
+            .background(
+                Brush.verticalGradient(
+                    listOf(
+                        Color.White,
+                        Color.White,
+                        Color.White,
+                        Color.White,
+                        Color.White,
+                        Color.White,
+                        Color.White,
+                        Color.Transparent
                     )
+                ),
+            )
+    ) {
+        Column {
+            Header(title = stringResource(R.string.explore_name))
+
+            /////////////////// Filters ///////////////////////
+
+            Column(
+                modifier = Modifier.padding(horizontal = 20.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.filters_title),
+                    modifier = Modifier.padding(bottom = 10.dp),
+                )
+
+                Row {
+                    Column {
+                        Button(
+                            onClick = { difficultyExpanded = true },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF56C1FF),
+                                contentColor = Color.Black
+                            ),
+                            modifier = Modifier.width(150.dp)
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.difficulty_filter),
+                                fontSize = 17.sp
+                            )
+                            Icon(
+                                if (difficultyExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                contentDescription = null
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = difficultyExpanded,
+                            onDismissRequest = { difficultyExpanded = false },
+                            modifier = Modifier.padding(horizontal = 10.dp)
+                        ) {
+                            for (option in difficultyOptions) {
+                                DropdownMenuItem(
+                                    text = { Text(text = option, color = Color.Black) },
+                                    onClick = {
+                                        filtersSelected.add(option)
+                                        difficultyExpanded = false
+                                    },
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(20.dp))
+
+                    Column {
+                        Button(
+                            onClick = { elementsExpanded = true },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF56C1FF),
+                                contentColor = Color.Black
+                            ),
+                            modifier = Modifier.width(150.dp)
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.elements_filter),
+                                fontSize = 17.sp
+                            )
+                            Icon(
+                                if (elementsExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                contentDescription = null
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = elementsExpanded,
+                            onDismissRequest = { elementsExpanded = false },
+                            modifier = Modifier.padding(horizontal = 10.dp)
+                        ) {
+                            for (option in elementsOptions) {
+                                DropdownMenuItem(
+                                    text = { Text(text = option, color = Color.Black) },
+                                    onClick = {
+                                        filtersSelected.add(option)
+                                        elementsExpanded = false
+                                    },
+                                )
+                            }
+                        }
+                    }
+                }
+
+
+                Row {
+                    Column {
+                        Button(
+                            onClick = { approachExpanded = true },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF56C1FF),
+                                contentColor = Color.Black
+                            ),
+                            modifier = Modifier.width(150.dp)
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.approach_filter),
+                                fontSize = 17.sp
+                            )
+                            Icon(
+                                if (approachExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                contentDescription = null
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = approachExpanded,
+                            onDismissRequest = { approachExpanded = false },
+                            modifier = Modifier.padding(horizontal = 10.dp)
+                        ) {
+                            for (option in approachOptions) {
+                                DropdownMenuItem(
+                                    text = { Text(text = option, color = Color.Black) },
+                                    onClick = {
+                                        filtersSelected.add(option)
+                                        approachExpanded = false
+                                    },
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(20.dp))
+
+                    Column {
+                        Button(
+                            onClick = { spaceExpanded = true },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF56C1FF),
+                                contentColor = Color.Black
+                            ),
+                            modifier = Modifier.width(150.dp)
+
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.space_filter),
+                                fontSize = 17.sp,
+                            )
+                            Icon(
+                                if (spaceExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                contentDescription = null
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = spaceExpanded,
+                            onDismissRequest = { spaceExpanded = false },
+                            modifier = Modifier.padding(horizontal = 10.dp)
+                        ) {
+                            for (option in spaceOptions) {
+                                DropdownMenuItem(
+                                    text = { Text(text = option, color = Color.Black) },
+                                    onClick = {
+                                        filtersSelected.add(option)
+                                        spaceExpanded = false
+                                    },
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -228,7 +533,7 @@ fun Header(title: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .padding(horizontal = 30.dp, vertical = 30.dp)
+            .padding(start = 20.dp, top = 30.dp, end = 20.dp)
             .fillMaxWidth(),
     ) {
         Text(
@@ -414,8 +719,6 @@ fun Routine() {
     Box(
         modifier = Modifier.background(Color.White)
     ) {
-
-        /////////////////// Routine image ///////////////////////
         val state = rememberScrollState()
         LaunchedEffect(Unit) { state.animateScrollTo(100) }
 
@@ -425,6 +728,7 @@ fun Routine() {
                 .padding(top = 60.dp)
         ) {
 
+            /////////////////// Routine image ///////////////////////
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -739,7 +1043,10 @@ fun Routine() {
                                         shape = RoundedCornerShape(20.dp),
                                         color = if (modeMatches) Color.LightGray else Color.Transparent,
                                         border = if (modeMatches) BorderStroke(1.dp, Color.LightGray) else BorderStroke(1.dp, Color(0xFFACACAC)),
-                                        modifier = Modifier.height(100.dp).width(100.dp).padding(10.dp)
+                                        modifier = Modifier
+                                            .height(100.dp)
+                                            .width(100.dp)
+                                            .padding(10.dp)
                                     ) {
                                         IconButton(
                                             onClick = { if(!modeMatches) detailMode = !detailMode }

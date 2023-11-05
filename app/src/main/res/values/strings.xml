@@ -65,4 +65,5 @@
     <string name="sc_good">Good</string>
     <string name="sc_very_good">Very good</string>
     <string name="sc_excelent">Excelent</string>
+    <string name="rate_name">Rate</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.example.move
 
 import android.os.Bundle
+import android.widget.RatingBar
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
@@ -93,7 +94,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MyApp(modifier: Modifier = Modifier) {
-    Menu()
+    //  Menu()
+    Routine()
 }
 
 @Preview()
@@ -112,10 +114,10 @@ fun MyPreview(modifier: Modifier = Modifier) {
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun RoutinePreview(imageUrl: String, title: String, time: Int, modifier: Modifier = Modifier) {
+fun RoutinePreview(imageUrl: String, title: String, time: Int, leftSide: Boolean = false) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(bottom = 30.dp)
+        horizontalAlignment = if(leftSide) Alignment.End else Alignment.Start,
+        modifier = Modifier.padding(bottom = 20.dp)
     ) {
         Surface(
             color = Color(0x00FFFFFF),
@@ -197,13 +199,11 @@ val routineData:  List<RoutineItemData> = listOf(
 
 
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ExploreScreen() {
     Box(modifier = Modifier.background(color = Color.White)) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(horizontal = 30.dp)
         ) {
 
             Spacer(modifier = Modifier.height(150.dp))
@@ -211,13 +211,17 @@ fun ExploreScreen() {
             /////////////////// Explore Routines ///////////////////////
 
             if (routineData.isNotEmpty()) {
-                LazyVerticalGrid(columns = GridCells.Fixed(2)) {
-                    items(routineData) { routine ->
-                        RoutinePreview(
-                            imageUrl = routine.imageUrl,
-                            title = routine.title,
-                            time = routine.time
-                        )
+                LazyVerticalGrid(columns = GridCells.Fixed(2), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+
+                    for((index, routine) in routineData.withIndex()) {
+                        item {
+                            RoutinePreview(
+                                imageUrl = routine.imageUrl,
+                                title = routine.title,
+                                time = routine.time,
+                                leftSide = index % 2 == 0
+                            )
+                        }
                     }
                     item {
                         /* empty item for spacer in odd routine count */
@@ -309,299 +313,304 @@ fun ExploreFilters() {
 
     var showFilters by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier.padding(horizontal = 20.dp)
+    Box(
+        modifier = Modifier
+            .background(Color.White)
+            .fillMaxWidth()
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(horizontal = 20.dp)
         ) {
-            Text(
-                text = stringResource(id = R.string.filters_title),
-            )
-            IconButton(onClick = { showFilters = !showFilters }) {
-                Icon(
-                    if (showFilters) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                    contentDescription = null
-                )
-            }
-        }
-
-        if (showFilters) {
-
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    val category = stringResource(id = R.string.difficulty_filter)
-                    Button(
-                        onClick = { difficultyExpanded = true },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF56C1FF),
-                            contentColor = Color.Black
-                        ),
-                        modifier = Modifier.width(150.dp)
-                    ) {
-                        Text(
-                            text = category,
-                            fontSize = 16.sp
-                        )
-                        Icon(
-                            if (difficultyExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                            contentDescription = null
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = difficultyExpanded,
-                        onDismissRequest = { difficultyExpanded = false },
-                        modifier = Modifier.padding(horizontal = 10.dp)
-                    ) {
-                        for (option in difficultyOptions) {
-                            DropdownMenuItem(
-                                text = { Text(text = option, color = Color.Black) },
-                                onClick = {
-                                    filtersSelected.add(
-                                        SelectedFilter(
-                                            category,
-                                            option
-                                        )
-                                    )
-                                    difficultyExpanded = false
-                                },
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(20.dp))
-
-                Column {
-                    val category = stringResource(id = R.string.elements_filter)
-                    Button(
-                        onClick = { elementsExpanded = true },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF56C1FF),
-                            contentColor = Color.Black
-                        ),
-                        modifier = Modifier.width(150.dp)
-                    ) {
-                        Text(
-                            text = category,
-                            fontSize = 16.sp
-                        )
-                        Icon(
-                            if (elementsExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                            contentDescription = null
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = elementsExpanded,
-                        onDismissRequest = { elementsExpanded = false },
-                        modifier = Modifier.padding(horizontal = 10.dp)
-                    ) {
-                        for (option in elementsOptions) {
-                            DropdownMenuItem(
-                                text = { Text(text = option, color = Color.Black) },
-                                onClick = {
-                                    filtersSelected.add(
-                                        SelectedFilter(
-                                            category,
-                                            option
-                                        )
-                                    )
-                                    elementsExpanded = false
-                                },
-                            )
-                        }
-                    }
+                Text(
+                    text = stringResource(id = R.string.filters_title),
+                )
+                IconButton(onClick = { showFilters = !showFilters }) {
+                    Icon(
+                        if (showFilters) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                        contentDescription = null
+                    )
                 }
             }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-            )  {
-                Column {
-                    val category = stringResource(id = R.string.approach_filter)
-                    Button(
-                        onClick = { approachExpanded = true },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF56C1FF),
-                            contentColor = Color.Black
-                        ),
-                        modifier = Modifier.width(150.dp)
-                    ) {
-                        Text(
-                            text = category,
-                            fontSize = 16.sp
-                        )
-                        Icon(
-                            if (approachExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                            contentDescription = null
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = approachExpanded,
-                        onDismissRequest = { approachExpanded = false },
-                        modifier = Modifier.padding(horizontal = 10.dp)
-                    ) {
-                        for (option in approachOptions) {
-                            DropdownMenuItem(
-                                text = { Text(text = option, color = Color.Black) },
-                                onClick = {
-                                    filtersSelected.add(
-                                        SelectedFilter(
-                                            category,
-                                            option
-                                        )
-                                    )
-                                    approachExpanded = false
-                                },
+            if (showFilters) {
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White)
+                ) {
+                    Column {
+                        val category = stringResource(id = R.string.difficulty_filter)
+                        Button(
+                            onClick = { difficultyExpanded = true },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF56C1FF),
+                                contentColor = Color.Black
+                            ),
+                            modifier = Modifier.width(150.dp)
+                        ) {
+                            Text(
+                                text = category,
+                                fontSize = 16.sp
                             )
+                            Icon(
+                                if (difficultyExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                contentDescription = null
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = difficultyExpanded,
+                            onDismissRequest = { difficultyExpanded = false },
+                            modifier = Modifier.padding(horizontal = 10.dp)
+                        ) {
+                            for (option in difficultyOptions) {
+                                DropdownMenuItem(
+                                    text = { Text(text = option, color = Color.Black) },
+                                    onClick = {
+                                        filtersSelected.add(
+                                            SelectedFilter(
+                                                category,
+                                                option
+                                            )
+                                        )
+                                        difficultyExpanded = false
+                                    },
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(20.dp))
+
+                    Column {
+                        val category = stringResource(id = R.string.elements_filter)
+                        Button(
+                            onClick = { elementsExpanded = true },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF56C1FF),
+                                contentColor = Color.Black
+                            ),
+                            modifier = Modifier.width(150.dp)
+                        ) {
+                            Text(
+                                text = category,
+                                fontSize = 16.sp
+                            )
+                            Icon(
+                                if (elementsExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                contentDescription = null
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = elementsExpanded,
+                            onDismissRequest = { elementsExpanded = false },
+                            modifier = Modifier.padding(horizontal = 10.dp)
+                        ) {
+                            for (option in elementsOptions) {
+                                DropdownMenuItem(
+                                    text = { Text(text = option, color = Color.Black) },
+                                    onClick = {
+                                        filtersSelected.add(
+                                            SelectedFilter(
+                                                category,
+                                                option
+                                            )
+                                        )
+                                        elementsExpanded = false
+                                    },
+                                )
+                            }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.width(20.dp))
-
-                Column {
-                    val category = stringResource(id = R.string.space_filter)
-                    Button(
-                        onClick = { spaceExpanded = true },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF56C1FF),
-                            contentColor = Color.Black
-                        ),
-                        modifier = Modifier.width(150.dp)
-
-                    ) {
-                        Text(
-                            text = category,
-                            fontSize = 16.sp,
-                        )
-                        Icon(
-                            if (spaceExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                            contentDescription = null
-                        )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White)
+                ) {
+                    Column {
+                        val category = stringResource(id = R.string.approach_filter)
+                        Button(
+                            onClick = { approachExpanded = true },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF56C1FF),
+                                contentColor = Color.Black
+                            ),
+                            modifier = Modifier.width(150.dp)
+                        ) {
+                            Text(
+                                text = category,
+                                fontSize = 16.sp
+                            )
+                            Icon(
+                                if (approachExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                contentDescription = null
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = approachExpanded,
+                            onDismissRequest = { approachExpanded = false },
+                            modifier = Modifier.padding(horizontal = 10.dp)
+                        ) {
+                            for (option in approachOptions) {
+                                DropdownMenuItem(
+                                    text = { Text(text = option, color = Color.Black) },
+                                    onClick = {
+                                        filtersSelected.add(
+                                            SelectedFilter(
+                                                category,
+                                                option
+                                            )
+                                        )
+                                        approachExpanded = false
+                                    },
+                                )
+                            }
+                        }
                     }
 
-                    DropdownMenu(
-                        expanded = spaceExpanded,
-                        onDismissRequest = { spaceExpanded = false },
-                        modifier = Modifier.padding(horizontal = 10.dp)
-                    ) {
-                        for (option in spaceOptions) {
-                            DropdownMenuItem(
-                                text = { Text(text = option, color = Color.Black) },
-                                onClick = {
-                                    filtersSelected.add(
-                                        SelectedFilter(
-                                            category,
-                                            option
-                                        )
-                                    )
-                                    spaceExpanded = false
-                                },
+                    Spacer(modifier = Modifier.width(20.dp))
+
+                    Column {
+                        val category = stringResource(id = R.string.space_filter)
+                        Button(
+                            onClick = { spaceExpanded = true },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF56C1FF),
+                                contentColor = Color.Black
+                            ),
+                            modifier = Modifier.width(150.dp)
+
+                        ) {
+                            Text(
+                                text = category,
+                                fontSize = 16.sp,
                             )
+                            Icon(
+                                if (spaceExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                contentDescription = null
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = spaceExpanded,
+                            onDismissRequest = { spaceExpanded = false },
+                            modifier = Modifier.padding(horizontal = 10.dp)
+                        ) {
+                            for (option in spaceOptions) {
+                                DropdownMenuItem(
+                                    text = { Text(text = option, color = Color.Black) },
+                                    onClick = {
+                                        filtersSelected.add(
+                                            SelectedFilter(
+                                                category,
+                                                option
+                                            )
+                                        )
+                                        spaceExpanded = false
+                                    },
+                                )
+                            }
                         }
                     }
                 }
-            }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(bottom = if(filtersSelected.isEmpty())  25.dp else 0.dp)
-            )  {
-                Column {
-                    val category = stringResource(id = R.string.score_filter)
-                    Button(
-                        onClick = { scoreExpanded = true },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF56C1FF),
-                            contentColor = Color.Black
-                        ),
-                        modifier = Modifier.width(150.dp)
-                    ) {
-                        Text(
-                            text = category,
-                            fontSize = 16.sp
-                        )
-                        Icon(
-                            if (scoreExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                            contentDescription = null
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = scoreExpanded,
-                        onDismissRequest = { scoreExpanded = false },
-                        modifier = Modifier.padding(horizontal = 10.dp)
-                    ) {
-                        for (option in scoreOptions) {
-                            DropdownMenuItem(
-                                text = { Text(text = option, color = Color.Black) },
-                                onClick = {
-                                    filtersSelected.add(
-                                        SelectedFilter(
-                                            category,
-                                            option
-                                        )
-                                    )
-                                    scoreExpanded = false
-                                },
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White)
+                        .padding(bottom = if (filtersSelected.isEmpty()) 25.dp else 0.dp)
+                ) {
+                    Column {
+                        val category = stringResource(id = R.string.score_filter)
+                        Button(
+                            onClick = { scoreExpanded = true },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF56C1FF),
+                                contentColor = Color.Black
+                            ),
+                            modifier = Modifier.width(150.dp)
+                        ) {
+                            Text(
+                                text = category,
+                                fontSize = 16.sp
                             )
+                            Icon(
+                                if (scoreExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                contentDescription = null
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = scoreExpanded,
+                            onDismissRequest = { scoreExpanded = false },
+                            modifier = Modifier.padding(horizontal = 10.dp)
+                        ) {
+                            for (option in scoreOptions) {
+                                DropdownMenuItem(
+                                    text = { Text(text = option, color = Color.Black) },
+                                    onClick = {
+                                        filtersSelected.add(
+                                            SelectedFilter(
+                                                category,
+                                                option
+                                            )
+                                        )
+                                        scoreExpanded = false
+                                    },
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(20.dp))
+
+                    Column {
+                        val category = stringResource(id = R.string.date_filter)
+                        Button(
+                            onClick = { dateExpanded = true },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF56C1FF),
+                                contentColor = Color.Black
+                            ),
+                            modifier = Modifier.width(150.dp)
+
+                        ) {
+                            Text(
+                                text = category,
+                                fontSize = 16.sp,
+                            )
+                            Icon(
+                                if (dateExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                contentDescription = null
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = dateExpanded,
+                            onDismissRequest = { dateExpanded = false },
+                            modifier = Modifier.padding(horizontal = 10.dp)
+                        ) {
+                            for (option in dateOptions) {
+                                DropdownMenuItem(
+                                    text = { Text(text = option, color = Color.Black) },
+                                    onClick = {
+                                        filtersSelected.add(
+                                            SelectedFilter(
+                                                category,
+                                                option
+                                            )
+                                        )
+                                        dateExpanded = false
+                                    },
+                                )
+                            }
                         }
                     }
                 }
-
-                Spacer(modifier = Modifier.width(20.dp))
-
-                Column {
-                    val category = stringResource(id = R.string.date_filter)
-                    Button(
-                        onClick = { dateExpanded = true },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF56C1FF),
-                            contentColor = Color.Black
-                        ),
-                        modifier = Modifier.width(150.dp)
-
-                    ) {
-                        Text(
-                            text = category,
-                            fontSize = 16.sp,
-                        )
-                        Icon(
-                            if (dateExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                            contentDescription = null
-                        )
-                    }
-
-                    DropdownMenu(
-                        expanded = dateExpanded,
-                        onDismissRequest = { dateExpanded = false },
-                        modifier = Modifier.padding(horizontal = 10.dp)
-                    ) {
-                        for (option in dateOptions) {
-                            DropdownMenuItem(
-                                text = { Text(text = option, color = Color.Black) },
-                                onClick = {
-                                    filtersSelected.add(
-                                        SelectedFilter(
-                                            category,
-                                            option
-                                        )
-                                    )
-                                    dateExpanded = false
-                                },
-                            )
-                        }
-                    }
-                }
-            }
 
             }
 
@@ -644,6 +653,7 @@ fun ExploreFilters() {
                                             contentDescription = null,
                                             modifier = Modifier.size(20.dp)
                                         )
+                                    }
                                 }
                             }
                         }
@@ -812,7 +822,8 @@ fun Routine() {
         val space :String,
         val description :String,
         val cycles :List<Cycle>,
-        val time :Int
+        val time :Int,
+        val score :Float
     )
 
     val exercises :List<Exercise> = listOf(
@@ -840,7 +851,7 @@ fun Routine() {
     )
 
     val routine :RoutineItem = RoutineItem("Senta-Senta", "https://s3.abcstatics.com/media/bienestar/2020/11/17/abdominales-kfHF--620x349@abc.jpeg",
-        "Medium", listOf("Dumbells", "Rope"), listOf("Cardio"), "Ideal for reduced spaces", "Very fun exercise", cycles, 15)
+        "Medium", listOf("Dumbells", "Rope"), listOf("Cardio"), "Ideal for reduced spaces", "Very fun exercise", cycles, 15, 3.4f)
 
 /// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -848,9 +859,14 @@ fun Routine() {
     var cycleIndex by remember { mutableStateOf(0) }
     var detailMode by remember { mutableStateOf(true) }
     var showModeDialog by remember { mutableStateOf(false) }
+    var showRateDialog by remember { mutableStateOf(false) }
+
+    var score by remember { mutableStateOf (3) }
+
 
     var descriptionIcon = if(showDescription) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
     var modeIcon = if(detailMode) painterResource(id = R.drawable.detail_mode) else painterResource(id = R.drawable.list_mode)
+    var rateIcon = if(showRateDialog) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
 
     data class ModeOption (
         val label :String,
@@ -900,7 +916,7 @@ fun Routine() {
                     painter = rememberImagePainter(
                         data = routine.imageUrl
                     ),
-                    contentDescription = "routine image",
+                    contentDescription = routine.imageUrl,
                     modifier = Modifier
                         .clip(
                             RoundedCornerShape(
@@ -935,11 +951,23 @@ fun Routine() {
                     .fillMaxSize()
                     .padding(vertical = 25.dp, horizontal = 30.dp)
             ) {
-                Text(
-                    text = routine.title,
-                    fontSize = 25.sp,
-                    modifier = Modifier.padding(horizontal = 10.dp)
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = routine.title,
+                        fontSize = 25.sp,
+                        modifier = Modifier.padding(horizontal = 10.dp).weight(1f)
+                    )
+                    Text(
+                        text = routine.score.toString()
+                    )
+                    Icon(
+                        Icons.Filled.Star,
+                        contentDescription = null,
+                        modifier = Modifier.padding(start = 5.dp)
+                    )
+                }
 
                 Column(
                     modifier = Modifier.padding(vertical = 20.dp)
@@ -966,6 +994,54 @@ fun Routine() {
                                 .fillMaxWidth()
                                 .padding(vertical = 2.dp)
                         )
+                    }
+                }
+
+                /////////////////// Rate routine ///////////////////////
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.rate_name)
+                    )
+
+                    Button(
+                        onClick = { showRateDialog = !showRateDialog },
+                        contentPadding = PaddingValues(0.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = Color(0xFFE4E4E4),
+                        ),
+                        modifier = Modifier
+                            .width(40.dp)
+                            .height(25.dp)
+                    ) {
+                        Icon(
+                            rateIcon,
+                            contentDescription = stringResource(R.string.rate_name),
+                            tint = Color.Black
+                        )
+                    }
+                }
+
+                if (showRateDialog) {
+                    Row(
+                        modifier = Modifier.padding(top = 10.dp)
+                    ) {
+                        for (i in 1..5) {
+                            IconButton(
+                                onClick = { score = i },
+                                modifier = Modifier.size(30.dp)
+                            ) {
+                                Icon(
+                                    painter = if (i <= score) painterResource(id = R.drawable.star) else painterResource(
+                                        id = R.drawable.empty_star
+                                    ),
+                                    contentDescription = null,
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -1020,11 +1096,11 @@ fun Routine() {
                     Surface(
                         shape = RoundedCornerShape(30.dp),
                         color = Color.LightGray,
-                        modifier = Modifier.width(400.dp)
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
-                            horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier.padding(5.dp)
                         ) {
                             for ((index, option) in cyclesOptions.withIndex()) {
@@ -1035,8 +1111,8 @@ fun Routine() {
                                         containerColor = if (cycleIndex == index) Color.White else Color.Transparent
                                     ),
                                     modifier = Modifier
-                                        .width(110.dp)
                                         .height(30.dp)
+                                        .weight(1f)
                                 ) {
                                     Icon(
                                         painter = painterResource(id = option),

@@ -22,9 +22,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -175,29 +177,29 @@ fun RoutinePreview(imageUrl: String, title: String, time: Int, modifier: Modifie
     }
 }
 
+///////////// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+data class RoutineItemData(
+    val imageUrl: String,
+    val title: String,
+    val time: Int
+)
+
+val routineData:  List<RoutineItemData> = listOf(
+    RoutineItemData("https://hips.hearstapps.com/hmg-prod/images/12-ejercicios-para-abdominales-elle-1632239590.jpg", "Abs routine 1", 15),
+    RoutineItemData("https://hips.hearstapps.com/hmg-prod/images/12-ejercicios-para-abdominales-elle-1632239590.jpg", "Abs routine 2", 60),
+    RoutineItemData("https://hips.hearstapps.com/hmg-prod/images/12-ejercicios-para-abdominales-elle-1632239590.jpg", "Abs routine 3", 25),
+    RoutineItemData("https://hips.hearstapps.com/hmg-prod/images/12-ejercicios-para-abdominales-elle-1632239590.jpg", "Abs routine 4", 40),
+    RoutineItemData("https://hips.hearstapps.com/hmg-prod/images/12-ejercicios-para-abdominales-elle-1632239590.jpg", "Abs routine 5", 60),
+)
+
+///////////// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ExploreScreen() {
-
-///////////// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    data class RoutineItemData(
-        val imageUrl: String,
-        val title: String,
-        val time: Int
-    )
-
-    val routineData:  List<RoutineItemData> = listOf(
-        RoutineItemData("https://hips.hearstapps.com/hmg-prod/images/12-ejercicios-para-abdominales-elle-1632239590.jpg", "Abs routine 1", 15),
-        RoutineItemData("https://hips.hearstapps.com/hmg-prod/images/12-ejercicios-para-abdominales-elle-1632239590.jpg", "Abs routine 2", 60),
-        RoutineItemData("https://hips.hearstapps.com/hmg-prod/images/12-ejercicios-para-abdominales-elle-1632239590.jpg", "Abs routine 3", 25),
-        RoutineItemData("https://hips.hearstapps.com/hmg-prod/images/12-ejercicios-para-abdominales-elle-1632239590.jpg", "Abs routine 4", 40),
-        RoutineItemData("https://hips.hearstapps.com/hmg-prod/images/12-ejercicios-para-abdominales-elle-1632239590.jpg", "Abs routine 5", 60),
-    )
-
-///////////// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     val difficultyOptions = listOf(stringResource(id = R.string.d_easy), stringResource(id = R.string.d_medium), stringResource(id = R.string.d_difficult))
 
     val approachOptions = listOf(
@@ -222,7 +224,7 @@ fun ExploreScreen() {
 
     var filtersSelected = remember { mutableListOf<String>() }
 
-    var showFilters by remember { mutableStateOf(true) }
+    var showFilters by remember { mutableStateOf(false) }
 
     Column (
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -506,6 +508,33 @@ fun ExploreScreen() {
 fun HomeScreen() {
     Column {
         Header(title = stringResource(R.string.home_name))
+        Spacer(modifier = Modifier.height(20.dp))
+        RoutinesCarousel(title = stringResource(id = R.string.favourites_title), routineData)
+        RoutinesCarousel(title = stringResource(id = R.string.your_routines_title), routineData)
+    }
+}
+
+@Composable
+fun RoutinesCarousel(title :String, routines :List<RoutineItemData>) {
+    Text(
+        text = title,
+        fontSize = 20.sp,
+        modifier = Modifier.padding(start = 20.dp)
+    )
+
+    LazyRow {
+        items(routines) { routine ->
+            Box(modifier = Modifier.padding(start = 20.dp, top = 10.dp)) {
+                RoutinePreview(
+                    imageUrl = routine.imageUrl,
+                    title = routine.title,
+                    time = routine.time
+                )
+            }
+        }
+        item{
+            Spacer(modifier = Modifier.width(20.dp))
+        }
     }
 }
 

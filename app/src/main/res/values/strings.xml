@@ -52,4 +52,6 @@
     <string name="filters_title">Filter by</string>
     <string name="filters_selected">Selected filters</string>
     <string name="no_results">No results where found</string>
+    <string name="favourites_title">Favourites</string>
+    <string name="your_routines_title">Created by you</string>
 </resources>

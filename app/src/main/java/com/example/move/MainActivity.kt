@@ -859,14 +859,14 @@ fun Routine() {
     var cycleIndex by remember { mutableStateOf(0) }
     var detailMode by remember { mutableStateOf(true) }
     var showModeDialog by remember { mutableStateOf(false) }
-    var showRateDialog by remember { mutableStateOf(false) }
+    var showRate by remember { mutableStateOf(false) }
 
     var score by remember { mutableStateOf (3) }
 
 
     var descriptionIcon = if(showDescription) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
     var modeIcon = if(detailMode) painterResource(id = R.drawable.detail_mode) else painterResource(id = R.drawable.list_mode)
-    var rateIcon = if(showRateDialog) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
+    var rateIcon = if(showRate) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
 
     data class ModeOption (
         val label :String,
@@ -1007,7 +1007,7 @@ fun Routine() {
                     )
 
                     Button(
-                        onClick = { showRateDialog = !showRateDialog },
+                        onClick = { showRate = !showRate },
                         contentPadding = PaddingValues(0.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Transparent,
@@ -1025,7 +1025,7 @@ fun Routine() {
                     }
                 }
 
-                if (showRateDialog) {
+                if (showRate) {
                     Row(
                         modifier = Modifier.padding(top = 10.dp)
                     ) {
@@ -1319,7 +1319,6 @@ fun RoutineMenu(time :Int) {
 
     val popUpOptions :List<PopUpOption> = listOf(
         PopUpOption(stringResource(id = R.string.add_favourite), Icons.Default.FavoriteBorder),
-        PopUpOption(stringResource(id = R.string.rate_routine), Icons.Default.Star),
         PopUpOption(stringResource(id = R.string.share), Icons.Default.Share),
     )
 

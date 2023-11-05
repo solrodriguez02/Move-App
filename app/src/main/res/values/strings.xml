@@ -54,4 +54,15 @@
     <string name="no_results">No results where found</string>
     <string name="favourites_title">Favourites</string>
     <string name="your_routines_title">Created by you</string>
+    <string name="date_filter">Date</string>
+    <string name="score_filter">Score</string>
+    <string name="da_today">Today</string>
+    <string name="da_week">Less than a week</string>
+    <string name="da_month">Less than a month</string>
+    <string name="da_older">Older</string>
+    <string name="sc_bad">Bad</string>
+    <string name="sc_fair">Fair</string>
+    <string name="sc_good">Good</string>
+    <string name="sc_very_good">Very good</string>
+    <string name="sc_excelent">Excelent</string>
 </resources>

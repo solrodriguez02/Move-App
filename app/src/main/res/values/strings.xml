@@ -66,4 +66,8 @@
     <string name="sc_very_good">Very good</string>
     <string name="sc_excelent">Excelent</string>
     <string name="rate_name">Rate</string>
+    <string name="finish_title">You have made it!</string>
+    <string name="score_label">How would you rate this routine?</string>
+    <string name="already_scored">You have already rated this routine</string>
+    <string name="continue_home">Continue to Home</string>
 </resources>

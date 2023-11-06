@@ -1,7 +1,6 @@
 package com.example.move
 
 import android.os.Bundle
-import android.widget.RatingBar
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
@@ -26,7 +25,6 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -34,10 +32,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
@@ -95,7 +95,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyApp(modifier: Modifier = Modifier) {
     //  Menu()
-    Routine()
+    // Routine()
+    FinishScreen()
 }
 
 @Preview()
@@ -957,7 +958,9 @@ fun Routine() {
                     Text(
                         text = routine.title,
                         fontSize = 25.sp,
-                        modifier = Modifier.padding(horizontal = 10.dp).weight(1f)
+                        modifier = Modifier
+                            .padding(horizontal = 10.dp)
+                            .weight(1f)
                     )
                     Text(
                         text = routine.score.toString()
@@ -1308,19 +1311,24 @@ fun Routine() {
     }
 }
 
+data class PopUpOption (
+    val label :String,
+    val icon :ImageVector
+)
+
+@Composable
+fun getOptions(): List<PopUpOption> {
+
+    return listOf(
+        PopUpOption(stringResource(id = R.string.add_favourite), Icons.Default.FavoriteBorder),
+        PopUpOption(stringResource(id = R.string.share), Icons.Default.Share),
+    )
+}
 
 @Composable
 fun RoutineMenu(time :Int) {
 
-    data class PopUpOption (
-        val label :String,
-        val icon :ImageVector
-    )
-
-    val popUpOptions :List<PopUpOption> = listOf(
-        PopUpOption(stringResource(id = R.string.add_favourite), Icons.Default.FavoriteBorder),
-        PopUpOption(stringResource(id = R.string.share), Icons.Default.Share),
-    )
+    var popUpOptions = getOptions()
 
     var showPopUp by remember { mutableStateOf(false) }
 
@@ -1498,6 +1506,145 @@ fun RestExercise(title :String, secs :Int) {
                 text = secs.toString() + stringResource(id = R.string.seconds),
                 color = Color.White
             )
+        }
+    }
+}
+
+/// ROUTINE PAGE //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+@Composable
+fun FinishScreen() {
+    var options = getOptions()
+    var score by remember { mutableStateOf (0) }
+    val rated = false
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        val state = rememberScrollState()
+        LaunchedEffect(Unit) { state.animateScrollTo(100) }
+
+        Column(
+            modifier = Modifier
+                .verticalScroll(state)
+                .padding(20.dp)
+                .fillMaxSize()
+        ) {
+
+            Row {
+                Spacer(modifier = Modifier.weight(1f))
+                IconButton(
+                    onClick = { /* redirigir a explore */ }
+                ) {
+                    Icon(
+                        Icons.Filled.Close,
+                        contentDescription = null,
+                        modifier = Modifier.padding(top = 10.dp)
+                    )
+                }
+            }
+
+            Text(
+                text = stringResource(id = R.string.finish_title),
+                modifier = Modifier.padding(top = 5.dp, bottom = 20.dp),
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            for (option in options) {
+                Button(
+                    onClick = { /* pending function */ },
+                    shape = RoundedCornerShape(20.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.LightGray,
+                        contentColor = Color.Black
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            option.icon,
+                            contentDescription = null,
+                            modifier = Modifier.padding(end = 15.dp)
+                        )
+                        Text(
+                            text = option.label
+                        )
+                    }
+                }
+            }
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 40.dp, bottom = 100.dp)
+            ) {
+                if (rated) {
+                    Text(
+                        text = stringResource(id = R.string.already_scored),
+                        fontSize = 18.sp
+                    )
+                } else {
+                    Text(
+                        text = stringResource(id = R.string.score_label),
+                        fontSize = 18.sp
+                    )
+
+                    Row(
+                        modifier = Modifier.padding(top = 10.dp)
+                    ) {
+                        for (i in 1..5) {
+                            IconButton(
+                                onClick = { score = i },
+                                modifier = Modifier.size(30.dp)
+                            ) {
+                                Icon(
+                                    painter = if (i <= score) painterResource(id = R.drawable.star) else painterResource(
+                                        id = R.drawable.empty_star
+                                    ),
+                                    contentDescription = null,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(bottom = 10.dp)
+        ) {
+            Button(
+                onClick = { /* go to home*/ },
+                modifier = Modifier
+                    .padding(bottom = 15.dp)
+                    .width(250.dp),
+                shape = RoundedCornerShape(30.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF5370F8),
+                    contentColor = Color.White
+                ),
+            ) {
+                Text(
+                    text = stringResource(id = R.string.continue_home),
+                    modifier = Modifier.padding(vertical = 5.dp)
+                )
+                Icon(
+                    Icons.Filled.KeyboardArrowRight,
+                    contentDescription = null
+                )
+            }
         }
     }
 }

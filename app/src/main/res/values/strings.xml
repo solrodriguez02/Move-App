@@ -76,4 +76,5 @@
     <string name="next_exercise">Next exercise:</string>
     <string name="cycle_name">"cycle "</string>
     <string name="rest_name">Rest</string>
+    <string name="next_cycle">Next cycle:</string>
 </resources>

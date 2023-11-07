@@ -113,7 +113,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MyApp(modifier: Modifier = Modifier) {
-    // Menu()
+     //Menu()
     // Routine()
     // FinishScreen()
     RoutineListMode()
@@ -1458,7 +1458,6 @@ fun ExerciseBox(title :String, secs :Int, reps :Int, imgUrl :String) {
                     ),
                     contentDescription = stringResource(R.string.exercise_image),
                     modifier = Modifier
-                        .clip(RoundedCornerShape(15.dp))
                         .fillMaxSize(),
                     contentScale = ContentScale.FillBounds,
                 )
@@ -1684,7 +1683,9 @@ fun FinishScreen() {
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun RoutineListMode() {
+fun RoutineListMode(isDetailedMode :Boolean = true) {
+
+    val detailedMode = isDetailedMode
 
     var cycleIndex by remember { mutableStateOf(0) }
 
@@ -1725,190 +1726,205 @@ fun RoutineListMode() {
         }
     }
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(20.dp)
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
+        val state = rememberScrollState()
+        LaunchedEffect(Unit) { state.animateScrollTo(100) }
 
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            IconButton(
-                onClick = { /*Pop up de exit*/ },
-            ) {
-                Icon(
-                    Icons.Filled.Close,
-                    contentDescription = null,
-                )
-            }
-            Text(
-                text = currentExercise.title,
-                fontSize = 24.sp,
-            )
-            Icon(
-                painter = cycleIcon,
-                contentDescription = null,
-                tint = Color(0xFF5370F8),
-                modifier = Modifier.padding(horizontal = 10.dp)
-            )
-        }
-
-        Box(
-            contentAlignment = Alignment.Center,
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .height(150.dp)
-                .width(400.dp)
-                .onSizeChanged { size = it }
-                .padding(top = 30.dp)
+                .verticalScroll(state)
+                .padding(20.dp)
         ) {
 
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                drawArc(
-                    color = if(totalTime.toInt() != 0) Color.LightGray else Color(0xFF5370F8),
-                    startAngle = -160f,
-                    sweepAngle = 140f,
-                    useCenter = false,
-                    size = androidx.compose.ui.geometry.Size(
-                        size.width.toFloat(),
-                        size.height.toFloat()
-                    ),
-                    style = Stroke(strokeWidth.toPx(), cap = StrokeCap.Round)
-                )
-                drawArc(
-                    color = Color(0xFF5370F8),
-                    startAngle = -160f,
-                    sweepAngle = 140f * value,
-                    useCenter = false,
-                    size = androidx.compose.ui.geometry.Size(
-                        size.width.toFloat(),
-                        size.height.toFloat()
-                    ),
-                    style = Stroke(strokeWidth.toPx(), cap = StrokeCap.Round)
-                )
-            }
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                val currentSecs = currentTime / 1000L
-                val stringSecs = String.format("%02d:%02d", currentSecs / 60, currentSecs % 60)
-
-                Text(
-                    text = if (totalTime.toInt() != 0) stringSecs else stringResource(id = R.string.repetitions) + currentExercise.reps.toString(),
-                    fontSize = 44.sp,
-                    color = Color.Black
-                )
-
-                if (totalTime.toInt() != 0 && currentExercise.reps != 0) {
-                    Text(
-                        text = stringResource(id = R.string.repetitions) + currentExercise.reps.toString(),
-                        fontSize = 20.sp,
+                IconButton(
+                    onClick = { /*Pop up de exit*/ },
+                ) {
+                    Icon(
+                        Icons.Filled.Close,
+                        contentDescription = null,
                     )
                 }
+                if(detailedMode) {
+                    Text(
+                        text = currentExercise.title,
+                        fontSize = 24.sp,
+                    )
+                }
+                Icon(
+                    painter = cycleIcon,
+                    contentDescription = null,
+                    tint = Color(0xFF5370F8),
+                    modifier = Modifier.padding(horizontal = 10.dp)
+                )
             }
-        }
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .clip(RoundedCornerShape(50.dp)),
-        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .height(150.dp)
+                    .width(400.dp)
+                    .onSizeChanged { size = it }
+                    .padding(top = 30.dp)
+            ) {
+                showTimer(totalTime = totalTime, size = size, strokeWidth = strokeWidth, currentExercise = currentExercise, currentTime = currentTime, value = value )
+            }
 
-            Image(
-                painter = rememberImagePainter(data = currentExercise.imageUrl),
-                contentDescription = currentExercise.title,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-            )
-        }
-        Text(
-            text = (exerciseIndex + 1).toString() + stringResource(id = R.string.dash) + exerciseCount,
-            fontSize = 18.sp,
-            modifier = Modifier.padding(10.dp)
-        )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .clip(RoundedCornerShape(50.dp)),
+            ) {
 
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            color = Color.LightGray,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(90.dp)
-                .padding(top = 10.dp)
-        ){
+                Image(
+                    painter = rememberImagePainter(data = currentExercise.imageUrl),
+                    contentDescription = currentExercise.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                )
+            }
             Text(
-                text = currentExercise.description,
+                text = (exerciseIndex + 1).toString() + stringResource(id = R.string.dash) + exerciseCount,
+                fontSize = 18.sp,
                 modifier = Modifier.padding(10.dp)
             )
-        }
+
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = Color.LightGray,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(90.dp)
+                    .padding(top = 10.dp)
+            ) {
+                Text(
+                    text = currentExercise.description,
+                    modifier = Modifier.padding(10.dp)
+                )
+            }
 
 
-        if (currentTime <= 0L && currentExercise.secs != 0 || nextExercise) {
-            exerciseIndex++
-            nextExercise = false
-            if (exerciseIndex < exerciseCount) {
-                currentExercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
-                currentTime = currentExercise.secs * 1000L
-                totalTime = currentExercise.secs * 1000L
-                isTimerRunning = true
-            } else {
-                cycleIndex++
-                if(cycleIndex < routine.cycles.size) {
-                    exerciseIndex = 0
+            if (currentTime <= 0L && currentExercise.secs != 0 || nextExercise) {
+                exerciseIndex++
+                nextExercise = false
+                if (exerciseIndex < exerciseCount) {
                     currentExercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
                     currentTime = currentExercise.secs * 1000L
                     totalTime = currentExercise.secs * 1000L
                     isTimerRunning = true
+                } else {
+                    cycleIndex++
+                    if (cycleIndex < routine.cycles.size) {
+                        exerciseIndex = 0
+                        currentExercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
+                        currentTime = currentExercise.secs * 1000L
+                        totalTime = currentExercise.secs * 1000L
+                        isTimerRunning = true
+                    }
                 }
             }
-        }
 
-        Surface(
-            shape = RoundedCornerShape(50.dp),
-            color = Color(0xFF5370F8),
-            modifier = Modifier
-                .padding(vertical = 20.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(20.dp),
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp)
+            Surface(
+                shape = RoundedCornerShape(50.dp),
+                color = Color(0xFF5370F8),
+                modifier = Modifier
+                    .padding(vertical = 20.dp)
             ) {
-                if(totalTime.toInt() != 0) {
-                    IconButton(
-                        onClick = {
-                            currentTime = totalTime
-                            isTimerRunning = true
-                        }) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(20.dp),
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp)
+                ) {
+                    if (totalTime.toInt() != 0) {
+                        IconButton(
+                            onClick = {
+                                currentTime = totalTime
+                                isTimerRunning = true
+                            }) {
+                            Icon(
+                                Icons.Filled.Refresh,
+                                contentDescription = null,
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
+                        IconButton(onClick = { isTimerRunning = !isTimerRunning }) {
+                            Icon(
+                                if (isTimerRunning && currentTime > 0L) painterResource(id = R.drawable.pause) else painterResource(
+                                    id = R.drawable.play
+                                ),
+                                contentDescription = null,
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
+                    }
+                    IconButton(onClick = { nextExercise = true }) {
                         Icon(
-                            Icons.Filled.Refresh,
+                            painterResource(id = R.drawable.skip_next),
                             contentDescription = null,
                             modifier = Modifier.size(30.dp)
                         )
                     }
-                    IconButton(onClick = { isTimerRunning = !isTimerRunning }) {
-                        Icon(
-                            if (isTimerRunning && currentTime > 0L) painterResource(id = R.drawable.pause) else painterResource(
-                                id = R.drawable.play
-                            ),
-                            contentDescription = null,
-                            modifier = Modifier.size(30.dp)
-                        )
-                    }
-                }
-                IconButton(onClick = { nextExercise = true }) {
-                    Icon(
-                        painterResource(id = R.drawable.skip_next),
-                        contentDescription = null,
-                        modifier = Modifier.size(30.dp)
-                    )
                 }
             }
+
+            NextExerciseBox(exerciseIndex, exerciseCount, cycleIndex, cycleIcon)
+
         }
+    }
+}
 
-        NextExerciseBox(exerciseIndex, exerciseCount, cycleIndex, cycleIcon)
+@Composable
+fun showTimer(totalTime :Long, size :IntSize, strokeWidth :Dp, currentExercise :Exercise, currentTime :Long, value :Float) {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        drawArc(
+            color = if (totalTime.toInt() != 0) Color.LightGray else Color(0xFF5370F8),
+            startAngle = -160f,
+            sweepAngle = 140f,
+            useCenter = false,
+            size = androidx.compose.ui.geometry.Size(
+                size.width.toFloat(),
+                size.height.toFloat()
+            ),
+            style = Stroke(strokeWidth.toPx(), cap = StrokeCap.Round)
+        )
+        drawArc(
+            color = Color(0xFF5370F8),
+            startAngle = -160f,
+            sweepAngle = 140f * value,
+            useCenter = false,
+            size = androidx.compose.ui.geometry.Size(
+                size.width.toFloat(),
+                size.height.toFloat()
+            ),
+            style = Stroke(strokeWidth.toPx(), cap = StrokeCap.Round)
+        )
+    }
 
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        val currentSecs = currentTime / 1000L
+        val stringSecs = String.format("%02d:%02d", currentSecs / 60, currentSecs % 60)
+
+        Text(
+            text = if (totalTime.toInt() != 0) stringSecs else stringResource(id = R.string.repetitions) + currentExercise.reps.toString(),
+            fontSize = 44.sp,
+            color = Color.Black
+        )
+
+        if (totalTime.toInt() != 0 && currentExercise.reps != 0) {
+            Text(
+                text = stringResource(id = R.string.repetitions) + currentExercise.reps.toString(),
+                fontSize = 20.sp,
+            )
+        }
     }
 }
 

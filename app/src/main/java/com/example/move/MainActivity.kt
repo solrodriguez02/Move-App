@@ -836,12 +836,13 @@ data class RoutineItem(
 
 val exercises :List<Exercise> = listOf(
     Exercise("Jump rope", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/jump-rope-hop.jpg", 5, 15, "This exercise is fun!"),
-    Exercise("Pivoting", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/pivoting-upper-cut.jpg", 0, 15, "This exercise is fun!"),
     Exercise("Switch Kick", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/switch-kick.jpg", 2, 0, "This exercise is fun!"),
     Exercise("Rest", "", 5, 0, "This exercise is fun!"),
-    Exercise("Windmill", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/windmill.jpg", 4, 0, "This exercise is fun!"),
-    Exercise("Squat Jacks", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/squat-jack.jpg", 0, 15, "This exercise is fun!")
-)
+    Exercise("Windmill", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/windmill.jpg", 0, 14, "This exercise is fun!"),
+    Exercise("Rest", "", 5, 0, "This exercise is fun!"),
+    Exercise("Squat Jacks", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/squat-jack.jpg", 0, 15, "This exercise is fun!"),
+
+    )
 
 val exercises1 :List<Exercise> = listOf(
     Exercise("Switch Kick", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/switch-kick.jpg", 3, 0, "This exercise is fun!"),
@@ -1680,7 +1681,7 @@ fun RoutineListMode(isDetailedMode :Boolean = true) {
 
     var currentExercise by remember { mutableStateOf<Exercise>(routine.cycles[cycleIndex].exercises[exerciseIndex]) }
 
-    val exerciseCount by remember { mutableStateOf(routine.cycles[cycleIndex].exercises.size) }
+    val exerciseCount = routine.cycles[cycleIndex].exercises.size
 
     var nextExercise by remember { mutableStateOf(false) }
 
@@ -1711,22 +1712,27 @@ fun RoutineListMode(isDetailedMode :Boolean = true) {
 
     var newCycle by remember { mutableStateOf(true) }
 
-    LaunchedEffect(key1 = currentTime, key2 = isTimerRunning) {
-        if (currentTime > 0 && isTimerRunning) {
-            delay(100L)
-            currentTime -= 100L
-            value = 1 - (currentTime / totalTime.toFloat())
+    var hasOnlyReps = currentExercise.secs == 0
+
+    if(!hasOnlyReps) {
+        LaunchedEffect(key1 = currentTime, key2 = isTimerRunning) {
+            if (currentTime > 0 && isTimerRunning) {
+                delay(100L)
+                currentTime -= 100L
+                value = 1 - (currentTime / totalTime.toFloat())
+            }
         }
     }
-
     if (currentTime <= 0L && currentExercise.secs != 0 || nextExercise) {
         exerciseIndex++
         nextExercise = false
         if (exerciseIndex < exerciseCount) {
-            currentExercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
-            currentTime = currentExercise.secs * 1000L
-            totalTime = currentExercise.secs * 1000L
-            isTimerRunning = true
+
+                currentExercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
+                currentTime = currentExercise.secs * 1000L
+                totalTime = currentExercise.secs * 1000L
+                isTimerRunning = true
+
         } else {
             cycleIndex++
             if (cycleIndex < routine.cycles.size) {
@@ -1808,7 +1814,9 @@ fun RoutineListMode(isDetailedMode :Boolean = true) {
                     Icon(
                         cycleIcon,
                         contentDescription = null,
-                        modifier = Modifier.padding(vertical = 100.dp).size(50.dp),
+                        modifier = Modifier
+                            .padding(vertical = 100.dp)
+                            .size(50.dp),
                         tint = Color(0xFF5370F8)
                     )
 
@@ -1997,7 +2005,7 @@ fun ShowTimer(totalTime :Long, size :IntSize, strokeWidth :Dp, currentExercise :
             style = Stroke(strokeWidth.toPx(), cap = StrokeCap.Round)
         )
         drawArc(
-            color = Color(0xFF5370F8),
+            color = if (totalTime.toInt() != 0) Color(0xFF5370F8) else Color.Transparent,
             startAngle = -160f,
             sweepAngle = 140f * value,
             useCenter = false,
@@ -2007,6 +2015,7 @@ fun ShowTimer(totalTime :Long, size :IntSize, strokeWidth :Dp, currentExercise :
             ),
             style = Stroke(strokeWidth.toPx(), cap = StrokeCap.Round)
         )
+
     }
 
     Column(

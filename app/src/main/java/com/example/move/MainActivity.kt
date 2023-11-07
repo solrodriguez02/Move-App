@@ -863,8 +863,8 @@ val exercises1 :List<Exercise> = listOf(
 
 val cycles :List<Cycle> = listOf(
     Cycle("Warm up", exercises, 1),
-    Cycle("Cycle 1", exercises1, 2),
-    Cycle("Cycle 2", exercises, 3),
+    Cycle("Cycle 1", exercises, 2),
+    Cycle("Cycle 2", exercises1, 3),
     Cycle("Cooling", exercises, 1)
 )
 
@@ -1745,48 +1745,48 @@ fun RoutineListMode() {
             }
             Text(
                 text = currentExercise.title,
-                fontSize = 24.sp
+                fontSize = 24.sp,
             )
             Icon(
                 painter = cycleIcon,
                 contentDescription = null,
-                tint = Color(0xFF5370F8)
+                tint = Color(0xFF5370F8),
+                modifier = Modifier.padding(horizontal = 10.dp)
             )
         }
 
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .height(200.dp)
+                .height(150.dp)
                 .width(400.dp)
                 .onSizeChanged { size = it }
-                .padding(top = 40.dp)
+                .padding(top = 30.dp)
         ) {
-            if(totalTime.toInt() != 0) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    drawArc(
-                        color = Color.LightGray,
-                        startAngle = -160f,
-                        sweepAngle = 140f,
-                        useCenter = false,
-                        size = androidx.compose.ui.geometry.Size(
-                            size.width.toFloat(),
-                            size.height.toFloat()
-                        ),
-                        style = Stroke(strokeWidth.toPx(), cap = StrokeCap.Round)
-                    )
-                    drawArc(
-                        color = Color(0xFF5370F8),
-                        startAngle = -160f,
-                        sweepAngle = 140f * value,
-                        useCenter = false,
-                        size = androidx.compose.ui.geometry.Size(
-                            size.width.toFloat(),
-                            size.height.toFloat()
-                        ),
-                        style = Stroke(strokeWidth.toPx(), cap = StrokeCap.Round)
-                    )
-                }
+
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                drawArc(
+                    color = if(totalTime.toInt() != 0) Color.LightGray else Color(0xFF5370F8),
+                    startAngle = -160f,
+                    sweepAngle = 140f,
+                    useCenter = false,
+                    size = androidx.compose.ui.geometry.Size(
+                        size.width.toFloat(),
+                        size.height.toFloat()
+                    ),
+                    style = Stroke(strokeWidth.toPx(), cap = StrokeCap.Round)
+                )
+                drawArc(
+                    color = Color(0xFF5370F8),
+                    startAngle = -160f,
+                    sweepAngle = 140f * value,
+                    useCenter = false,
+                    size = androidx.compose.ui.geometry.Size(
+                        size.width.toFloat(),
+                        size.height.toFloat()
+                    ),
+                    style = Stroke(strokeWidth.toPx(), cap = StrokeCap.Round)
+                )
             }
 
             Column(
@@ -1835,8 +1835,8 @@ fun RoutineListMode() {
             color = Color.LightGray,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(110.dp)
-                .padding(vertical = 10.dp)
+                .height(90.dp)
+                .padding(top = 10.dp)
         ){
             Text(
                 text = currentExercise.description,
@@ -1869,30 +1869,33 @@ fun RoutineListMode() {
             shape = RoundedCornerShape(50.dp),
             color = Color(0xFF5370F8),
             modifier = Modifier
-                .width(220.dp)
                 .padding(vertical = 20.dp)
         ) {
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(20.dp),
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp)
             ) {
-                IconButton(
-                    onClick = {
-                        currentTime = totalTime
-                        isTimerRunning = true
-                }) {
-                    Icon(
-                        Icons.Filled.Refresh,
-                        contentDescription = null,
-                        modifier = Modifier.size(30.dp)
-                    )
-                }
-                IconButton(onClick = { isTimerRunning = !isTimerRunning }) {
-                    Icon(
-                        if (isTimerRunning && currentTime > 0L) painterResource(id = R.drawable.pause) else painterResource(id = R.drawable.play),
-                        contentDescription = null,
-                        modifier = Modifier.size(30.dp)
-                    )
+                if(totalTime.toInt() != 0) {
+                    IconButton(
+                        onClick = {
+                            currentTime = totalTime
+                            isTimerRunning = true
+                        }) {
+                        Icon(
+                            Icons.Filled.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.size(30.dp)
+                        )
+                    }
+                    IconButton(onClick = { isTimerRunning = !isTimerRunning }) {
+                        Icon(
+                            if (isTimerRunning && currentTime > 0L) painterResource(id = R.drawable.pause) else painterResource(
+                                id = R.drawable.play
+                            ),
+                            contentDescription = null,
+                            modifier = Modifier.size(30.dp)
+                        )
+                    }
                 }
                 IconButton(onClick = { nextExercise = true }) {
                     Icon(
@@ -1904,41 +1907,79 @@ fun RoutineListMode() {
             }
         }
 
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            color = Color(0xFF2D2C32),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Box(
-                modifier = Modifier.fillMaxWidth().height(80.dp),
-                contentAlignment = Alignment.Center
+        NextExerciseBox(exerciseIndex, exerciseCount, cycleIndex, cycleIcon)
+
+    }
+}
+
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cycleIcon :Painter) {
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = Color(0xFF2D2C32),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dp)
+                .padding(horizontal = 15.dp),
+
             ) {
-                if (exerciseIndex == exerciseCount - 1) {
-                    val lastCycle = cycleIndex == routine.cycles.size - 1
-                    Row {
+            if (exerciseIndex == exerciseCount - 1) {
+                val lastCycle = cycleIndex == routine.cycles.size - 1
+                Row {
+                    Icon(
+                        if (lastCycle) painterResource(id = R.drawable.last_exercise) else cycleIcon,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.padding(horizontal = 30.dp)
+                    )
+                    Text(
+                        text = if (lastCycle) stringResource(id = R.string.last_exercise) else routine.cycles[cycleIndex+1].name,
+                        color = Color.White
+                    )
+                }
+            } else {
+                val followingExercise = routine.cycles[cycleIndex].exercises[exerciseIndex + 1]
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if(followingExercise.title == stringResource(id = R.string.rest_name)) {
                         Icon(
-                            if (lastCycle) painterResource(id = R.drawable.last_exercise) else cycleIcon,
+                            painterResource(id = R.drawable.rest),
                             contentDescription = null,
                             tint = Color.White,
-                            modifier = Modifier.padding(end = 10.dp)
-                        )
-                        Text(
-                            text = if (lastCycle) stringResource(id = R.string.last_exercise) else routine.cycles[cycleIndex+1].name,
-                            color = Color.White
+                            modifier = Modifier.padding(horizontal = 30.dp)
                         )
                     }
-                } else {
-                    Row {
-                        Column {
+                    else {
+                        Box(
+                            modifier = Modifier
+                                .height(60.dp)
+                                .width(90.dp)
+                                .padding(end = 15.dp)
+                                .clip(RoundedCornerShape(10.dp)),
+                        ) {
+                            Image(
+                                painter = rememberImagePainter(data = followingExercise.imageUrl),
+                                contentDescription = followingExercise.title,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop,
+                            )
+                        }
+                    }
+                    Column {
+                        if(followingExercise.title != stringResource(id = R.string.rest_name)) {
                             Text(
                                 text = stringResource(id = R.string.next_exercise),
                                 color = Color.White
                             )
-                            Text(
-                                text = routine.cycles[cycleIndex].exercises[exerciseIndex + 1].title,
-                                color = Color.White
-                            )
                         }
+                        Text(
+                            text = followingExercise.title,
+                            color = Color.White
+                        )
                     }
                 }
             }

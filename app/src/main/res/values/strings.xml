@@ -70,4 +70,9 @@
     <string name="score_label">How would you rate this routine?</string>
     <string name="already_scored">You have already rated this routine</string>
     <string name="continue_home">Continue to Home</string>
+    <string name="dash">/</string>
+    <string name="last_exercise">This is the last exercise!</string>
+    <string name="new_cycle">New cycle</string>
+    <string name="next_exercise">Next exercise:</string>
+    <string name="cycle_name">"cycle "</string>
 </resources>

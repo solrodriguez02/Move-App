@@ -1,9 +1,11 @@
 package com.example.move
 
 import android.os.Bundle
+import android.util.Size
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -41,6 +43,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
@@ -58,28 +61,44 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PointMode
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.move.ui.theme.MoveTheme
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlinx.coroutines.*
+import java.util.Timer
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,9 +113,10 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MyApp(modifier: Modifier = Modifier) {
-    //  Menu()
+    // Menu()
     // Routine()
-    FinishScreen()
+    // FinishScreen()
+    RoutineListMode()
 }
 
 @Preview()
@@ -793,69 +813,78 @@ fun Menu() {
 
 
 
+
+
+
+/// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
+data class Exercise(
+    val title :String,
+    val imageUrl :String,
+    val secs :Int,
+    val reps :Int,
+    val description :String
+)
+
+data class Cycle(
+    val name :String,
+    val exercises :List<Exercise>,
+    val reps :Int
+)
+
+data class RoutineItem(
+    val title: String,
+    val imageUrl :String,
+    val difficulty :String,
+    val elements :List<String>,
+    val approach :List<String>,
+    val space :String,
+    val description :String,
+    val cycles :List<Cycle>,
+    val time :Int,
+    val score :Float
+)
+
+val exercises :List<Exercise> = listOf(
+    Exercise("Jump rope", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/jump-rope-hop.jpg", 5, 15, "This exercise is fun!"),
+    Exercise("Pivoting", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/pivoting-upper-cut.jpg", 0, 15, "This exercise is fun!"),
+    Exercise("Switch Kick", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/switch-kick.jpg", 2, 0, "This exercise is fun!"),
+    Exercise("Rest", "", 5, 0, "This exercise is fun!"),
+    Exercise("Windmill", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/windmill.jpg", 4, 0, "This exercise is fun!"),
+    Exercise("Squat Jacks", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/squat-jack.jpg", 0, 15, "This exercise is fun!")
+)
+
+val exercises1 :List<Exercise> = listOf(
+    Exercise("Switch Kick", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/switch-kick.jpg", 3, 0, "This exercise is fun!"),
+    Exercise("Windmill", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/windmill.jpg", 4, 0, "This exercise is fun!"),
+    Exercise("Rest", "", 5, 0, "This exercise is fun!"),
+    Exercise("Jump rope", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/jump-rope-hop.jpg", 5, 0, "This exercise is fun!"),
+    Exercise("Pivoting", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/pivoting-upper-cut.jpg", 3, 15, "This exercise is fun!"),
+)
+
+val cycles :List<Cycle> = listOf(
+    Cycle("Warm up", exercises, 1),
+    Cycle("Cycle 1", exercises1, 2),
+    Cycle("Cycle 2", exercises, 3),
+    Cycle("Cooling", exercises, 1)
+)
+
+val routine :RoutineItem = RoutineItem("Senta-Senta", "https://s3.abcstatics.com/media/bienestar/2020/11/17/abdominales-kfHF--620x349@abc.jpeg",
+    "Medium", listOf("Dumbells", "Rope"), listOf("Cardio"), "Ideal for reduced spaces", "Very fun exercise", cycles, 15, 3.4f)
+
+/// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
 /// ROUTINE PAGE //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun Routine() {
-
-/// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    data class Exercise(
-        val title :String,
-        val imageUrl :String,
-        val secs :Int,
-        val reps :Int
-    )
-
-    data class Cycle(
-        val name :String,
-        val exercises :List<Exercise>,
-        val reps :Int
-    )
-
-    data class RoutineItem(
-        val title: String,
-        val imageUrl :String,
-        val difficulty :String,
-        val elements :List<String>,
-        val approach :List<String>,
-        val space :String,
-        val description :String,
-        val cycles :List<Cycle>,
-        val time :Int,
-        val score :Float
-    )
-
-    val exercises :List<Exercise> = listOf(
-        Exercise("Jump rope", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/jump-rope-hop.jpg", 15, 0),
-        Exercise("Pivoting", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/pivoting-upper-cut.jpg", 30, 15),
-        Exercise("Switch Kick", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/switch-kick.jpg", 30, 0),
-        Exercise("Rest", "", 15, 0),
-        Exercise("Windmill", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/windmill.jpg", 45, 0),
-        Exercise("Squat Jacks", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/squat-jack.jpg", 0, 15)
-    )
-
-    val exercises1 :List<Exercise> = listOf(
-        Exercise("Switch Kick", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/switch-kick.jpg", 30, 0),
-        Exercise("Windmill", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/windmill.jpg", 45, 0),
-        Exercise("Rest", "", 15, 0),
-        Exercise("Jump rope", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/jump-rope-hop.jpg", 15, 0),
-        Exercise("Pivoting", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/pivoting-upper-cut.jpg", 30, 15),
-    )
-
-    val cycles :List<Cycle> = listOf(
-        Cycle("Warm up", exercises, 1),
-        Cycle("Cycle 1", exercises1, 2),
-        Cycle("Cycle 2", exercises, 3),
-        Cycle("Cooling", exercises, 1)
-    )
-
-    val routine :RoutineItem = RoutineItem("Senta-Senta", "https://s3.abcstatics.com/media/bienestar/2020/11/17/abdominales-kfHF--620x349@abc.jpeg",
-        "Medium", listOf("Dumbells", "Rope"), listOf("Cardio"), "Ideal for reduced spaces", "Very fun exercise", cycles, 15, 3.4f)
-
-/// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     var showDescription by remember { mutableStateOf(false) }
     var cycleIndex by remember { mutableStateOf(0) }
     var detailMode by remember { mutableStateOf(true) }
@@ -1510,7 +1539,7 @@ fun RestExercise(title :String, secs :Int) {
     }
 }
 
-/// ROUTINE PAGE //////////////////////////////////////////////////////////////////////////////////////////////////////
+/// FINISHED ROUTINE PAGE //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 @Composable
 fun FinishScreen() {
@@ -1648,3 +1677,275 @@ fun FinishScreen() {
         }
     }
 }
+
+
+
+/// ROUTINE LIST MODE //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun RoutineListMode() {
+
+    var cycleIndex by remember { mutableStateOf(0) }
+
+    var exerciseIndex by remember { mutableStateOf(0) }
+
+    var currentExercise by remember { mutableStateOf<Exercise>(routine.cycles[cycleIndex].exercises[exerciseIndex]) }
+
+    var exerciseCount by remember { mutableStateOf(routine.cycles[cycleIndex].exercises.size) }
+
+    var nextExercise by remember { mutableStateOf(false) }
+
+    val initialValue = 1f
+
+    val strokeWidth = 10.dp
+
+    var totalTime by remember { mutableStateOf(currentExercise.secs * 1000L) }
+
+    var size by remember {
+        mutableStateOf(IntSize.Zero)
+    }
+    var value by remember {
+        mutableStateOf(initialValue)
+    }
+    var currentTime by remember {
+        mutableStateOf(totalTime)
+    }
+    var isTimerRunning by remember {
+        mutableStateOf(true)
+    }
+
+    var cycleIcon = if(cycleIndex == 0) painterResource(id = R.drawable.warm_up) else if (cycleIndex == routine.cycles.size-1) painterResource(id = R.drawable.cooling) else painterResource(id = R.drawable.exercise)
+
+    LaunchedEffect(key1 = currentTime, key2 = isTimerRunning) {
+        if (currentTime > 0 && isTimerRunning) {
+            delay(100L)
+            currentTime -= 100L
+            value = 1 - (currentTime / totalTime.toFloat())
+        }
+    }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(20.dp)
+    ) {
+
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            IconButton(
+                onClick = { /*Pop up de exit*/ },
+            ) {
+                Icon(
+                    Icons.Filled.Close,
+                    contentDescription = null,
+                )
+            }
+            Text(
+                text = currentExercise.title,
+                fontSize = 24.sp
+            )
+            Icon(
+                painter = cycleIcon,
+                contentDescription = null,
+                tint = Color(0xFF5370F8)
+            )
+        }
+
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .height(200.dp)
+                .width(400.dp)
+                .onSizeChanged { size = it }
+                .padding(top = 40.dp)
+        ) {
+            if(totalTime.toInt() != 0) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    drawArc(
+                        color = Color.LightGray,
+                        startAngle = -160f,
+                        sweepAngle = 140f,
+                        useCenter = false,
+                        size = androidx.compose.ui.geometry.Size(
+                            size.width.toFloat(),
+                            size.height.toFloat()
+                        ),
+                        style = Stroke(strokeWidth.toPx(), cap = StrokeCap.Round)
+                    )
+                    drawArc(
+                        color = Color(0xFF5370F8),
+                        startAngle = -160f,
+                        sweepAngle = 140f * value,
+                        useCenter = false,
+                        size = androidx.compose.ui.geometry.Size(
+                            size.width.toFloat(),
+                            size.height.toFloat()
+                        ),
+                        style = Stroke(strokeWidth.toPx(), cap = StrokeCap.Round)
+                    )
+                }
+            }
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                val currentSecs = currentTime / 1000L
+                val stringSecs = String.format("%02d:%02d", currentSecs / 60, currentSecs % 60)
+
+                Text(
+                    text = if (totalTime.toInt() != 0) stringSecs else stringResource(id = R.string.repetitions) + currentExercise.reps.toString(),
+                    fontSize = 44.sp,
+                    color = Color.Black
+                )
+
+                if (totalTime.toInt() != 0 && currentExercise.reps != 0) {
+                    Text(
+                        text = stringResource(id = R.string.repetitions) + currentExercise.reps.toString(),
+                        fontSize = 20.sp,
+                    )
+                }
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .clip(RoundedCornerShape(50.dp)),
+        ) {
+
+            Image(
+                painter = rememberImagePainter(data = currentExercise.imageUrl),
+                contentDescription = currentExercise.title,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+            )
+        }
+        Text(
+            text = (exerciseIndex + 1).toString() + stringResource(id = R.string.dash) + exerciseCount,
+            fontSize = 18.sp,
+            modifier = Modifier.padding(10.dp)
+        )
+
+        Surface(
+            shape = RoundedCornerShape(20.dp),
+            color = Color.LightGray,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(110.dp)
+                .padding(vertical = 10.dp)
+        ){
+            Text(
+                text = currentExercise.description,
+                modifier = Modifier.padding(10.dp)
+            )
+        }
+
+
+        if (currentTime <= 0L && currentExercise.secs != 0 || nextExercise) {
+            exerciseIndex++
+            nextExercise = false
+            if (exerciseIndex < exerciseCount) {
+                currentExercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
+                currentTime = currentExercise.secs * 1000L
+                totalTime = currentExercise.secs * 1000L
+                isTimerRunning = true
+            } else {
+                cycleIndex++
+                if(cycleIndex < routine.cycles.size) {
+                    exerciseIndex = 0
+                    currentExercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
+                    currentTime = currentExercise.secs * 1000L
+                    totalTime = currentExercise.secs * 1000L
+                    isTimerRunning = true
+                }
+            }
+        }
+
+        Surface(
+            shape = RoundedCornerShape(50.dp),
+            color = Color(0xFF5370F8),
+            modifier = Modifier
+                .width(220.dp)
+                .padding(vertical = 20.dp)
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp)
+            ) {
+                IconButton(
+                    onClick = {
+                        currentTime = totalTime
+                        isTimerRunning = true
+                }) {
+                    Icon(
+                        Icons.Filled.Refresh,
+                        contentDescription = null,
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
+                IconButton(onClick = { isTimerRunning = !isTimerRunning }) {
+                    Icon(
+                        if (isTimerRunning && currentTime > 0L) painterResource(id = R.drawable.pause) else painterResource(id = R.drawable.play),
+                        contentDescription = null,
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
+                IconButton(onClick = { nextExercise = true }) {
+                    Icon(
+                        painterResource(id = R.drawable.skip_next),
+                        contentDescription = null,
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
+            }
+        }
+
+        Surface(
+            shape = RoundedCornerShape(20.dp),
+            color = Color(0xFF2D2C32),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Box(
+                modifier = Modifier.fillMaxWidth().height(80.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (exerciseIndex == exerciseCount - 1) {
+                    val lastCycle = cycleIndex == routine.cycles.size - 1
+                    Row {
+                        Icon(
+                            if (lastCycle) painterResource(id = R.drawable.last_exercise) else cycleIcon,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.padding(end = 10.dp)
+                        )
+                        Text(
+                            text = if (lastCycle) stringResource(id = R.string.last_exercise) else routine.cycles[cycleIndex+1].name,
+                            color = Color.White
+                        )
+                    }
+                } else {
+                    Row {
+                        Column {
+                            Text(
+                                text = stringResource(id = R.string.next_exercise),
+                                color = Color.White
+                            )
+                            Text(
+                                text = routine.cycles[cycleIndex].exercises[exerciseIndex + 1].title,
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+

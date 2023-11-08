@@ -77,4 +77,8 @@
     <string name="cycle_name">"cycle "</string>
     <string name="rest_name">Rest</string>
     <string name="next_cycle">Next cycle:</string>
+    <string name="quit_routine_title">Are you sure you want to quit this routine?</string>
+    <string name="quit_routine_label">If you do so, your progress will be deleted. Press Cancel to continue exercising</string>
+    <string name="cancel_name">Cancel</string>
+    <string name="quit_name">Quit</string>
 </resources>

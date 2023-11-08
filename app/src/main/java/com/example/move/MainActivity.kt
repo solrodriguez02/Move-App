@@ -1715,6 +1715,16 @@ fun RoutineExecution(isDetailedMode :Boolean = false) {
 
     var hasOnlyReps = currentExercise.secs == 0
 
+    var showExitPopUp by remember { mutableStateOf(false) }
+
+    if(showExitPopUp) {
+        isTimerRunning = false
+        ExitPopUp( onCancel = {
+            showExitPopUp = false
+            isTimerRunning = true
+        })
+    }
+
     if(!hasOnlyReps) {
         LaunchedEffect(key1 = currentTime, key2 = isTimerRunning) {
             if (currentTime > 0 && isTimerRunning) {
@@ -1769,7 +1779,7 @@ fun RoutineExecution(isDetailedMode :Boolean = false) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 IconButton(
-                    onClick = { /*Pop up de exit*/ },
+                    onClick = { showExitPopUp = true },
                 ) {
                     Icon(
                         Icons.Filled.Close,
@@ -1925,6 +1935,63 @@ fun RoutineExecution(isDetailedMode :Boolean = false) {
     }
 }
 
+@Composable
+fun ExitPopUp(onCancel: () -> Unit) {
+    Dialog(
+        onDismissRequest = { onCancel },
+    ) {
+        Surface(
+            shape = RoundedCornerShape(20.dp),
+            color = Color.White,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp, vertical = 20.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.quit_routine_title),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = stringResource(id = R.string.quit_routine_label),
+                    modifier = Modifier.padding(vertical = 10.dp)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(
+                        onClick = onCancel,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = Color.Black,
+                        ),
+                        border = BorderStroke(1.dp, Color.Gray)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.cancel_name)
+                        )
+                    }
+                    Button(
+                        onClick = { /* go to explore */ },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = Color.Red,
+                        ),
+                        border = BorderStroke(1.dp, Color.Red)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.quit_name)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun ListMode(currentExercise: Exercise, exerciseIndex: Int, cycleIndex: Int, isRestExercise: Boolean, cycleIcon: Painter) {
@@ -1935,7 +2002,9 @@ fun ListMode(currentExercise: Exercise, exerciseIndex: Int, cycleIndex: Int, isR
         Surface(
             shape = RoundedCornerShape(10.dp),
             color = if(isRestExercise) Color(0xFF2D2C32) else Color.LightGray,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 10.dp)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -2001,7 +2070,8 @@ fun ExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon :Painter) {
         modifier = Modifier
             .fillMaxWidth()
             .height(50.dp)
-            .padding(bottom = 10.dp).padding(horizontal = 15.dp)
+            .padding(bottom = 10.dp)
+            .padding(horizontal = 15.dp)
     ) {
         if (type == 0) {
             Row(

@@ -81,4 +81,5 @@
     <string name="quit_routine_label">If you do so, your progress will be deleted. Press Cancel to continue exercising</string>
     <string name="cancel_name">Cancel</string>
     <string name="quit_name">Quit</string>
+    <string name="next_name">Next:</string>
 </resources>

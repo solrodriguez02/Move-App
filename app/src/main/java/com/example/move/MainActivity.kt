@@ -1798,7 +1798,7 @@ fun RoutineExecution(isDetailedMode :Boolean = true) {
                     )
 
                     if (newCycle) {
-                        NewCycleScreen(onStart = {
+                        NewCycleVerticalScreen(onStart = {
                             newCycle = false
                             isTimerRunning = true
                         }, cycleIcon = cycleIcon, cycleIndex = cycleIndex)
@@ -1858,21 +1858,40 @@ fun RoutineExecution(isDetailedMode :Boolean = true) {
                         )
                     }
                 } else {
-                    if(isDetailedMode)
-                        HorizontalDetailedMode(onClose = {
-                            showExitPopUp = true
-                            isTimerRunning = false },
-                            onRefresh = {
-                            currentTime = totalTime
-                            isTimerRunning = true },
-                            onPlay = { isTimerRunning = !isTimerRunning },
-                            onNext = { nextExercise = true },
-                            isPaused = isTimerRunning && currentTime > 0L,
-                            textColor = textColor, isRestExercise = isRestExercise, currentExercise = currentExercise,
-                            hasOnlyReps = hasOnlyReps, totalTime = totalTime, currentTime = currentTime,
-                            value = value, cycleIcon = cycleIcon, exerciseCount = exerciseCount,
-                            exerciseIndex = exerciseIndex, cycleIndex = cycleIndex
-                        )
+                    if(newCycle) {
+                        NewCycleHorizontalScreen(onStart = {
+                            newCycle = false
+                            isTimerRunning = true
+                        }, cycleIcon = cycleIcon, cycleIndex = cycleIndex)
+                    } else {
+                        if (isDetailedMode)
+                            HorizontalDetailedMode(
+                                onClose = {
+                                    showExitPopUp = true
+                                    isTimerRunning = false
+                                },
+                                onRefresh = {
+                                    currentTime = totalTime
+                                    isTimerRunning = true
+                                },
+                                onPlay = { isTimerRunning = !isTimerRunning },
+                                onNext = { nextExercise = true },
+                                isPaused = isTimerRunning && currentTime > 0L,
+                                textColor = textColor,
+                                isRestExercise = isRestExercise,
+                                currentExercise = currentExercise,
+                                hasOnlyReps = hasOnlyReps,
+                                totalTime = totalTime,
+                                currentTime = currentTime,
+                                value = value,
+                                cycleIcon = cycleIcon,
+                                exerciseCount = exerciseCount,
+                                exerciseIndex = exerciseIndex,
+                                cycleIndex = cycleIndex
+                            )
+                        //else
+                           // HorizontalListMode()
+                    }
                 }
             }
         }
@@ -2216,6 +2235,7 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
                 cycleIndex = cycleIndex,
                 cycleIcon = cycleIcon,
                 isRestExercise = isRestExercise,
+                isHorizontal = true
             )
         }
     }
@@ -2411,7 +2431,7 @@ fun VerticalDetailedMode(currentExercise: Exercise, exerciseIndex :Int, exercise
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cycleIcon :Painter, isRestExercise: Boolean) {
+fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cycleIcon :Painter, isRestExercise: Boolean, isHorizontal :Boolean = false) {
 
     val textColor = if(isRestExercise) Color.Black else Color.White
 
@@ -2472,7 +2492,7 @@ fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cyc
                     Column {
                         if(followingExercise.title != stringResource(id = R.string.rest_name)) {
                             Text(
-                                text = stringResource(id = R.string.next_exercise),
+                                text = if(isHorizontal) stringResource(id = R.string.next_name) else stringResource(id = R.string.next_exercise),
                                 color = textColor
                             )
                         }
@@ -2488,7 +2508,57 @@ fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cyc
 }
 
 @Composable
-fun NewCycleScreen(onStart :() -> Unit, cycleIcon: Painter, cycleIndex :Int) {
+fun NewCycleHorizontalScreen(onStart :() -> Unit, cycleIcon: Painter, cycleIndex :Int) {
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxSize()
+    ) {
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(end = 150.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.next_cycle),
+                modifier = Modifier.padding(top = 50.dp, bottom = 15.dp)
+            )
+
+            Text(
+                text = routine.cycles[cycleIndex].name,
+                fontSize = 40.sp
+            )
+
+            Icon(
+                cycleIcon,
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(vertical = 40.dp)
+                    .size(50.dp),
+                tint = Color(0xFF5370F8)
+            )
+        }
+
+        Button(
+            onClick = onStart,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF5370F8),
+                contentColor = Color.Black
+            ),
+            contentPadding = PaddingValues(horizontal = 30.dp, vertical = 15.dp)
+        ) {
+            Icon(
+                Icons.Filled.PlayArrow,
+                contentDescription = null,
+                modifier = Modifier.size(40.dp)
+            )
+        }
+    }
+}
+
+
+@Composable
+fun NewCycleVerticalScreen(onStart :() -> Unit, cycleIcon: Painter, cycleIndex :Int) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -2530,6 +2600,5 @@ fun NewCycleScreen(onStart :() -> Unit, cycleIcon: Painter, cycleIndex :Int) {
         }
     }
 }
-
 
 

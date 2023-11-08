@@ -1673,7 +1673,7 @@ fun FinishScreen() {
 /// ROUTINE EXECUTION PAGE //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 @Composable
-fun RoutineExecution(isDetailedMode :Boolean = true) {
+fun RoutineExecution(isDetailedMode :Boolean = false) {
 
     var cycleIndex by remember { mutableStateOf(0) }
 
@@ -1739,18 +1739,27 @@ fun RoutineExecution(isDetailedMode :Boolean = true) {
         exerciseIndex++
         nextExercise = false
         if (exerciseIndex < exerciseCount) {
+            LaunchedEffect(key1 = exerciseIndex) {
+                currentExercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
+                currentTime = currentExercise.secs * 1000L
+                totalTime = currentExercise.secs * 1000L
+                delay(5000L)
+            }
             isTimerRunning = true
         } else {
             cycleIndex++
             if (cycleIndex < routine.cycles.size) {
-                exerciseIndex = 0
+                LaunchedEffect(key1 = exerciseIndex) {
+                    exerciseIndex = 0
+                    currentExercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
+                    currentTime = currentExercise.secs * 1000L
+                    totalTime = currentExercise.secs * 1000L
+                    delay(5000L)
+                }
                 isTimerRunning = false
                 newCycle = true
             }
         }
-        currentExercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
-        currentTime = currentExercise.secs * 1000L
-        totalTime = currentExercise.secs * 1000L
     }
 
 

@@ -76,7 +76,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -1938,7 +1937,7 @@ fun RoutineExecution(isDetailedMode :Boolean = false) {
 @Composable
 fun ExitPopUp(onCancel: () -> Unit) {
     Dialog(
-        onDismissRequest = { onCancel },
+        onDismissRequest = onCancel,
     ) {
         Surface(
             shape = RoundedCornerShape(20.dp),

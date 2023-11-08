@@ -1670,10 +1670,10 @@ fun FinishScreen() {
 
 
 
-/// ROUTINE LIST MODE //////////////////////////////////////////////////////////////////////////////////////////////////////
+/// ROUTINE EXECUTION PAGE //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 @Composable
-fun RoutineExecution(isDetailedMode :Boolean = false) {
+fun RoutineExecution(isDetailedMode :Boolean = true) {
 
     var cycleIndex by remember { mutableStateOf(0) }
 
@@ -1724,6 +1724,7 @@ fun RoutineExecution(isDetailedMode :Boolean = false) {
         })
     }
 
+
     if(!hasOnlyReps) {
         LaunchedEffect(key1 = currentTime, key2 = isTimerRunning) {
             if (currentTime > 0 && isTimerRunning) {
@@ -1733,27 +1734,23 @@ fun RoutineExecution(isDetailedMode :Boolean = false) {
             }
         }
     }
+
     if (currentTime <= 0L && currentExercise.secs != 0 || nextExercise) {
         exerciseIndex++
         nextExercise = false
         if (exerciseIndex < exerciseCount) {
-
-                currentExercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
-                currentTime = currentExercise.secs * 1000L
-                totalTime = currentExercise.secs * 1000L
-                isTimerRunning = true
-
+            isTimerRunning = true
         } else {
             cycleIndex++
             if (cycleIndex < routine.cycles.size) {
                 exerciseIndex = 0
-                currentExercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
-                currentTime = currentExercise.secs * 1000L
-                totalTime = currentExercise.secs * 1000L
                 isTimerRunning = false
                 newCycle = true
             }
         }
+        currentExercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
+        currentTime = currentExercise.secs * 1000L
+        totalTime = currentExercise.secs * 1000L
     }
 
 
@@ -1865,7 +1862,7 @@ fun RoutineExecution(isDetailedMode :Boolean = false) {
                         currentExercise = currentExercise,
                         currentTime = currentTime,
                         value = value,
-                        textColor
+                        textColor = textColor
                     )
                 }
 
@@ -1890,7 +1887,7 @@ fun RoutineExecution(isDetailedMode :Boolean = false) {
                         horizontalArrangement = Arrangement.spacedBy(20.dp),
                         modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp)
                     ) {
-                        if (totalTime.toInt() != 0) {
+                        if (!hasOnlyReps) {
                             IconButton(
                                 onClick = {
                                     currentTime = totalTime
@@ -2184,7 +2181,7 @@ fun ShowTimer(totalTime :Long, size :IntSize, strokeWidth :Dp, currentExercise :
 
     Canvas(modifier = Modifier.fillMaxSize()) {
         drawArc(
-            color = if (totalTime.toInt() != 0) Color.LightGray else Color(0xFF5370F8),
+            color = Color.LightGray,
             startAngle = -160f,
             sweepAngle = 140f,
             useCenter = false,
@@ -2195,9 +2192,9 @@ fun ShowTimer(totalTime :Long, size :IntSize, strokeWidth :Dp, currentExercise :
             style = Stroke(strokeWidth.toPx(), cap = StrokeCap.Round)
         )
         drawArc(
-            color = if (totalTime.toInt() != 0) Color(0xFF5370F8) else Color.Transparent,
+            color = Color(0xFF5370F8),
             startAngle = -160f,
-            sweepAngle = 140f * value,
+            sweepAngle = 140f * if(currentExercise.secs == 0) 1f else value,
             useCenter = false,
             size = androidx.compose.ui.geometry.Size(
                 size.width.toFloat(),

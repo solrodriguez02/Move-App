@@ -76,6 +76,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -106,7 +107,7 @@ fun MyApp(modifier: Modifier = Modifier) {
      //Menu()
     // Routine()
     // FinishScreen()
-    RoutineListMode()
+    RoutineExecution()
 }
 
 @Preview()
@@ -1673,7 +1674,7 @@ fun FinishScreen() {
 /// ROUTINE LIST MODE //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 @Composable
-fun RoutineListMode(isDetailedMode :Boolean = true) {
+fun RoutineExecution(isDetailedMode :Boolean = false) {
 
     var cycleIndex by remember { mutableStateOf(0) }
 
@@ -1708,7 +1709,7 @@ fun RoutineListMode(isDetailedMode :Boolean = true) {
 
     val isRestExercise = currentExercise.title == stringResource(id = R.string.rest_name)
 
-    val textColor = if(isRestExercise) Color.White else Color.Black
+    val textColor = if(isRestExercise && isDetailedMode) Color.White else Color.Black
 
     var newCycle by remember { mutableStateOf(true) }
 
@@ -1750,7 +1751,7 @@ fun RoutineListMode(isDetailedMode :Boolean = true) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(if (isRestExercise) Color(0xFF2D2C32) else Color.Transparent)
+            .background(if (isRestExercise && isDetailedMode) Color(0xFF2D2C32) else Color.Transparent)
     ) {
         val state = rememberScrollState()
         LaunchedEffect(Unit) { state.animateScrollTo(100) }
@@ -1868,7 +1869,7 @@ fun RoutineListMode(isDetailedMode :Boolean = true) {
                         textColor = textColor
                     )
                 else
-                    ListMode()
+                    ListMode(currentExercise = currentExercise, exerciseIndex = exerciseIndex, cycleIndex = cycleIndex, isRestExercise = isRestExercise, cycleIcon = cycleIcon)
 
                 Surface(
                     shape = RoundedCornerShape(50.dp),
@@ -1924,9 +1925,129 @@ fun RoutineListMode(isDetailedMode :Boolean = true) {
     }
 }
 
+@OptIn(ExperimentalCoilApi::class)
 @Composable
-fun ListMode() {
+fun ListMode(currentExercise: Exercise, exerciseIndex: Int, cycleIndex: Int, isRestExercise: Boolean, cycleIcon: Painter) {
+    Column(
+        modifier = Modifier.padding(horizontal = 20.dp)
+    ){
+        ExerciseListBox(exerciseIndex = exerciseIndex-1, cycleIndex = cycleIndex, cycleIcon = cycleIcon)
+        Surface(
+            shape = RoundedCornerShape(10.dp),
+            color = if(isRestExercise) Color(0xFF2D2C32) else Color.LightGray,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(horizontal = 40.dp, vertical = 20.dp)
+            ) {
+                Text(
+                    text = currentExercise.title,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = if(isRestExercise) Color.White else Color.Black
+                )
+                if(isRestExercise) {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.height(150.dp)
+                    ) {
+                        Icon(
+                            painterResource(id = R.drawable.rest),
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(50.dp)
+                        )
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .height(150.dp)
+                            .padding(top = 10.dp)
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp)),
+                    ) {
+                        Image(
+                            painter = rememberImagePainter(data = currentExercise.imageUrl),
+                            contentDescription = currentExercise.title,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                        )
+                    }
+                }
+            }
+        }
 
+        for(i in 1..3) {
+            ExerciseListBox(exerciseIndex = exerciseIndex+i, cycleIndex = cycleIndex, cycleIcon = cycleIcon)
+        }
+    }
+}
+
+@Composable
+fun ExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon :Painter) {
+
+    var type = -1
+
+    if(exerciseIndex == -1) type = 0
+    else if(exerciseIndex < routine.cycles[cycleIndex].exercises.size) {
+        type = if(routine.cycles[cycleIndex].exercises[exerciseIndex].title == stringResource(id = R.string.rest_name)) 2 else 1
+    }
+
+    Surface(
+        shape = RoundedCornerShape(10.dp),
+        color = if(type == 2) Color(0xFF2D2C32) else if(type == -1) Color.Transparent else Color(0xFFE7E7E7),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp)
+            .padding(bottom = 10.dp).padding(horizontal = 15.dp)
+    ) {
+        if (type == 0) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 20.dp)
+            ) {
+                Icon(
+                    cycleIcon,
+                    contentDescription = null,
+                    tint = Color(0xFF5370F8),
+                    modifier = Modifier.padding(end = 20.dp)
+                )
+                Text(
+                    text = routine.cycles[cycleIndex].name,
+                    color = Color(0xFF5370F8),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+        } else if (type > 0) {
+            val exercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.padding(horizontal = 20.dp)
+            ) {
+                if (type == 2) {
+                    Icon(
+                        painterResource(id = R.drawable.rest),
+                        contentDescription = null,
+                        modifier = Modifier.padding(start = 25.dp),
+                        tint = Color.White
+                    )
+                } else {
+                    Text(
+                        text = exercise.title,
+                    )
+                }
+                Text(
+                    text = exercise.secs.toString() + "s",
+                    color = if(type == 1) Color.Black else Color.White
+                )
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalCoilApi::class)

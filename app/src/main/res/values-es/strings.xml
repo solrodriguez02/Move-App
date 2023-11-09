@@ -54,7 +54,7 @@
     <string name="no_results">No se encontraron resultados</string>
     <string name="favourites_title">Favoritos</string>
     <string name="your_routines_title">Creados por ti</string>
-    <string name="date_filter">Día</string>
+    <string name="date_filter">Fecha</string>
     <string name="score_filter">Calificación</string>
     <string name="da_descending">Decentente</string>
     <string name="sc_bad">Mala</string>
@@ -86,4 +86,6 @@
     <string name="space_required_filter">Espacio necesario</string>
     <string name="difficulty_lower">dificultad</string>
     <string name="repetitions_upper">"X "</string>
+    <string name="categories_name">Categorías:</string>
+    <string name="order_by_name">Ordenar por:</string>
 </resources>

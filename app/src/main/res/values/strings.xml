@@ -85,4 +85,6 @@
     <string name="space_required_filter">Space required</string>
     <string name="difficulty_lower">"difficulty "</string>
     <string name="repetitions_upper">X</string>
+    <string name="categories_name">Categories:</string>
+    <string name="order_by_name">Order by:</string>
 </resources>

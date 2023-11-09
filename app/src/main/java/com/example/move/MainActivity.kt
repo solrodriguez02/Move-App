@@ -1207,14 +1207,13 @@ fun Routine() {
             val state = rememberScrollState()
             LaunchedEffect(Unit) { state.animateScrollTo(100) }
 
-            Column(
-                modifier = Modifier
-                    .verticalScroll(state)
-                    .padding(top = 60.dp)
-                    .fillMaxWidth()
-            ) {
-
-                if(orientation == Configuration.ORIENTATION_PORTRAIT) {
+            if(orientation == Configuration.ORIENTATION_PORTRAIT) {
+                Column(
+                    modifier = Modifier
+                        .verticalScroll(state)
+                        .padding(top = 60.dp)
+                        .fillMaxWidth()
+                ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1254,60 +1253,59 @@ fun Routine() {
                                 .height(50.dp)
                         )
                     }
-
                     RoutineDetail()
-
-                } else {
-                    Row(
-                        modifier = Modifier.fillMaxSize()
+                }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Column(
+                        modifier = Modifier.weight(0.4f)
                     ) {
-                        Column(
-                            modifier = Modifier.weight(0.4f)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(280.dp)
+                                .padding(bottom = 20.dp)
                         ) {
-                            Box(
+                            Image(
+                                painter = rememberImagePainter(
+                                    data = routine.imageUrl
+                                ),
+                                contentDescription = routine.imageUrl,
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(280.dp)
-                                    .padding(bottom = 20.dp)
-                            ) {
-                                Image(
-                                    painter = rememberImagePainter(
-                                        data = routine.imageUrl
-                                    ),
-                                    contentDescription = routine.imageUrl,
-                                    modifier = Modifier
-                                        .clip(
-                                            RoundedCornerShape(
-                                                topStart = 15.dp,
-                                                topEnd = 15.dp,
-                                                bottomStart = 0.dp,
-                                                bottomEnd = 0.dp
-                                            )
+                                    .clip(
+                                        RoundedCornerShape(
+                                            topStart = 15.dp,
+                                            topEnd = 15.dp,
+                                            bottomStart = 0.dp,
+                                            bottomEnd = 0.dp
                                         )
-                                        .fillMaxWidth()
-                                        .height(250.dp),
-                                    contentScale = ContentScale.FillBounds,
-                                )
-                            }
-                            Box(
-                                contentAlignment = Alignment.BottomCenter,
-                                modifier = Modifier
+                                    )
                                     .fillMaxWidth()
-                                    .padding(bottom = 20.dp)
-                            ) {
-                                RoutineExecutionMenu(
-                                    detailMode = detailMode,
-                                    showModeDialog = showModeDialog,
-                                    onShowMode = { showModeDialog = !showModeDialog },
-                                    onChangeMode = { detailMode = !detailMode },
-                                    onStayMode = {})
-                            }
+                                    .height(250.dp),
+                                contentScale = ContentScale.FillBounds,
+                            )
                         }
-                        Column(
-                            modifier = Modifier.weight(0.5f).padding(10.dp)
+                        Box(
+                            contentAlignment = Alignment.BottomCenter,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 20.dp)
                         ) {
-                            RoutineDetail()
+                            RoutineExecutionMenu(
+                                detailMode = detailMode,
+                                showModeDialog = showModeDialog,
+                                onShowMode = { showModeDialog = !showModeDialog },
+                                onChangeMode = { detailMode = !detailMode },
+                                onStayMode = {})
                         }
+                    }
+                    Column(
+                        modifier = Modifier.weight(0.5f).padding(horizontal = 20.dp).verticalScroll(state)
+                    ) {
+                        Spacer(modifier = Modifier.height(90.dp))
+                        RoutineDetail()
                     }
                 }
             }

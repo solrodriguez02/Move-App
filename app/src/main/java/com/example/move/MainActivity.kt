@@ -63,6 +63,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -110,9 +111,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyApp(modifier: Modifier = Modifier) {
      // Menu()
-      Routine()
+       Routine()
     // FinishScreen()
-    // RoutineExecution(true)
+    // RoutineExecution(false)
 }
 
 @Preview()
@@ -157,7 +158,7 @@ fun RoutinePreview(imageUrl: String, title: String, time: Int, leftSide: Boolean
                         painter = rememberImagePainter(
                             data = imageUrl
                         ),
-                        contentDescription = "routine image",
+                        contentDescription = stringResource(id = R.string.routine_image),
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(
@@ -297,7 +298,7 @@ fun ExploreFilters() {
     val difficultyOptions = listOf(stringResource(id = R.string.d_easy), stringResource(id = R.string.d_medium), stringResource(id = R.string.d_difficult))
 
     val approachOptions = listOf(
-        stringResource(id = R.string.a_aerobic), stringResource(id = R.string.a_calisthenics), stringResource(id = R.string.a_cardio),
+        stringResource(id = R.string.a_aerobic), stringResource(id = R.string.a_cardio),
         stringResource(id = R.string.a_flex), stringResource(id = R.string.a_crossfit), stringResource(id = R.string.a_functional),
         stringResource(id = R.string.a_hiit), stringResource(id = R.string.a_pilates), stringResource(id = R.string.a_resistance),
         stringResource(id = R.string.a_streching), stringResource(id = R.string.a_strength), stringResource(id = R.string.a_weight), stringResource(id = R.string.a_yoga)
@@ -317,7 +318,7 @@ fun ExploreFilters() {
     )
 
     val dateOptions = listOf(
-        stringResource(id = R.string.da_today), stringResource(id = R.string.da_week), stringResource(id = R.string.da_month), stringResource(id = R.string.da_older)
+        stringResource(id = R.string.da_ascending), stringResource(id = R.string.da_descending)
     )
 
     var difficultyExpanded by remember { mutableStateOf(false) }
@@ -722,7 +723,9 @@ fun ExploreFilters() {
 @Composable
 fun HomeScreen() {
     Column(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.inversePrimary)
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.inversePrimary)
     ) {
         Header(title = stringResource(R.string.home_name))
         Spacer(modifier = Modifier.height(20.dp))
@@ -777,7 +780,7 @@ fun Header(title: String) {
             painter = rememberImagePainter(
                 data = "https://profilemagazine.com/wp-content/uploads/2020/04/Ajmere-Dale-Square-thumbnail.jpg"
             ),
-            contentDescription = "Profile Picture",
+            contentDescription = stringResource(id = R.string.profile_image),
             modifier = Modifier
                 .size(60.dp)
                 .clip(shape = RoundedCornerShape(100.dp)),
@@ -921,466 +924,540 @@ val routine :RoutineItem = RoutineItem("Senta-Senta", "https://s3.abcstatics.com
 /// ROUTINE PAGE //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-@OptIn(ExperimentalCoilApi::class)
+@OptIn(ExperimentalCoilApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun Routine() {
+
+    val config = LocalConfiguration.current
+    val orientation = config.orientation
+
+    var showRate by remember { mutableStateOf(false) }
     var showDescription by remember { mutableStateOf(false) }
-    var cycleIndex by remember { mutableStateOf(0) }
     var detailMode by remember { mutableStateOf(true) }
     var showModeDialog by remember { mutableStateOf(false) }
-    var showRate by remember { mutableStateOf(false) }
-
     var score by remember { mutableStateOf (3) }
+    var cycleIndex by remember { mutableStateOf(0) }
+
+    @Composable
+    fun RoutineDetail() {
+        val descriptionIcon = if(showDescription) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
+        val rateIcon = if(showRate) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
+
+        data class FilterDetail (
+            val title :String,
+            val detail :String,
+            val icon :Int,
+        )
+
+        val filters = arrayListOf(
+            FilterDetail(stringResource(id = R.string.difficulty_filter), routine.difficulty + stringResource(id = R.string.difficulty_lower), R.drawable.difficulty),
+            FilterDetail(stringResource(id = R.string.elements_required_filter), routine.elements.toString().substring(1, routine.elements.toString().length - 1), R.drawable.elements),
+            FilterDetail(stringResource(id = R.string.approach_filter), routine.approach.toString().substring(1, routine.approach.toString().length - 1), R.drawable.approach),
+            FilterDetail(stringResource(id = R.string.space_required_filter), routine.space, R.drawable.space)
+        )
+
+        val cyclesOptions = listOf(R.drawable.warm_up, R.drawable.exercise, R.drawable.cooling)
+
+        Column(
+            modifier = Modifier
+                .background(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(40.dp)
+                )
+                .fillMaxSize()
+                .padding(vertical = 25.dp, horizontal = 30.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = routine.title,
+                    fontSize = 25.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .padding(horizontal = 10.dp)
+                        .weight(1f)
+                )
+                Text(
+                    text = routine.score.toString(),
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Icon(
+                    Icons.Filled.Star,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 5.dp)
+                )
+            }
+
+            Column(
+                modifier = Modifier.padding(vertical = 20.dp)
+            ) {
+                for (filter in filters) {
+                    Row(
+                        modifier = Modifier.padding(vertical = 5.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = filter.icon),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.padding(start = 5.dp, end = 10.dp)
+                        )
+                        Text(
+                            text = filter.detail,
+                            color = MaterialTheme.colorScheme.tertiary
+                        )
+                    }
+                    Divider(
+                        color = MaterialTheme.colorScheme.tertiary,
+                        thickness = 1.dp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 2.dp)
+                    )
+                }
+            }
+
+            /////////////////// Rate routine ///////////////////////
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.rate_name),
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Button(
+                    onClick = { showRate = !showRate },
+                    contentPadding = PaddingValues(0.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.surface,
+                    ),
+                    modifier = Modifier
+                        .width(40.dp)
+                        .height(25.dp)
+                ) {
+                    Icon(
+                        rateIcon,
+                        contentDescription = stringResource(R.string.rate_name),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            if (showRate) {
+                Row(
+                    modifier = Modifier.padding(top = 10.dp)
+                ) {
+                    for (i in 1..5) {
+                        IconButton(
+                            onClick = { score = i },
+                            modifier = Modifier.size(30.dp)
+                        ) {
+                            Icon(
+                                painter = if (i <= score) painterResource(id = R.drawable.star) else painterResource(
+                                    id = R.drawable.empty_star
+                                ),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+            }
+
+            /////////////////// Routine description ///////////////////////
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.description_name),
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Button(
+                    onClick = {showDescription = !showDescription},
+                    contentPadding = PaddingValues(0.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.surface,
+                    ),
+                    modifier = Modifier.width(40.dp)
+                ) {
+                    Icon(
+                        descriptionIcon,
+                        contentDescription = stringResource(R.string.description_name),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            if (showDescription) {
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = MaterialTheme.colorScheme.inversePrimary,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = routine.description,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(10.dp)
+                    )
+                }
+            }
+
+            /////////////////// Cycles ///////////////////////
+            Text(
+                text = stringResource(R.string.cycles_name),
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(vertical = 10.dp)
+            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(30.dp),
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.padding(5.dp)
+                    ) {
+                        for ((index, option) in cyclesOptions.withIndex()) {
+                            Button(
+                                onClick = { cycleIndex = index },
+                                contentPadding = PaddingValues(0.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (cycleIndex == index) MaterialTheme.colorScheme.inversePrimary else Color.Transparent
+                                ),
+                                modifier = Modifier
+                                    .height(30.dp)
+                                    .weight(1f)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = option),
+                                    contentDescription = null,
+                                    tint = if (cycleIndex == index) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+                }
+            }
 
 
-    val descriptionIcon = if(showDescription) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
-    val modeIcon = if(detailMode) painterResource(id = R.drawable.detail_mode) else painterResource(id = R.drawable.list_mode)
-    val rateIcon = if(showRate) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
+            /////////////////// Cycle exercises ///////////////////////
+            for ((index, cycle) in routine.cycles.withIndex()) {
+                if (cycleIndex == 0 && index == 0 ||
+                    cycleIndex == 1 && index > 0 && index < routine.cycles.size - 1 ||
+                    cycleIndex == 2 && index == routine.cycles.size - 1
+                ) {
 
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(vertical = 15.dp)
+                    ) {
+                        Text(
+                            text = cycle.name,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(end = 10.dp)
+                        )
+                        Surface(
+                            color = MaterialTheme.colorScheme.inversePrimary,
+                            shape = RoundedCornerShape(8.dp),
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.repetitions_upper) + cycle.reps,
+                                color = MaterialTheme.colorScheme.surfaceTint,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                            )
+                        }
+                    }
+
+                    for (exercise in cycle.exercises) {
+                        if (exercise.title == stringResource(id = R.string.rest_name)) {
+                            RestExercise(title = exercise.title, secs = exercise.secs)
+                        } else {
+                            ExerciseBox(
+                                title = exercise.title,
+                                secs = exercise.secs,
+                                reps = exercise.reps,
+                                imgUrl = exercise.imageUrl
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    AnimatedContent(targetState = orientation, label = "") {
+
+        Box(
+            modifier = Modifier.background(MaterialTheme.colorScheme.inversePrimary)
+        ) {
+            val state = rememberScrollState()
+            LaunchedEffect(Unit) { state.animateScrollTo(100) }
+
+            Column(
+                modifier = Modifier
+                    .verticalScroll(state)
+                    .padding(top = 60.dp)
+                    .fillMaxWidth()
+            ) {
+
+                if(orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    /////////////////// Routine image ///////////////////////
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(250.dp)
+                            .padding(bottom = 20.dp)
+                    ) {
+                        Image(
+                            painter = rememberImagePainter(
+                                data = routine.imageUrl
+                            ),
+                            contentDescription = routine.imageUrl,
+                            modifier = Modifier
+                                .clip(
+                                    RoundedCornerShape(
+                                        topStart = 15.dp,
+                                        topEnd = 15.dp,
+                                        bottomStart = 0.dp,
+                                        bottomEnd = 0.dp
+                                    )
+                                )
+                                .fillMaxWidth()
+                                .height(250.dp),
+                            contentScale = ContentScale.FillBounds,
+                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    Brush.verticalGradient(
+                                        listOf(
+                                            Color.Transparent,
+                                            MaterialTheme.colorScheme.inversePrimary
+                                        )
+                                    ),
+                                )
+                                .align(Alignment.BottomCenter)
+                                .height(50.dp)
+                        )
+                    }
+
+                    /////////////////// Routine filters detail ///////////////////////
+                    RoutineDetail()
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(0.4f)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(280.dp)
+                                    .padding(bottom = 20.dp)
+                            ) {
+                                Image(
+                                    painter = rememberImagePainter(
+                                        data = routine.imageUrl
+                                    ),
+                                    contentDescription = routine.imageUrl,
+                                    modifier = Modifier
+                                        .clip(
+                                            RoundedCornerShape(
+                                                topStart = 15.dp,
+                                                topEnd = 15.dp,
+                                                bottomStart = 0.dp,
+                                                bottomEnd = 0.dp
+                                            )
+                                        )
+                                        .fillMaxWidth()
+                                        .height(250.dp),
+                                    contentScale = ContentScale.FillBounds,
+                                )
+                            }
+                        }
+                        Column(
+                            modifier = Modifier.weight(0.5f)
+                        ) {
+                            RoutineDetail()
+                        }
+                    }
+                }
+            }
+
+            /////////////////// Routine header ///////////////////////
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.inversePrimary,
+                                MaterialTheme.colorScheme.inversePrimary,
+                                Color.Transparent
+                            )
+                        ),
+                    )
+                    .height(80.dp)
+            ) {
+                RoutineMenu(routine.time)
+            }
+
+            /////////////////// Start Routine & Mode Button ///////////////////////
+            Box(
+                contentAlignment = Alignment.BottomCenter,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 20.dp)
+            ) {
+                RoutineExecutionMenu(detailMode = detailMode, showModeDialog = showModeDialog, onShowMode = {showModeDialog = !showModeDialog}, onChangeMode = {detailMode = !detailMode}, onStayMode = {})
+            }
+        }
+    }
+}
+
+@Composable
+fun RoutineExecutionMenu(detailMode :Boolean, showModeDialog :Boolean, onShowMode :() -> Unit, onChangeMode :() -> Unit, onStayMode :() -> Unit) {
     data class ModeOption (
         val label :String,
         val icon :Painter
     )
 
-    data class FilterDetail (
-        val title :String,
-        val detail :String,
-        val icon :Int,
-    )
+    val modeIcon = if(detailMode) painterResource(id = R.drawable.detail_mode) else painterResource(id = R.drawable.list_mode)
 
     val modeOptions :List<ModeOption> = listOf(
         ModeOption(stringResource(id = R.string.detail_mode), painterResource(id = R.drawable.detail_mode)),
         ModeOption(stringResource(id = R.string.list_mode), painterResource(id = R.drawable.list_mode)),
     )
 
-    val filters = arrayListOf(
-        FilterDetail("Difficulty", routine.difficulty + " difficulty", R.drawable.difficulty),
-        FilterDetail("Elements required", routine.elements.toString().substring(1, routine.elements.toString().length - 1), R.drawable.elements),
-        FilterDetail("Approach", routine.approach.toString().substring(1, routine.approach.toString().length - 1), R.drawable.approach),
-        FilterDetail("Space required", routine.space, R.drawable.space)
-    )
-
-    val cyclesOptions = listOf(R.drawable.warm_up, R.drawable.exercise, R.drawable.cooling)
-
-    Box(
-        modifier = Modifier.background(MaterialTheme.colorScheme.inversePrimary)
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(40.dp)
     ) {
-        val state = rememberScrollState()
-        LaunchedEffect(Unit) { state.animateScrollTo(100) }
+        Spacer(modifier = Modifier.width(30.dp))
 
-        Column(
-            modifier = Modifier
-                .verticalScroll(state)
-                .padding(top = 60.dp)
+        Button(
+            onClick = { },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceTint,
+                contentColor = Color.Transparent,
+            ),
+            modifier = Modifier.height(50.dp)
         ) {
+            Text(
+                text = stringResource(id = R.string.start_routine),
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 18.sp,
+            )
+            Icon(
+                Icons.Filled.PlayArrow,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(start = 5.dp)
+            )
+        }
 
-            /////////////////// Routine image ///////////////////////
-            Box(
+        Button(
+            onClick = onShowMode,
+            shape = CircleShape,
+            contentPadding = PaddingValues(0.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = Color.Transparent,
+            ),
+            modifier = Modifier
+                .height(50.dp)
+                .width(50.dp)
+
+        ) {
+            Icon(
+                painter = modeIcon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+
+    /////////////////// Mode Dialog ///////////////////////
+    if (showModeDialog) {
+        Dialog(
+            onDismissRequest = onShowMode,
+        ) {
+            Surface(
                 modifier = Modifier
+                    .wrapContentWidth()
+                    .wrapContentHeight()
                     .fillMaxWidth()
-                    .height(250.dp)
-                    .padding(bottom = 20.dp)
+                    .padding(20.dp),
+                shape = MaterialTheme.shapes.large,
+                tonalElevation = AlertDialogDefaults.TonalElevation,
+                color = MaterialTheme.colorScheme.inversePrimary
             ) {
-                Image(
-                    painter = rememberImagePainter(
-                        data = routine.imageUrl
-                    ),
-                    contentDescription = routine.imageUrl,
-                    modifier = Modifier
-                        .clip(
-                            RoundedCornerShape(
-                                topStart = 15.dp,
-                                topEnd = 15.dp,
-                                bottomStart = 0.dp,
-                                bottomEnd = 0.dp
-                            )
-                        )
-                        .fillMaxWidth()
-                        .height(250.dp),
-                    contentScale = ContentScale.FillBounds,
-                )
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            Brush.verticalGradient(listOf(Color.Transparent, MaterialTheme.colorScheme.inversePrimary)),
-                        )
-                        .align(Alignment.BottomCenter)
-                        .height(50.dp)
-                )
-            }
-
-            /////////////////// Routine filters detail ///////////////////////
-            Column(
-                modifier = Modifier
-                    .background(
-                        color = MaterialTheme.colorScheme.surface,
-                        shape = RoundedCornerShape(40.dp)
-                    )
-                    .fillMaxSize()
-                    .padding(vertical = 25.dp, horizontal = 30.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = routine.title,
-                        fontSize = 25.sp,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .padding(horizontal = 10.dp)
-                            .weight(1f)
-                    )
-                    Text(
-                        text = routine.score.toString(),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Icon(
-                        Icons.Filled.Star,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(start = 5.dp)
-                    )
-                }
-
                 Column(
-                    modifier = Modifier.padding(vertical = 20.dp)
-                ) {
-                    for (filter in filters) {
-                        Row(
-                            modifier = Modifier.padding(vertical = 5.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = filter.icon),
-                                contentDescription = "item icon",
-                                tint = MaterialTheme.colorScheme.tertiary,
-                                modifier = Modifier.padding(start = 5.dp, end = 10.dp)
-                            )
-                            Text(
-                                text = filter.detail,
-                                color = MaterialTheme.colorScheme.tertiary
-                            )
-                        }
-                        Divider(
-                            color = MaterialTheme.colorScheme.tertiary,
-                            thickness = 1.dp,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 2.dp)
-                        )
-                    }
-                }
-
-                /////////////////// Rate routine ///////////////////////
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = stringResource(R.string.rate_name),
-                        color = MaterialTheme.colorScheme.primary
+                        text = stringResource(id = R.string.mode_dialog_title),
+                        fontWeight = FontWeight.Bold
                     )
-
-                    Button(
-                        onClick = { showRate = !showRate },
-                        contentPadding = PaddingValues(0.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = MaterialTheme.colorScheme.surface,
-                        ),
-                        modifier = Modifier
-                            .width(40.dp)
-                            .height(25.dp)
-                    ) {
-                        Icon(
-                            rateIcon,
-                            contentDescription = stringResource(R.string.rate_name),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-
-                if (showRate) {
-                    Row(
-                        modifier = Modifier.padding(top = 10.dp)
-                    ) {
-                        for (i in 1..5) {
-                            IconButton(
-                                onClick = { score = i },
-                                modifier = Modifier.size(30.dp)
-                            ) {
-                                Icon(
-                                    painter = if (i <= score) painterResource(id = R.drawable.star) else painterResource(
-                                        id = R.drawable.empty_star
-                                    ),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row {
+                        for (option in modeOptions) {
+                            val modeMatches =
+                                detailMode && option.label == stringResource(id = R.string.detail_mode) || !detailMode && option.label == stringResource(
+                                    id = R.string.list_mode
                                 )
-                            }
-                        }
-                    }
-                }
-
-                /////////////////// Routine description ///////////////////////
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.description_name),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Button(
-                        onClick = { showDescription = !showDescription },
-                        contentPadding = PaddingValues(0.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = MaterialTheme.colorScheme.surface,
-                        ),
-                        modifier = Modifier.width(40.dp)
-                    ) {
-                        Icon(
-                            descriptionIcon,
-                            contentDescription = stringResource(R.string.description_name),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-                if (showDescription) {
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = MaterialTheme.colorScheme.inversePrimary,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = routine.description,
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(10.dp)
-                        )
-                    }
-                }
-
-                /////////////////// Cycles ///////////////////////
-                Text(
-                    text = stringResource(R.string.cycles_name),
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(vertical = 10.dp)
-                )
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(30.dp),
-                        color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.padding(5.dp)
-                        ) {
-                            for ((index, option) in cyclesOptions.withIndex()) {
-                                Button(
-                                    onClick = { cycleIndex = index },
-                                    contentPadding = PaddingValues(0.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = if (cycleIndex == index) MaterialTheme.colorScheme.inversePrimary else Color.Transparent
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(20.dp),
+                                    color = if (modeMatches) MaterialTheme.colorScheme.secondary else Color.Transparent,
+                                    border = if (modeMatches) BorderStroke(
+                                        1.dp,
+                                        MaterialTheme.colorScheme.secondary
+                                    ) else BorderStroke(
+                                        1.dp,
+                                        MaterialTheme.colorScheme.secondary
                                     ),
                                     modifier = Modifier
-                                        .height(30.dp)
-                                        .weight(1f)
+                                        .height(100.dp)
+                                        .width(100.dp)
+                                        .padding(10.dp)
                                 ) {
-                                    Icon(
-                                        painter = painterResource(id = option),
-                                        contentDescription = null,
-                                        tint = if (cycleIndex == index) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-
-                /////////////////// Cycle exercises ///////////////////////
-                for ((index, cycle) in routine.cycles.withIndex()) {
-                    if (cycleIndex == 0 && index == 0 ||
-                        cycleIndex == 1 && index > 0 && index < routine.cycles.size - 1 ||
-                        cycleIndex == 2 && index == routine.cycles.size - 1
-                    ) {
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(vertical = 15.dp)
-                        ) {
-                            Text(
-                                text = cycle.name,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(end = 10.dp)
-                            )
-                            Surface(
-                                color = MaterialTheme.colorScheme.inversePrimary,
-                                shape = RoundedCornerShape(8.dp),
-                            ) {
-                                Text(
-                                    text = "X " + cycle.reps,
-                                    color = MaterialTheme.colorScheme.surfaceTint,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                                )
-                            }
-                        }
-
-                        for (exercise in cycle.exercises) {
-                            if (exercise.title == "Rest") {
-                                RestExercise(title = exercise.title, secs = exercise.secs)
-                            } else {
-                                ExerciseBox(
-                                    title = exercise.title,
-                                    secs = exercise.secs,
-                                    reps = exercise.reps,
-                                    imgUrl = exercise.imageUrl
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /////////////////// Routine header ///////////////////////
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.TopCenter)
-                .background(
-                    Brush.verticalGradient(listOf(MaterialTheme.colorScheme.inversePrimary, MaterialTheme.colorScheme.inversePrimary, Color.Transparent)),
-                )
-                .height(80.dp)
-        ) {
-            RoutineMenu(routine.time)
-        }
-
-        /////////////////// Start Routine Button ///////////////////////
-        Box(
-            contentAlignment = Alignment.BottomCenter,
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 20.dp)
-        ){
-            Button(
-                onClick = {  },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceTint,
-                    contentColor = Color.Transparent,
-                ),
-                modifier = Modifier.height(50.dp)
-            ) {
-                Text(
-                    text = stringResource(id = R.string.start_routine),
-                    color = MaterialTheme.colorScheme.primary,
-                    fontSize = 18.sp,
-                )
-                Icon(
-                    Icons.Filled.PlayArrow,
-                    contentDescription = stringResource(id = R.string.start_routine),
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 5.dp)
-                )
-            }
-        }
-
-        /////////////////// Mode Button ///////////////////////
-        Box(
-            contentAlignment = Alignment.BottomEnd,
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 20.dp, end = 40.dp)
-
-        ){
-            Button(
-                onClick = { showModeDialog = true },
-                shape = CircleShape,
-                contentPadding = PaddingValues(0.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = Color.Transparent,
-                ),
-                modifier = Modifier
-                    .height(50.dp)
-                    .width(50.dp)
-
-            ){
-                Icon(
-                    painter = modeIcon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-
-        /////////////////// Mode Dialog ///////////////////////
-        if (showModeDialog) {
-            Dialog(
-                onDismissRequest = { showModeDialog = false },
-            ) {
-                Surface(
-                    modifier = Modifier
-                        .wrapContentWidth()
-                        .wrapContentHeight()
-                        .fillMaxWidth()
-                        .padding(20.dp),
-                    shape = MaterialTheme.shapes.large,
-                    tonalElevation = AlertDialogDefaults.TonalElevation,
-                    color = MaterialTheme.colorScheme.inversePrimary
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.mode_dialog_title),
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Row {
-                            for(option in modeOptions) {
-                                val modeMatches = detailMode && option.label == stringResource(id = R.string.detail_mode) || !detailMode && option.label == stringResource(id = R.string.list_mode)
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    Surface(
-                                        shape = RoundedCornerShape(20.dp),
-                                        color = if (modeMatches) MaterialTheme.colorScheme.secondary else Color.Transparent,
-                                        border = if (modeMatches) BorderStroke(1.dp, MaterialTheme.colorScheme.secondary) else BorderStroke(1.dp, MaterialTheme.colorScheme.secondary),
-                                        modifier = Modifier
-                                            .height(100.dp)
-                                            .width(100.dp)
-                                            .padding(10.dp)
+                                    IconButton(
+                                        onClick = if(modeMatches) onStayMode else onChangeMode
                                     ) {
-                                        IconButton(
-                                            onClick = { if(!modeMatches) detailMode = !detailMode }
-                                        ) {
-                                            Icon(
-                                                painter = option.icon,
-                                                contentDescription = option.label,
-                                                modifier = Modifier.padding(25.dp),
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
+                                        Icon(
+                                            painter = option.icon,
+                                            contentDescription = option.label,
+                                            modifier = Modifier.padding(25.dp),
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
                                     }
-                                    Text(
-                                        text = option.label,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
                                 }
+                                Text(
+                                    text = option.label,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
                             }
                         }
                     }
@@ -1389,6 +1466,7 @@ fun Routine() {
         }
     }
 }
+
 
 data class PopUpOption (
     val label :String,
@@ -1419,7 +1497,7 @@ fun RoutineMenu(time :Int) {
     ) {
         Icon(
             Icons.Filled.KeyboardArrowLeft,
-            contentDescription = "back icon",
+            contentDescription = null,
             tint = Color.Gray,
             modifier = Modifier.size(30.dp)
         )
@@ -1597,7 +1675,9 @@ fun FinishScreen() {
     val rated = false
 
     Box(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.inversePrimary)
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.inversePrimary)
     ) {
         val state = rememberScrollState()
         LaunchedEffect(Unit) { state.animateScrollTo(100) }
@@ -2408,7 +2488,7 @@ fun HorizontalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon :Pa
                     )
                 }
                 Text(
-                    text = exercise.secs.toString() + "s",
+                    text = exercise.secs.toString() + stringResource(id = R.string.seconds),
                     color = if(type == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.inversePrimary
                 )
             }
@@ -2652,7 +2732,7 @@ fun VerticalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon :Pain
                     )
                 }
                 Text(
-                    text = exercise.secs.toString() + "s",
+                    text = exercise.secs.toString() + stringResource(id = R.string.seconds),
                     color = if(type == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.inversePrimary
                 )
             }

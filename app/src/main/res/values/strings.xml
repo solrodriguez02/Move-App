@@ -43,7 +43,6 @@
     <string name="a_yoga">Yoga</string>
     <string name="a_pilates">Pilates</string>
     <string name="a_functional">Functional</string>
-    <string name="a_calisthenics">Calisthenics</string>
     <string name="a_aerobic">Aerobic</string>
     <string name="a_streching">Streching</string>
     <string name="s_reduced">Ideal for reduced spaces</string>
@@ -56,10 +55,8 @@
     <string name="your_routines_title">Created by you</string>
     <string name="date_filter">Date</string>
     <string name="score_filter">Score</string>
-    <string name="da_today">Today</string>
-    <string name="da_week">Less than a week</string>
-    <string name="da_month">Less than a month</string>
-    <string name="da_older">Older</string>
+    <string name="da_ascending">Ascending</string>
+    <string name="da_descending">Descending</string>
     <string name="sc_bad">Bad</string>
     <string name="sc_fair">Fair</string>
     <string name="sc_good">Good</string>
@@ -82,4 +79,10 @@
     <string name="cancel_name">Cancel</string>
     <string name="quit_name">Quit</string>
     <string name="next_name">Next:</string>
+    <string name="routine_image">Routine image</string>
+    <string name="profile_image">Profile image</string>
+    <string name="elements_required_filter">Elements required</string>
+    <string name="space_required_filter">Space required</string>
+    <string name="difficulty_lower">"difficulty "</string>
+    <string name="repetitions_upper">X</string>
 </resources>

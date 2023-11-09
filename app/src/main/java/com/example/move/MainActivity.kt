@@ -59,7 +59,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -91,7 +90,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.PopupProperties
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.move.ui.theme.MoveTheme
@@ -329,7 +327,7 @@ fun ExploreFilters() {
     var scoreExpanded by remember { mutableStateOf(false) }
     var dateExpanded by remember { mutableStateOf(false) }
 
-    var filtersSelected = remember { mutableStateListOf<SelectedFilter>() }
+    val filtersSelected = remember { mutableStateListOf<SelectedFilter>() }
 
     var showFilters by remember { mutableStateOf(false) }
 
@@ -1409,7 +1407,7 @@ fun getOptions(): List<PopUpOption> {
 @Composable
 fun RoutineMenu(time :Int) {
 
-    var popUpOptions = getOptions()
+    val popUpOptions = getOptions()
 
     var showPopUp by remember { mutableStateOf(false) }
 

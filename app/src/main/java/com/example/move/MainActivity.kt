@@ -110,8 +110,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MyApp(modifier: Modifier = Modifier) {
-     // Menu()
-       Routine()
+      Menu()
+    // Routine()
     // FinishScreen()
     // RoutineExecution(false)
 }
@@ -727,10 +727,17 @@ fun HomeScreen() {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.inversePrimary)
     ) {
-        Header(title = stringResource(R.string.home_name))
-        Spacer(modifier = Modifier.height(20.dp))
-        RoutinesCarousel(title = stringResource(id = R.string.favourites_title), routineData)
-        RoutinesCarousel(title = stringResource(id = R.string.your_routines_title), routineData)
+        val state = rememberScrollState()
+        LaunchedEffect(Unit) { state.animateScrollTo(100) }
+
+        Header(title = stringResource(R.string.home_name), isHome = true)
+        Column(
+            modifier = Modifier.verticalScroll(state)
+        ) {
+            RoutinesCarousel(title = stringResource(id = R.string.favourites_title), routineData)
+            RoutinesCarousel(title = stringResource(id = R.string.your_routines_title), routineData)
+            Spacer(modifier = Modifier.height(100.dp))
+        }
     }
 }
 
@@ -761,11 +768,11 @@ fun RoutinesCarousel(title :String, routines :List<RoutineItemData>) {
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun Header(title: String) {
+fun Header(title: String, isHome :Boolean = false) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .padding(start = 20.dp, top = 30.dp, end = 20.dp)
+            .padding(start = 20.dp, top = 15.dp, end = 15.dp, bottom = if(isHome) 10.dp else 0.dp)
             .fillMaxWidth(),
     ) {
         Text(

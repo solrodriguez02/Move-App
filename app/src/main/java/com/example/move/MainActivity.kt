@@ -1215,7 +1215,6 @@ fun Routine() {
             ) {
 
                 if(orientation == Configuration.ORIENTATION_PORTRAIT) {
-                    /////////////////// Routine image ///////////////////////
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1256,11 +1255,11 @@ fun Routine() {
                         )
                     }
 
-                    /////////////////// Routine filters detail ///////////////////////
                     RoutineDetail()
+
                 } else {
                     Row(
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxSize()
                     ) {
                         Column(
                             modifier = Modifier.weight(0.4f)
@@ -1290,9 +1289,22 @@ fun Routine() {
                                     contentScale = ContentScale.FillBounds,
                                 )
                             }
+                            Box(
+                                contentAlignment = Alignment.BottomCenter,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 20.dp)
+                            ) {
+                                RoutineExecutionMenu(
+                                    detailMode = detailMode,
+                                    showModeDialog = showModeDialog,
+                                    onShowMode = { showModeDialog = !showModeDialog },
+                                    onChangeMode = { detailMode = !detailMode },
+                                    onStayMode = {})
+                            }
                         }
                         Column(
-                            modifier = Modifier.weight(0.5f)
+                            modifier = Modifier.weight(0.5f).padding(10.dp)
                         ) {
                             RoutineDetail()
                         }
@@ -1319,15 +1331,21 @@ fun Routine() {
                 RoutineMenu(routine.time)
             }
 
-            /////////////////// Start Routine & Mode Button ///////////////////////
-            Box(
-                contentAlignment = Alignment.BottomCenter,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 20.dp)
-            ) {
-                RoutineExecutionMenu(detailMode = detailMode, showModeDialog = showModeDialog, onShowMode = {showModeDialog = !showModeDialog}, onChangeMode = {detailMode = !detailMode}, onStayMode = {})
+            if(orientation == Configuration.ORIENTATION_PORTRAIT) {
+                Box(
+                    contentAlignment = Alignment.BottomCenter,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 20.dp)
+                ) {
+                    RoutineExecutionMenu(
+                        detailMode = detailMode,
+                        showModeDialog = showModeDialog,
+                        onShowMode = { showModeDialog = !showModeDialog },
+                        onChangeMode = { detailMode = !detailMode },
+                        onStayMode = {})
+                }
             }
         }
     }

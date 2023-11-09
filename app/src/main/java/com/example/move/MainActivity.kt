@@ -1869,7 +1869,8 @@ fun RoutineExecution(isDetailedMode :Boolean = false) {
                         NewCycleHorizontalScreen(onStart = {
                             newCycle = false
                             isTimerRunning = true
-                        }, cycleIcon = cycleIcon, cycleIndex = cycleIndex)
+                        }, cycleIcon = cycleIcon, cycleIndex = cycleIndex,
+                            textColor = textColor, onClose = { showExitPopUp = true })
                     } else {
                         if (isDetailedMode)
                             HorizontalDetailedMode(
@@ -2744,50 +2745,61 @@ fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cyc
 }
 
 @Composable
-fun NewCycleHorizontalScreen(onStart :() -> Unit, cycleIcon: Painter, cycleIndex :Int) {
-    Row(
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxSize()
-    ) {
-
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(end = 150.dp)
+fun NewCycleHorizontalScreen(onStart :() -> Unit, cycleIcon: Painter, cycleIndex :Int, textColor: Color, onClose: () -> Unit) {
+    Row {
+        IconButton(
+            onClick = onClose
         ) {
-            Text(
-                text = stringResource(id = R.string.next_cycle),
-                modifier = Modifier.padding(top = 50.dp, bottom = 15.dp)
-            )
-
-            Text(
-                text = routine.cycles[cycleIndex].name,
-                fontSize = 40.sp
-            )
-
             Icon(
-                cycleIcon,
+                Icons.Filled.Close,
                 contentDescription = null,
-                modifier = Modifier
-                    .padding(vertical = 40.dp)
-                    .size(50.dp),
-                tint = Color(0xFF5370F8)
+                tint = textColor
             )
         }
-
-        Button(
-            onClick = onStart,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF5370F8),
-                contentColor = Color.Black
-            ),
-            contentPadding = PaddingValues(horizontal = 30.dp, vertical = 15.dp)
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxSize()
         ) {
-            Icon(
-                Icons.Filled.PlayArrow,
-                contentDescription = null,
-                modifier = Modifier.size(40.dp)
-            )
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(end = 150.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.next_cycle),
+                    modifier = Modifier.padding(top = 50.dp, bottom = 15.dp)
+                )
+
+                Text(
+                    text = routine.cycles[cycleIndex].name,
+                    fontSize = 40.sp
+                )
+
+                Icon(
+                    cycleIcon,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(vertical = 40.dp)
+                        .size(50.dp),
+                    tint = Color(0xFF5370F8)
+                )
+            }
+
+            Button(
+                onClick = onStart,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF5370F8),
+                    contentColor = Color.Black
+                ),
+                contentPadding = PaddingValues(horizontal = 30.dp, vertical = 15.dp)
+            ) {
+                Icon(
+                    Icons.Filled.PlayArrow,
+                    contentDescription = null,
+                    modifier = Modifier.size(40.dp)
+                )
+            }
         }
     }
 }

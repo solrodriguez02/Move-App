@@ -96,4 +96,5 @@
     <string name="p_email">Email</string>
     <string name="check_website_name">Check our website</string>
     <string name="logout_name">Log out</string>
+    <string name="rest_compare">Rest</string>
 </resources>

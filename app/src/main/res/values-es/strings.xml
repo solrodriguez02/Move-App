@@ -97,4 +97,5 @@
     <string name="p_email">Mail</string>
     <string name="check_website_name">Chequeá nuestro sitio web</string>
     <string name="logout_name">Cerrar sesión</string>
+    <string name="rest_compare">Rest</string>
 </resources>

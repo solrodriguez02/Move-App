@@ -1,5 +1,6 @@
 package com.example.move
 
+import android.content.IntentSender.OnFinished
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -35,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -66,9 +68,9 @@ import kotlinx.coroutines.delay
 
 
 @Composable
-fun RoutineExecutionScreen() {
+fun RoutineExecutionScreen(onNavigateToFinish :(routineId:Int)->Unit) {
 
-    val isDetailedMode = false
+    val isDetailedMode = true
 
     var cycleIndex by remember { mutableIntStateOf(0) }
 
@@ -88,10 +90,10 @@ fun RoutineExecutionScreen() {
         mutableStateOf(IntSize.Zero)
     }
     var value by remember {
-        mutableStateOf(initialValue)
+        mutableFloatStateOf(initialValue)
     }
     var currentTime by remember {
-        mutableStateOf(totalTime)
+        mutableLongStateOf(totalTime)
     }
     var isTimerRunning by remember {
         mutableStateOf(false)
@@ -99,7 +101,7 @@ fun RoutineExecutionScreen() {
 
     val cycleIcon = if(cycleIndex == 0) painterResource(id = R.drawable.warm_up) else if (cycleIndex == routine.cycles.size-1) painterResource(id = R.drawable.cooling) else painterResource(id = R.drawable.exercise)
 
-    val isRestExercise = currentExercise.title == stringResource(id = R.string.rest_name)
+    val isRestExercise = currentExercise.title == stringResource(id = R.string.rest_compare)
 
     val textColor = if(isRestExercise && isDetailedMode) MaterialTheme.colorScheme.inversePrimary else MaterialTheme.colorScheme.primary
 
@@ -131,29 +133,33 @@ fun RoutineExecutionScreen() {
         }
     }
 
-    if (currentTime <= 0L && currentExercise.secs != 0 || nextExercise) {
-        exerciseIndex++
-        nextExercise = false
-        if (exerciseIndex < exerciseCount) {
-            LaunchedEffect(key1 = exerciseIndex) {
-                currentExercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
-                currentTime = currentExercise.secs * 1000L
-                totalTime = currentExercise.secs * 1000L
-                delay(5000L)
-            }
-            isTimerRunning = true
-        } else {
-            cycleIndex++
-            if (cycleIndex < routine.cycles.size) {
+    if(cycleIndex == routine.cycles.size-1 && exerciseIndex == exerciseCount-1 && (currentTime.toInt() == 0 && !hasOnlyReps || nextExercise)) {
+        onNavigateToFinish(0)
+    } else {
+        if (currentTime <= 0L && currentExercise.secs != 0 || nextExercise) {
+            exerciseIndex++
+            nextExercise = false
+            if (exerciseIndex < exerciseCount) {
                 LaunchedEffect(key1 = exerciseIndex) {
-                    exerciseIndex = 0
                     currentExercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
                     currentTime = currentExercise.secs * 1000L
                     totalTime = currentExercise.secs * 1000L
                     delay(5000L)
                 }
-                isTimerRunning = false
-                newCycle = true
+                isTimerRunning = true
+            } else {
+                cycleIndex++
+                if (cycleIndex < routine.cycles.size) {
+                    LaunchedEffect(key1 = exerciseIndex) {
+                        exerciseIndex = 0
+                        currentExercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
+                        currentTime = currentExercise.secs * 1000L
+                        totalTime = currentExercise.secs * 1000L
+                        delay(5000L)
+                    }
+                    isTimerRunning = false
+                    newCycle = true
+                }
             }
         }
     }
@@ -671,7 +677,7 @@ fun HorizontalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : P
     if(exerciseIndex == -2) type = -1
     else if(exerciseIndex == -1) type = 0
     else if(exerciseIndex < routine.cycles[cycleIndex].exercises.size) {
-        type = if(routine.cycles[cycleIndex].exercises[exerciseIndex].title == stringResource(id = R.string.rest_name)) 2 else 1
+        type = if(routine.cycles[cycleIndex].exercises[exerciseIndex].title == stringResource(id = R.string.rest_compare)) 2 else 1
     }
 
     Surface(
@@ -929,7 +935,7 @@ fun VerticalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : Pai
 
     if(exerciseIndex == -1) type = 0
     else if(exerciseIndex < routine.cycles[cycleIndex].exercises.size) {
-        type = if(routine.cycles[cycleIndex].exercises[exerciseIndex].title == stringResource(id = R.string.rest_name)) 2 else 1
+        type = if(routine.cycles[cycleIndex].exercises[exerciseIndex].title == stringResource(id = R.string.rest_compare)) 2 else 1
     }
 
     Surface(
@@ -1086,7 +1092,7 @@ fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cyc
             } else {
                 val followingExercise = routine.cycles[cycleIndex].exercises[exerciseIndex + 1]
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if(followingExercise.title == stringResource(id = R.string.rest_name)) {
+                    if(followingExercise.title == stringResource(id = R.string.rest_compare)) {
                         Icon(
                             painterResource(id = R.drawable.rest),
                             contentDescription = null,
@@ -1111,7 +1117,7 @@ fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cyc
                         }
                     }
                     Column {
-                        if(followingExercise.title != stringResource(id = R.string.rest_name)) {
+                        if(followingExercise.title != stringResource(id = R.string.rest_compare)) {
                             Text(
                                 text = if(isHorizontal) stringResource(id = R.string.next_name) else stringResource(id = R.string.next_exercise),
                                 color = textColor

@@ -327,7 +327,7 @@ fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit) {
                     }
 
                     for (exercise in cycle.exercises) {
-                        if (exercise.title == stringResource(id = R.string.rest_name)) {
+                        if (exercise.title == stringResource(id = R.string.rest_compare)) {
                             RestExercise(title = exercise.title, secs = exercise.secs)
                         } else {
                             ExerciseBox(

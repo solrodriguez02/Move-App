@@ -52,23 +52,14 @@ fun MoveNavHost(
             Screen.RoutineExecutionScreen.route,
             arguments = listOf(navArgument("id") {type = NavType.IntType}),
         ) {
-            RoutineExecutionScreen()
+            RoutineExecutionScreen(onNavigateToFinish = { id -> navController.navigate("routine/$id/finished") })
         }
 
-
-        /*
-
-        composable("home") {
-            HomeAuxScreen(onNavigateToOtherScreen = { id -> navController.navigate("other/$id")})
-        }
         composable(
-            route = "other/{id}",
+            Screen.RoutineFinishedScreen.route,
             arguments = listOf(navArgument("id") {type = NavType.IntType}),
-            deepLinks = listOf(navDeepLink { uriPattern = "$uri/other?id={id}" }, navDeepLink { uriPattern = "$secureUri/other?id={id}" }),
-        ) {route ->
-            OtherScreen(id = route.arguments?.getInt("id"))
+        ) {
+            FinishedRoutineScreen()
         }
-
-         */
     }
 }

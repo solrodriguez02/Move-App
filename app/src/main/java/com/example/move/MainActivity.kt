@@ -58,73 +58,81 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
 fun NavBar(navController: NavController) {
-    var selectedItem by remember { mutableIntStateOf(0) }
-    val items = listOf(Screen.ExploreScreen, Screen.HomeScreen)
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    selectedItem = if(currentRoute == Screen.ExploreScreen.route) 0 else 1
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(vertical = 25.dp)
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.Center,
+    if(currentRoute == Screen.ExploreScreen.route || currentRoute == Screen.HomeScreen.route) {
+        var selectedItem by remember { mutableIntStateOf(0) }
+        val items = listOf(Screen.ExploreScreen, Screen.HomeScreen)
+        selectedItem =
+            if (currentRoute == Screen.ExploreScreen.route) 0 else if (currentRoute == Screen.HomeScreen.route) 1 else -1
+
+        Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .clip(shape = RoundedCornerShape(100.dp))
-                .height(60.dp)
-                .background(MaterialTheme.colorScheme.tertiary)
-                .padding(horizontal = 30.dp)
-                .width(130.dp)
+                .fillMaxSize()
+                .padding(vertical = 25.dp)
         ) {
-            items.forEachIndexed { index, item ->
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .clip(shape = RoundedCornerShape(100.dp))
+                    .height(60.dp)
+                    .background(MaterialTheme.colorScheme.tertiary)
+                    .padding(horizontal = 30.dp)
+                    .width(130.dp)
+            ) {
+                items.forEachIndexed { index, item ->
 
-                val selectedPosition =  if (selectedItem == index) Modifier.padding(15.dp) else Modifier.padding(16.dp)
-                val selectedColor = if (selectedItem == index) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.inversePrimary
+                    val selectedPosition =
+                        if (selectedItem == index) Modifier.padding(15.dp) else Modifier.padding(16.dp)
+                    val selectedColor =
+                        if (selectedItem == index) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.inversePrimary
 
-                Button(
-                    onClick = {
-                        navController.navigate(item.route) {
-                            navController.graph.startDestinationRoute?.let { screenRoute ->
-                                popUpTo(screenRoute) {
-                                    saveState = true
+                    Button(
+                        onClick = {
+                            navController.navigate(item.route) {
+                                navController.graph.startDestinationRoute?.let { screenRoute ->
+                                    popUpTo(screenRoute) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
                             }
-                        }
-                    },
-                    contentPadding = PaddingValues(0.dp),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = Color.Transparent,
-                    ),
-                    modifier = Modifier.width(60.dp)
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = selectedPosition.then(Modifier.fillMaxSize())
+                        },
+                        contentPadding = PaddingValues(0.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = Color.Transparent,
+                        ),
+                        modifier = Modifier.width(60.dp)
                     ) {
-                        Icon(
-                            item.icon,
-                            contentDescription = "item $index",
-                            tint = selectedColor,
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = selectedPosition.then(Modifier.fillMaxSize())
+                        ) {
+                            Icon(
+                                item.icon,
+                                contentDescription = "item $index",
+                                tint = selectedColor,
 
-                            )
-                        if (selectedItem == index) {
-                            Divider(
-                                color = MaterialTheme.colorScheme.surfaceTint,
-                                thickness = 3.dp,
-                                modifier = Modifier
-                                    .width(25.dp)
-                                    .padding(top = 1.dp)
-                                    .clip(shape = RoundedCornerShape(20.dp))
-                            )
+                                )
+                            if (selectedItem == index) {
+                                Divider(
+                                    color = MaterialTheme.colorScheme.surfaceTint,
+                                    thickness = 3.dp,
+                                    modifier = Modifier
+                                        .width(25.dp)
+                                        .padding(top = 1.dp)
+                                        .clip(shape = RoundedCornerShape(20.dp))
+                                )
+                            }
                         }
                     }
                 }

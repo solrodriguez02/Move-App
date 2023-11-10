@@ -1,5 +1,6 @@
+package com.example.move
+
 import android.content.res.Configuration
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -44,6 +45,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -64,79 +66,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
-import com.example.move.R
 
 
-/// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
-data class Exercise(
-    val title :String,
-    val imageUrl :String,
-    val secs :Int,
-    val reps :Int,
-    val description :String
-)
-
-data class Cycle(
-    val name :String,
-    val exercises :List<Exercise>,
-    val reps :Int
-)
-
-data class RoutineItem(
-    val title: String,
-    val imageUrl :String,
-    val difficulty :String,
-    val elements :List<String>,
-    val approach :List<String>,
-    val space :String,
-    val description :String,
-    val cycles :List<Cycle>,
-    val time :Int,
-    val score :Float
-)
-
-val exercises :List<Exercise> = listOf(
-    Exercise("Jump rope", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/jump-rope-hop.jpg", 5, 15, "This exercise is fun!"),
-    Exercise("Switch Kick", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/switch-kick.jpg", 2, 0, "This exercise is fun!"),
-    Exercise("Rest", "", 5, 0, "This exercise is fun!"),
-    Exercise("Windmill", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/windmill.jpg", 0, 14, "This exercise is fun!"),
-    Exercise("Rest", "", 5, 0, "This exercise is fun!"),
-    Exercise("Squat Jacks", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/squat-jack.jpg", 0, 15, "This exercise is fun!"),
-
-    )
-
-val exercises1 :List<Exercise> = listOf(
-    Exercise("Switch Kick", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/switch-kick.jpg", 3, 0, "This exercise is fun!"),
-    Exercise("Windmill", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/windmill.jpg", 4, 0, "This exercise is fun!"),
-    Exercise("Rest", "", 5, 0, "This exercise is fun!"),
-    Exercise("Jump rope", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/jump-rope-hop.jpg", 5, 0, "This exercise is fun!"),
-    Exercise("Pivoting", "https://storage.googleapis.com/sworkit-assets/images/exercises/standard/middle-frame/pivoting-upper-cut.jpg", 3, 15, "This exercise is fun!"),
-)
-
-val cycles :List<Cycle> = listOf(
-    Cycle("Warm up", exercises, 1),
-    Cycle("Cycle 1", exercises, 2),
-    Cycle("Cycle 2", exercises1, 3),
-    Cycle("Cooling", exercises, 1)
-)
-
-val routine :RoutineItem = RoutineItem("Senta-Senta", "https://s3.abcstatics.com/media/bienestar/2020/11/17/abdominales-kfHF--620x349@abc.jpeg",
-    "Medium", listOf("Dumbells", "Rope"), listOf("Cardio"), "Ideal for reduced spaces", "Very fun exercise", cycles, 15, 3.4f)
-
-/// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-/// ROUTINE PAGE //////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-@OptIn(ExperimentalCoilApi::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalCoilApi::class)
 @Composable
-fun Routine() {
+fun RoutineScreen() {
 
     val config = LocalConfiguration.current
     val orientation = config.orientation
@@ -145,8 +79,8 @@ fun Routine() {
     var showDescription by remember { mutableStateOf(false) }
     var detailMode by remember { mutableStateOf(true) }
     var showModeDialog by remember { mutableStateOf(false) }
-    var score by remember { mutableStateOf (3) }
-    var cycleIndex by remember { mutableStateOf(0) }
+    var score by remember { mutableIntStateOf (3) }
+    var cycleIndex by remember { mutableIntStateOf(0) }
 
     @Composable
     fun RoutineDetail() {

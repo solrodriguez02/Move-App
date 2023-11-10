@@ -22,16 +22,30 @@ fun MoveNavHost(
         startDestination = Screen.ExploreScreen.route
     ) {
         composable(Screen.ExploreScreen.route) {
-            ExploreScreen(onNavigateToProfile = { id -> navController.navigate("profile/$id")})
+            ExploreScreen(
+                onNavigateToProfile = { id -> navController.navigate("profile/$id") },
+                onNavigateToRoutine = { id -> navController.navigate("routine/$id") }
+                )
         }
         composable(Screen.HomeScreen.route) {
-            HomeScreen(onNavigateToProfile = { id -> navController.navigate("profile/$id")})
+            HomeScreen(
+                onNavigateToProfile = { id -> navController.navigate("profile/$id") },
+                onNavigateToRoutine = { id -> navController.navigate("routine/$id") }
+                )
         }
         composable(
             Screen.ProfileScreen.route,
             arguments = listOf(navArgument("id") {type = NavType.IntType}),
-            deepLinks = listOf(navDeepLink { uriPattern = "$uri/profile?id={id}" }, navDeepLink { uriPattern = "$secureUri/profile?id={id}" }),) {
+            ) {
             ProfileScreen()
+        }
+
+        composable(
+            Screen.RoutineScreen.route,
+            arguments = listOf(navArgument("id") {type = NavType.IntType}),
+            deepLinks = listOf(navDeepLink { uriPattern = "$uri/routine?id={id}" }, navDeepLink { uriPattern = "$secureUri/routine?id={id}" }),
+            ) {
+            RoutineScreen()
         }
 
 

@@ -1,3 +1,5 @@
+package com.example.move
+
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas

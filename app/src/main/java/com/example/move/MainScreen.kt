@@ -49,6 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -81,7 +82,7 @@ val routineData:  List<RoutineItemData> = listOf(
 
 
 @Composable
-fun ExploreScreen(onNavigateToProfile :(userId:Int)->Unit) {
+fun ExploreScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(routineId:Int)->Unit) {
 
     val config = LocalConfiguration.current
     val orientation = config.orientation
@@ -110,7 +111,8 @@ fun ExploreScreen(onNavigateToProfile :(userId:Int)->Unit) {
                                 imageUrl = routine.imageUrl,
                                 title = routine.title,
                                 time = routine.time,
-                                leftSide = if (isVertical) index % 2 == 0 else false
+                                leftSide = if (isVertical) index % 2 == 0 else false,
+                                onNavigateToRoutine = onNavigateToRoutine
                             )
                         }
                     }
@@ -160,74 +162,6 @@ fun ExploreScreen(onNavigateToProfile :(userId:Int)->Unit) {
         }
     }
 }
-
-@OptIn(ExperimentalCoilApi::class)
-@Composable
-fun RoutinePreview(imageUrl: String, title: String, time: Int, leftSide: Boolean = false) {
-    Column(
-        horizontalAlignment = if(leftSide) Alignment.End else Alignment.Start,
-        modifier = Modifier.padding(bottom = 20.dp)
-    ) {
-        Surface(
-            color = Color(0x00FFFFFF),
-            modifier = Modifier
-                .background(
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(40.dp)
-                )
-                .padding(8.dp)
-                .width(140.dp)
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Box(
-                    modifier = Modifier
-                        .height(150.dp)
-                        .padding(bottom = 5.dp)
-                ) {
-                    Image(
-                        painter = rememberImagePainter(
-                            data = imageUrl
-                        ),
-                        contentDescription = stringResource(id = R.string.routine_image),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(
-                                RoundedCornerShape(
-                                    topStart = 30.dp,
-                                    topEnd = 30.dp,
-                                    bottomStart = 0.dp,
-                                    bottomEnd = 0.dp
-                                )
-                            ),
-                        contentScale = ContentScale.Crop,
-                    )
-                }
-
-                Text(
-                    text = title,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-
-                Row {
-                    Icon(
-                        painter = painterResource(id = R.drawable.time),
-                        contentDescription = stringResource(R.string.time_icon),
-                        tint = MaterialTheme.colorScheme.surfaceTint
-                    )
-
-                    Text(
-                        text = "$time'",
-                        color = MaterialTheme.colorScheme.surfaceTint,
-                        modifier = Modifier.padding(start = 5.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -452,7 +386,7 @@ fun ExploreFilters() {
 }
 
 @Composable
-fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit) {
+fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(routineId:Int)->Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -465,15 +399,15 @@ fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit) {
         Column(
             modifier = Modifier.verticalScroll(state)
         ) {
-            RoutinesCarousel(title = stringResource(id = R.string.favourites_title), routineData)
-            RoutinesCarousel(title = stringResource(id = R.string.your_routines_title), routineData)
+            RoutinesCarousel(title = stringResource(id = R.string.favourites_title), routines = routineData, onNavigateToRoutine = onNavigateToRoutine)
+            RoutinesCarousel(title = stringResource(id = R.string.your_routines_title), routines = routineData, onNavigateToRoutine = onNavigateToRoutine)
             Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
 
 @Composable
-fun RoutinesCarousel(title :String, routines :List<RoutineItemData>) {
+fun RoutinesCarousel(title :String, routines :List<RoutineItemData>, onNavigateToRoutine :(routineId:Int)->Unit) {
     Text(
         text = title,
         fontSize = 20.sp,
@@ -487,7 +421,8 @@ fun RoutinesCarousel(title :String, routines :List<RoutineItemData>) {
                 RoutinePreview(
                     imageUrl = routine.imageUrl,
                     title = routine.title,
-                    time = routine.time
+                    time = routine.time,
+                    onNavigateToRoutine = onNavigateToRoutine
                 )
             }
         }
@@ -533,3 +468,81 @@ fun Header(title: String, onNavigateToProfile :(userId:Int)->Unit, isHome :Boole
         }
     }
 }
+
+
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun RoutinePreview(imageUrl: String, title: String, time: Int, leftSide: Boolean = false, onNavigateToRoutine :(routineId:Int)->Unit) {
+    Column(
+        horizontalAlignment = if(leftSide) Alignment.End else Alignment.Start,
+        modifier = Modifier.padding(bottom = 20.dp)
+    ) {
+        Button(
+            shape = RoundedCornerShape(40.dp),
+            onClick = { onNavigateToRoutine(0) },
+            contentPadding = PaddingValues(0.dp),
+            colors =  ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent,
+                contentColor = Color.Transparent),
+        ) {
+            Surface(
+                color = Color(0x00FFFFFF),
+                modifier = Modifier
+                    .background(
+                        color = MaterialTheme.colorScheme.surface,
+                        shape = RoundedCornerShape(40.dp)
+                    )
+                    .padding(8.dp)
+                    .width(140.dp)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .height(150.dp)
+                            .padding(bottom = 5.dp)
+                    ) {
+                        Image(
+                            painter = rememberImagePainter(
+                                data = imageUrl
+                            ),
+                            contentDescription = stringResource(id = R.string.routine_image),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(
+                                    RoundedCornerShape(
+                                        topStart = 30.dp,
+                                        topEnd = 30.dp,
+                                        bottomStart = 0.dp,
+                                        bottomEnd = 0.dp
+                                    )
+                                ),
+                            contentScale = ContentScale.Crop,
+                        )
+                    }
+
+                    Text(
+                        text = title,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+
+                    Row {
+                        Icon(
+                            painter = painterResource(id = R.drawable.time),
+                            contentDescription = stringResource(R.string.time_icon),
+                            tint = MaterialTheme.colorScheme.surfaceTint
+                        )
+
+                        Text(
+                            text = "$time'",
+                            color = MaterialTheme.colorScheme.surfaceTint,
+                            modifier = Modifier.padding(start = 5.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+

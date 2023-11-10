@@ -45,7 +45,14 @@ fun MoveNavHost(
             arguments = listOf(navArgument("id") {type = NavType.IntType}),
             deepLinks = listOf(navDeepLink { uriPattern = "$uri/routine?id={id}" }, navDeepLink { uriPattern = "$secureUri/routine?id={id}" }),
             ) {
-            RoutineScreen()
+            RoutineScreen(onNavigateToExecute = { id -> navController.navigate("routine/$id/execute") })
+        }
+
+        composable(
+            Screen.RoutineExecutionScreen.route,
+            arguments = listOf(navArgument("id") {type = NavType.IntType}),
+        ) {
+            RoutineExecutionScreen()
         }
 
 

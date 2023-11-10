@@ -12,5 +12,7 @@ sealed class Screen(val title: String, val icon: ImageVector, val route: String)
     object HomeScreen: Screen("Home", Icons.Filled.Home, "home")
     object ProfileScreen: Screen("Profile", Icons.Filled.AccountCircle, "profile/{id}")
     object RoutineScreen: Screen("Routine", Icons.Filled.Info, "routine/{id}")
-    object RoutineExecutionScreen: Screen("Routine execution", Icons.Filled.PlayArrow, "routine/{id}/execution")
+    object RoutineExecutionScreen: Screen("Routine execution", Icons.Filled.PlayArrow, "routine/{id}/execute")
+    object RoutineFinishedScreen: Screen("Routine finished", Icons.Filled.PlayArrow, "routine/{id}/finished")
+
 }

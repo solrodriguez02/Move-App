@@ -35,6 +35,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -60,16 +62,17 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
-import com.example.move.R
 import kotlinx.coroutines.delay
 
 
 @Composable
-fun RoutineExecution(isDetailedMode :Boolean = true) {
+fun RoutineExecutionScreen() {
 
-    var cycleIndex by remember { mutableStateOf(0) }
+    val isDetailedMode = false
 
-    var exerciseIndex by remember { mutableStateOf(0) }
+    var cycleIndex by remember { mutableIntStateOf(0) }
+
+    var exerciseIndex by remember { mutableIntStateOf(0) }
 
     var currentExercise by remember { mutableStateOf<Exercise>(routine.cycles[cycleIndex].exercises[exerciseIndex]) }
 
@@ -79,7 +82,7 @@ fun RoutineExecution(isDetailedMode :Boolean = true) {
 
     val initialValue = 1f
 
-    var totalTime by remember { mutableStateOf(currentExercise.secs * 1000L) }
+    var totalTime by remember { mutableLongStateOf(currentExercise.secs * 1000L) }
 
     var size by remember {
         mutableStateOf(IntSize.Zero)

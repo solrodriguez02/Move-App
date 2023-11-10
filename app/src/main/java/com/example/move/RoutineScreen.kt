@@ -70,7 +70,7 @@ import coil.compose.rememberImagePainter
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun RoutineScreen() {
+fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit) {
 
     val config = LocalConfiguration.current
     val orientation = config.orientation
@@ -343,8 +343,6 @@ fun RoutineScreen() {
         }
     }
 
-
-
     Box(
         modifier = Modifier.background(MaterialTheme.colorScheme.inversePrimary)
     ) {
@@ -442,7 +440,8 @@ fun RoutineScreen() {
                             showModeDialog = showModeDialog,
                             onShowMode = { showModeDialog = !showModeDialog },
                             onChangeMode = { detailMode = !detailMode },
-                            onStayMode = {})
+                            onStayMode = {},
+                            onNavigateToExecute = onNavigateToExecute)
                     }
                 }
                 Column(
@@ -489,7 +488,8 @@ fun RoutineScreen() {
                     showModeDialog = showModeDialog,
                     onShowMode = { showModeDialog = !showModeDialog },
                     onChangeMode = { detailMode = !detailMode },
-                    onStayMode = {})
+                    onStayMode = {},
+                    onNavigateToExecute = onNavigateToExecute)
             }
         }
     }
@@ -498,7 +498,7 @@ fun RoutineScreen() {
 
 
 @Composable
-fun RoutineExecutionMenu(detailMode :Boolean, showModeDialog :Boolean, onShowMode :() -> Unit, onChangeMode :() -> Unit, onStayMode :() -> Unit) {
+fun RoutineExecutionMenu(detailMode :Boolean, showModeDialog :Boolean, onShowMode :() -> Unit, onChangeMode :() -> Unit, onStayMode :() -> Unit, onNavigateToExecute :(routineId:Int)->Unit) {
     data class ModeOption (
         val label :String,
         val icon : Painter
@@ -517,7 +517,7 @@ fun RoutineExecutionMenu(detailMode :Boolean, showModeDialog :Boolean, onShowMod
         Spacer(modifier = Modifier.width(30.dp))
 
         Button(
-            onClick = { },
+            onClick = { onNavigateToExecute(0) },
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.surfaceTint,
                 contentColor = Color.Transparent,

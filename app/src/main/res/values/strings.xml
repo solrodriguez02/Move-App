@@ -87,4 +87,13 @@
     <string name="repetitions_upper">X</string>
     <string name="categories_name">Categories:</string>
     <string name="order_by_name">Order by:</string>
+    <string name="profile_information">Information</string>
+    <string name="profile_settings">Settings</string>
+    <string name="p_username">Username</string>
+    <string name="p_first_name">First name</string>
+    <string name="p_last_name">Last name</string>
+    <string name="p_gender">Gender</string>
+    <string name="p_email">Email</string>
+    <string name="check_website_name">Check our website</string>
+    <string name="logout_name">Log out</string>
 </resources>

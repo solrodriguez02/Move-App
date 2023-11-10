@@ -88,4 +88,13 @@
     <string name="repetitions_upper">"X "</string>
     <string name="categories_name">Categorías:</string>
     <string name="order_by_name">Ordenar por:</string>
+    <string name="profile_information">Información</string>
+    <string name="profile_settings">Ajustes</string>
+    <string name="p_username">Nombre de usuario</string>
+    <string name="p_first_name">Nombre</string>
+    <string name="p_last_name">Apellido</string>
+    <string name="p_gender">Género</string>
+    <string name="p_email">Mail</string>
+    <string name="check_website_name">Chequeá nuestro sitio web</string>
+    <string name="logout_name">Cerrar sesión</string>
 </resources>

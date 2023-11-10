@@ -408,7 +408,7 @@ fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit, navController: Nav
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(280.dp)
+                            .height(250.dp)
                             .padding(bottom = 20.dp)
                     ) {
                         Image(

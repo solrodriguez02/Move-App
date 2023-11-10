@@ -98,4 +98,8 @@
     <string name="check_website_name">Chequeá nuestro sitio web</string>
     <string name="logout_name">Cerrar sesión</string>
     <string name="rest_compare">Rest</string>
+    <string name="sign_in_title">Iniciar sesión</string>
+    <string name="sign_in_username">Ingrese su nombre de usuario</string>
+    <string name="sign_in_password">Ingrese su contraseña</string>
+    <string name="p_password">Contraseña</string>
 </resources>

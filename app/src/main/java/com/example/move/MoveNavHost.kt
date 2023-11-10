@@ -67,5 +67,9 @@ fun MoveNavHost(
         ) {
             FinishedRoutineScreen(onNavigateToHome = { navController.navigate("home") { popUpTo("explore") {inclusive = true} } })
         }
+
+        composable(Screen.SignInScreen.route) {
+            SignInScreen(onNavigateToExplore = { navController.navigate("explore") })
+        }
     }
 }

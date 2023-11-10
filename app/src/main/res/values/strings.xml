@@ -97,4 +97,8 @@
     <string name="check_website_name">Check our website</string>
     <string name="logout_name">Log out</string>
     <string name="rest_compare">Rest</string>
+    <string name="sign_in_title">Sign in</string>
+    <string name="sign_in_username">Enter your username</string>
+    <string name="sign_in_password">Enter you password</string>
+    <string name="p_password">Password</string>
 </resources>

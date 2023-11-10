@@ -37,7 +37,7 @@ fun MoveNavHost(
             Screen.ProfileScreen.route,
             arguments = listOf(navArgument("id") {type = NavType.IntType}),
             ) {
-            ProfileScreen()
+            ProfileScreen(navController = navController)
         }
 
         composable(
@@ -45,21 +45,27 @@ fun MoveNavHost(
             arguments = listOf(navArgument("id") {type = NavType.IntType}),
             deepLinks = listOf(navDeepLink { uriPattern = "$uri/routine?id={id}" }, navDeepLink { uriPattern = "$secureUri/routine?id={id}" }),
             ) {
-            RoutineScreen(onNavigateToExecute = { id -> navController.navigate("routine/$id/execute") })
+            RoutineScreen(
+                onNavigateToExecute = { id -> navController.navigate("routine/$id/execute") },
+                navController = navController
+            )
         }
 
         composable(
             Screen.RoutineExecutionScreen.route,
             arguments = listOf(navArgument("id") {type = NavType.IntType}),
         ) {
-            RoutineExecutionScreen(onNavigateToFinish = { id -> navController.navigate("routine/$id/finished") })
+            RoutineExecutionScreen(
+                onNavigateToFinish = { id -> navController.navigate("routine/$id/finished") },
+                navController = navController
+            )
         }
 
         composable(
             Screen.RoutineFinishedScreen.route,
             arguments = listOf(navArgument("id") {type = NavType.IntType}),
         ) {
-            FinishedRoutineScreen()
+            FinishedRoutineScreen(onNavigateToHome = { navController.navigate("home") { popUpTo("explore") {inclusive = true} } })
         }
     }
 }

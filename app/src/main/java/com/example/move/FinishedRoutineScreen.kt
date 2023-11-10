@@ -39,9 +39,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 
 @Composable
-fun FinishedRoutineScreen() {
+fun FinishedRoutineScreen(onNavigateToHome :() -> Unit) {
     val options = getButtonsOptions()
     var score by remember { mutableIntStateOf (0) }
     val rated = false
@@ -60,19 +61,6 @@ fun FinishedRoutineScreen() {
                 .padding(20.dp)
                 .fillMaxSize()
         ) {
-
-            Row {
-                IconButton(
-                    onClick = { /* redirigir a explore */ }
-                ) {
-                    Icon(
-                        Icons.Filled.Close,
-                        contentDescription = null,
-                        modifier = Modifier.padding(top = 10.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
 
             Text(
                 text = stringResource(id = R.string.finish_title),
@@ -160,7 +148,7 @@ fun FinishedRoutineScreen() {
                 .padding(bottom = 10.dp)
         ) {
             Button(
-                onClick = { /* go to home*/ },
+                onClick = { onNavigateToHome() },
                 modifier = Modifier
                     .padding(bottom = 15.dp)
                     .width(250.dp),

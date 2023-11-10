@@ -64,13 +64,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit) {
+fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit, navController: NavController) {
 
     val config = LocalConfiguration.current
     val orientation = config.orientation
@@ -472,7 +473,7 @@ fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit) {
                 )
                 .height(80.dp)
         ) {
-            RoutineMenu(routine.time)
+            RoutineMenu(routine.time, navController)
         }
 
         if(orientation == Configuration.ORIENTATION_PORTRAIT) {
@@ -647,7 +648,7 @@ fun getOptions(): List<PopUpOption> {
 }
 
 @Composable
-fun RoutineMenu(time :Int) {
+fun RoutineMenu(time :Int, navController: NavController) {
 
     val popUpOptions = getOptions()
 
@@ -659,12 +660,14 @@ fun RoutineMenu(time :Int) {
             .fillMaxWidth()
             .padding(vertical = 20.dp, horizontal = 10.dp)
     ) {
-        Icon(
-            Icons.Filled.KeyboardArrowLeft,
-            contentDescription = null,
-            tint = Color.Gray,
-            modifier = Modifier.size(30.dp)
-        )
+        IconButton(onClick = { navController.popBackStack() }) {
+            Icon(
+                Icons.Filled.KeyboardArrowLeft,
+                contentDescription = null,
+                tint = Color.Gray,
+                modifier = Modifier.size(30.dp)
+            )
+        }
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,

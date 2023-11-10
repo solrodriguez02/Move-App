@@ -1,6 +1,5 @@
 package com.example.move
 
-import android.content.IntentSender.OnFinished
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -62,13 +61,14 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import kotlinx.coroutines.delay
 
 
 @Composable
-fun RoutineExecutionScreen(onNavigateToFinish :(routineId:Int)->Unit) {
+fun RoutineExecutionScreen(onNavigateToFinish :(routineId:Int)->Unit, navController: NavController) {
 
     val isDetailedMode = true
 
@@ -119,8 +119,9 @@ fun RoutineExecutionScreen(onNavigateToFinish :(routineId:Int)->Unit) {
         isTimerRunning = false
         ExitPopUp(onCancel = {
             showExitPopUp = false
-            isTimerRunning = true
-        })
+            isTimerRunning = true },
+            navController = navController
+        )
     }
 
     if(!hasOnlyReps) {
@@ -316,7 +317,7 @@ fun RoutineExecutionScreen(onNavigateToFinish :(routineId:Int)->Unit) {
 }
 
 @Composable
-fun ExitPopUp(onCancel: () -> Unit) {
+fun ExitPopUp(onCancel: () -> Unit, navController: NavController) {
     Dialog(
         onDismissRequest = onCancel,
     ) {
@@ -361,7 +362,7 @@ fun ExitPopUp(onCancel: () -> Unit) {
                         )
                     }
                     Button(
-                        onClick = { /* go to explore */ },
+                        onClick = { navController.popBackStack() },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Transparent,
                             contentColor = MaterialTheme.colorScheme.error,

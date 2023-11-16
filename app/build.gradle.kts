@@ -63,7 +63,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10")
     implementation("com.google.accompanist:accompanist-swiperefresh:0.27.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
-    implementation ("androidx.navigation:navigation-compose:2.7.5")
+    implementation("androidx.navigation:navigation-compose:2.7.5")
     testImplementation("junit:junit:4.13.2")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")

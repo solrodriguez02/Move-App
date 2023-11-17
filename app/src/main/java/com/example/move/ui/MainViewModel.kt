@@ -34,8 +34,6 @@ class MainViewModel(
             state.copy(
                 isAuthenticated = false,
                 currentUser = null,
-                currentSport = null,
-                sports = null
             )
         }
     )
@@ -43,41 +41,6 @@ class MainViewModel(
     fun getCurrentUser() = runOnViewModelScope(
         { userRepository.getCurrentUser(uiState.currentUser == null) },
         { state, response -> state.copy(currentUser = response) }
-    )
-
-    fun getSports() = runOnViewModelScope(
-        { sportRepository.getSports(true) },
-        { state, response -> state.copy(sports = response) }
-    )
-
-    fun getSport(sportId: Int) = runOnViewModelScope(
-        { sportRepository.getSport(sportId) },
-        { state, response -> state.copy(currentSport = response) }
-    )
-
-    fun addOrModifySport(sport: Sport) = runOnViewModelScope(
-        {
-            if (sport.id == null)
-                sportRepository.addSport(sport)
-            else
-                sportRepository.modifySport(sport)
-        },
-        { state, response ->
-            state.copy(
-                currentSport = response,
-                sports = null
-            )
-        }
-    )
-
-    fun deleteSport(sportId: Int) = runOnViewModelScope(
-        { sportRepository.deleteSport(sportId) },
-        { state, response ->
-            state.copy(
-                currentSport = null,
-                sports = null
-            )
-        }
     )
 
     private fun <R> runOnViewModelScope(

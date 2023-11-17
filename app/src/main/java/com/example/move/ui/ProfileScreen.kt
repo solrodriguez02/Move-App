@@ -52,6 +52,9 @@ import com.example.move.util.getViewModelFactory
 @Composable
 fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewModel(factory = getViewModelFactory())) {
 
+    viewModel.getCurrentUser()
+    val currentUser = viewModel.uiState.currentUser
+
     var showModeDialog by remember { mutableStateOf(false) }
 
     if(showModeDialog) {
@@ -82,7 +85,7 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "Karolo Dominguez",
+                text = (currentUser?.firstName ?: "" ) + " " + (currentUser?.lastName ?: ""),
                 modifier = Modifier
                     .weight(1f)
                     .padding(top = 16.dp)
@@ -132,7 +135,7 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "@KaroloDominguez",
+                        text = "@" + currentUser?.username,
                         modifier = Modifier
                             .align(Alignment.CenterStart)
                             .padding(top = 42.dp),
@@ -175,7 +178,7 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "Karolo",
+                        text = currentUser?.firstName ?: "",
                         modifier = Modifier
                             .align(Alignment.CenterStart)
                             .padding(top = 42.dp),
@@ -190,7 +193,7 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "Dominguez",
+                        text = currentUser?.lastName ?: "",
                         modifier = Modifier
                             .align(Alignment.CenterStart)
                             .padding(start = 190.dp)
@@ -217,7 +220,7 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "kdomi@gmail.com",
+                        text = currentUser?.email ?: "",
                         modifier = Modifier
                             .align(Alignment.CenterStart)
                             .padding(top = 42.dp),

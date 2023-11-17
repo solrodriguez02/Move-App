@@ -19,3 +19,4 @@ data class NetworkPagedContent<T>(
     @SerializedName("isLastPage")
     var isLastPage: Boolean
 )
+

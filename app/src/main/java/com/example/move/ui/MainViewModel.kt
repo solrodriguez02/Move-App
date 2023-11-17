@@ -10,6 +10,7 @@ import com.example.move.data.model.Error
 import com.example.move.data.model.Review
 import com.example.move.data.model.Sport
 import com.example.move.data.repository.ReviewRepository
+import com.example.move.data.repository.RoutineRepository
 import com.example.move.data.repository.SportRepository
 import com.example.move.data.repository.UserRepository
 import com.example.move.util.SessionManager
@@ -19,7 +20,8 @@ import kotlinx.coroutines.launch
 class MainViewModel(
     sessionManager: SessionManager,
     private val userRepository: UserRepository,
-    private val reviewRepository: ReviewRepository
+    private val reviewRepository: ReviewRepository,
+    private val routineRepository: RoutineRepository,
 ) : ViewModel() {
 
     var uiState by mutableStateOf(MainUiState(isAuthenticated = sessionManager.loadAuthToken() != null))

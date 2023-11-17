@@ -35,9 +35,12 @@ import kotlinx.coroutines.*
 import androidx.compose.material.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.move.util.getViewModelFactory
+
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.move.util.getViewModelFactory
 
@@ -62,8 +65,10 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
 fun NavBar(navController: NavController) {
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 

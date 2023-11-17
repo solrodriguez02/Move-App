@@ -7,7 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.move.data.DataSourceException
 import com.example.move.data.model.Error
+import com.example.move.data.model.Review
 import com.example.move.data.model.Sport
+import com.example.move.data.repository.ReviewRepository
 import com.example.move.data.repository.SportRepository
 import com.example.move.data.repository.UserRepository
 import com.example.move.util.SessionManager
@@ -17,7 +19,8 @@ import kotlinx.coroutines.launch
 class MainViewModel(
     sessionManager: SessionManager,
     private val userRepository: UserRepository,
-    private val sportRepository: SportRepository
+    private val sportRepository: SportRepository,
+    private val reviewRepository: ReviewRepository
 ) : ViewModel() {
 
     var uiState by mutableStateOf(MainUiState(isAuthenticated = sessionManager.loadAuthToken() != null))
@@ -79,6 +82,17 @@ class MainViewModel(
             )
         }
     )
+
+    fun addReview(routineId: Int, review: Review) = runOnViewModelScope(
+        { reviewRepository.addReview(routineId, review) },
+        { state, response -> state.copy() }
+    )
+
+    fun changeMode() {
+        viewModelScope.launch {
+            uiState = uiState.copy(listMode = !uiState.listMode)
+        }
+    }
 
     private fun <R> runOnViewModelScope(
         block: suspend () -> R,

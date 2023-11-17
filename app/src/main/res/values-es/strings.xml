@@ -102,4 +102,8 @@
     <string name="sign_in_username">Ingrese su nombre de usuario</string>
     <string name="sign_in_password">Ingrese su contraseña</string>
     <string name="p_password">Contraseña</string>
+    <string name="enter_to_account">Ingrese a su cuenta</string>
+    <string name="logo_img">Imagen de logo</string>
+    <string name="copy_share_title">Presione el botón para copiar el enlace y compartirlo con amigos!</string>
+    <string name="copy_name">Copiar</string>
 </resources>

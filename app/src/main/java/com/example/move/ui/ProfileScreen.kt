@@ -25,26 +25,44 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.move.R
+import com.example.move.util.getViewModelFactory
 
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun ProfileScreen(navController: NavController) {
-    Column(
+fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewModel(factory = getViewModelFactory())) {
 
-    ) {
+    var showModeDialog by remember { mutableStateOf(false) }
+
+    if(showModeDialog) {
+        ModeDialog(onShowMode = { showModeDialog = !showModeDialog })
+    }
+
+    if(!viewModel.uiState.isAuthenticated) {
+        navController.navigate(Screen.SignInScreen.route)
+    }
+
+    Column {
         Spacer(modifier = Modifier.padding(top = 15.dp))
         IconButton(
             onClick = { navController.popBackStack() },
@@ -220,9 +238,7 @@ fun ProfileScreen(navController: NavController) {
             color = MaterialTheme.colorScheme.primary
         )
         Button(
-            onClick = {
-                /* TODO */
-            },
+            onClick = { showModeDialog = true },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 28.dp),
@@ -231,7 +247,8 @@ fun ProfileScreen(navController: NavController) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(imageVector = Icons.Default.Face, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                val icon: Painter = if(viewModel.uiState.listMode) painterResource(id = R.drawable.list_mode) else painterResource(id = R.drawable.detail_mode)
+                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 Text(
                     text = stringResource(id = R.string.mode_dialog_title),
                     modifier = Modifier.padding(start = 10.dp),
@@ -260,7 +277,7 @@ fun ProfileScreen(navController: NavController) {
             }
         }
         OutlinedButton(
-            onClick = {/* TODO */},
+            onClick = { viewModel.logout() },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp)

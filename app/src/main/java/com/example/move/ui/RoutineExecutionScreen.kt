@@ -61,17 +61,21 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import kotlinx.coroutines.delay
 import com.example.move.R
+import com.example.move.util.getViewModelFactory
 
 
 @Composable
 fun RoutineExecutionScreen(onNavigateToFinish :(routineId:Int)->Unit, navController: NavController) {
 
-    val isDetailedMode = true
+    val viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
+
+    val isDetailedMode = !viewModel.uiState.listMode
 
     var cycleIndex by remember { mutableIntStateOf(0) }
 

@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -46,7 +47,12 @@ import com.example.move.R
 fun FinishedRoutineScreen(onNavigateToHome :() -> Unit) {
     val options = getButtonsOptions()
     var score by remember { mutableIntStateOf (0) }
+    var showShareDialog by remember { mutableStateOf (false) }
     val rated = false
+
+    if(showShareDialog) {
+        ShareDialog(onCancel = { showShareDialog = false }, id = 0)
+    }
 
     Box(
         modifier = Modifier
@@ -71,35 +77,63 @@ fun FinishedRoutineScreen(onNavigateToHome :() -> Unit) {
                 color = MaterialTheme.colorScheme.primary
             )
 
-            for (option in options) {
-                Button(
-                    onClick = { /* pending function */ },
-                    shape = RoundedCornerShape(20.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        contentColor = MaterialTheme.colorScheme.primary
-                    ),
+            Button(
+                onClick = { /* pending function */ },
+                shape = RoundedCornerShape(20.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 6.dp)
+            ) {
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 6.dp)
+                        .padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            option.icon,
-                            contentDescription = null,
-                            modifier = Modifier.padding(end = 15.dp)
-                        )
-                        Text(
-                            text = option.label
-                        )
-                    }
+                    Icon(
+                        options[0].icon,
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = 15.dp)
+                    )
+                    Text(
+                        text = options[0].label
+                    )
                 }
             }
+
+
+            Button(
+                onClick = { showShareDialog = true },
+                shape = RoundedCornerShape(20.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 6.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        options[1].icon,
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = 15.dp)
+                    )
+                    Text(
+                        text = options[1].label
+                    )
+                }
+            }
+
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -149,7 +183,7 @@ fun FinishedRoutineScreen(onNavigateToHome :() -> Unit) {
                 .padding(bottom = 10.dp)
         ) {
             Button(
-                onClick = { onNavigateToHome() },
+                onClick = onNavigateToHome,
                 modifier = Modifier
                     .padding(bottom = 15.dp)
                     .width(250.dp),

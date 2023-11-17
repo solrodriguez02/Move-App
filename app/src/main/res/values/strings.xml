@@ -101,4 +101,8 @@
     <string name="sign_in_username">Enter your username</string>
     <string name="sign_in_password">Enter you password</string>
     <string name="p_password">Password</string>
+    <string name="enter_to_account">Enter to your account</string>
+    <string name="logo_img">Logo image</string>
+    <string name="copy_share_title">Press the button to copy the link and share it with friends!</string>
+    <string name="copy_name">Copy</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.example.move.data.network.api
 
 import android.content.Context
+import com.example.move.BuildConfig
 //import com.example.move.api.BuildConfig
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
@@ -33,7 +34,7 @@ object RetrofitClient {
             .create()
 
         return Retrofit.Builder()
-            //.baseUrl(BuildConfig.API_BASE_URL)
+            .baseUrl(BuildConfig.API_BASE_URL)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .client(okHttpClient)
             .build()
@@ -45,5 +46,9 @@ object RetrofitClient {
 
     fun getApiSportService(context: Context): ApiSportService {
         return getInstance(context).create(ApiSportService::class.java)
+    }
+
+    fun getApiReviewService(context: Context): ApiReviewService {
+        return getInstance(context).create(ApiReviewService::class.java)
     }
 }

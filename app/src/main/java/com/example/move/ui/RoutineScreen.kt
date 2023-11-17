@@ -57,17 +57,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.move.R
+import com.example.move.util.getViewModelFactory
 
 
 @OptIn(ExperimentalCoilApi::class)
@@ -79,7 +85,6 @@ fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit, navController: Nav
 
     var showRate by remember { mutableStateOf(false) }
     var showDescription by remember { mutableStateOf(false) }
-    var detailMode by remember { mutableStateOf(true) }
     var showModeDialog by remember { mutableStateOf(false) }
     var score by remember { mutableIntStateOf (3) }
     var cycleIndex by remember { mutableIntStateOf(0) }
@@ -438,11 +443,8 @@ fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit, navController: Nav
                             .padding(bottom = 20.dp)
                     ) {
                         RoutineExecutionMenu(
-                            detailMode = detailMode,
                             showModeDialog = showModeDialog,
                             onShowMode = { showModeDialog = !showModeDialog },
-                            onChangeMode = { detailMode = !detailMode },
-                            onStayMode = {},
                             onNavigateToExecute = onNavigateToExecute)
                     }
                 }
@@ -486,11 +488,8 @@ fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit, navController: Nav
                     .padding(bottom = 20.dp)
             ) {
                 RoutineExecutionMenu(
-                    detailMode = detailMode,
                     showModeDialog = showModeDialog,
                     onShowMode = { showModeDialog = !showModeDialog },
-                    onChangeMode = { detailMode = !detailMode },
-                    onStayMode = {},
                     onNavigateToExecute = onNavigateToExecute)
             }
         }
@@ -500,18 +499,11 @@ fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit, navController: Nav
 
 
 @Composable
-fun RoutineExecutionMenu(detailMode :Boolean, showModeDialog :Boolean, onShowMode :() -> Unit, onChangeMode :() -> Unit, onStayMode :() -> Unit, onNavigateToExecute :(routineId:Int)->Unit) {
-    data class ModeOption (
-        val label :String,
-        val icon : Painter
-    )
+fun RoutineExecutionMenu(showModeDialog :Boolean, onShowMode :() -> Unit, onNavigateToExecute :(routineId:Int)->Unit) {
 
-    val modeIcon = if(detailMode) painterResource(id = R.drawable.detail_mode) else painterResource(id = R.drawable.list_mode)
+    val viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
+    val modeIcon: Painter = if(viewModel.uiState.listMode) painterResource(id = R.drawable.list_mode) else painterResource(id = R.drawable.detail_mode)
 
-    val modeOptions :List<ModeOption> = listOf(
-        ModeOption(stringResource(id = R.string.detail_mode), painterResource(id = R.drawable.detail_mode)),
-        ModeOption(stringResource(id = R.string.list_mode), painterResource(id = R.drawable.list_mode)),
-    )
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(40.dp)
@@ -560,76 +552,8 @@ fun RoutineExecutionMenu(detailMode :Boolean, showModeDialog :Boolean, onShowMod
         }
     }
 
-    /////////////////// Mode Dialog ///////////////////////
     if (showModeDialog) {
-        Dialog(
-            onDismissRequest = onShowMode,
-        ) {
-            Surface(
-                modifier = Modifier
-                    .wrapContentWidth()
-                    .wrapContentHeight()
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                shape = MaterialTheme.shapes.large,
-                tonalElevation = AlertDialogDefaults.TonalElevation,
-                color = MaterialTheme.colorScheme.inversePrimary
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.mode_dialog_title),
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Row {
-                        for (option in modeOptions) {
-                            val modeMatches =
-                                detailMode && option.label == stringResource(id = R.string.detail_mode) || !detailMode && option.label == stringResource(
-                                    id = R.string.list_mode
-                                )
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Surface(
-                                    shape = RoundedCornerShape(20.dp),
-                                    color = if (modeMatches) MaterialTheme.colorScheme.secondary else Color.Transparent,
-                                    border = if (modeMatches) BorderStroke(
-                                        1.dp,
-                                        MaterialTheme.colorScheme.secondary
-                                    ) else BorderStroke(
-                                        1.dp,
-                                        MaterialTheme.colorScheme.secondary
-                                    ),
-                                    modifier = Modifier
-                                        .height(100.dp)
-                                        .width(100.dp)
-                                        .padding(10.dp)
-                                ) {
-                                    IconButton(
-                                        onClick = if(modeMatches) onStayMode else onChangeMode
-                                    ) {
-                                        Icon(
-                                            painter = option.icon,
-                                            contentDescription = option.label,
-                                            modifier = Modifier.padding(25.dp),
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                }
-                                Text(
-                                    text = option.label,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        ModeDialog(onShowMode)
     }
 }
 
@@ -644,7 +568,7 @@ fun getOptions(): List<PopUpOption> {
 
     return listOf(
         PopUpOption(stringResource(id = R.string.add_favourite), Icons.Default.FavoriteBorder),
-        PopUpOption(stringResource(id = R.string.share), Icons.Default.Share),
+        PopUpOption(stringResource(id = R.string.share), Icons.Default.Share)
     )
 }
 
@@ -652,8 +576,12 @@ fun getOptions(): List<PopUpOption> {
 fun RoutineMenu(time :Int, navController: NavController) {
 
     val popUpOptions = getOptions()
-
     var showPopUp by remember { mutableStateOf(false) }
+    var showShareDialog by remember { mutableStateOf(false) }
+
+    if(showShareDialog) {
+        ShareDialog(onCancel = { showShareDialog = false }, id = 0)
+    }
 
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -711,19 +639,29 @@ fun RoutineMenu(time :Int, navController: NavController) {
             onDismissRequest = { showPopUp = false },
             modifier = Modifier.padding(horizontal = 10.dp)
         ) {
-            for (option in popUpOptions) {
-                DropdownMenuItem(
-                    text = { Text(text = option.label, color = MaterialTheme.colorScheme.primary) },
-                    onClick = { /* Handle edit! */ },
-                    leadingIcon = {
-                        Icon(
-                            option.icon,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                )
-            }
+            DropdownMenuItem(
+                text = { Text(text = popUpOptions[0].label, color = MaterialTheme.colorScheme.primary) },
+                onClick = {  },
+                leadingIcon = {
+                    Icon(
+                        popUpOptions[0].icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            )
+            DropdownMenuItem(
+                text = { Text(text = popUpOptions[1].label, color = MaterialTheme.colorScheme.primary) },
+                onClick = { showShareDialog = true },
+                leadingIcon = {
+                    Icon(
+                        popUpOptions[1].icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            )
+
         }
     }
 }

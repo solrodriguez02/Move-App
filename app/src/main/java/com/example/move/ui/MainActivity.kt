@@ -38,7 +38,8 @@ import androidx.compose.material3.Scaffold
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.move.util.getViewModelFactory
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -48,6 +49,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             MoveTheme(dynamicColor = false) {
                 val navController = rememberNavController()
+                val viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
+                val uiState = viewModel.uiState
+                // caso del Deep Link
                 Scaffold(
                     bottomBar = { NavBar(navController = navController) }
                 ) {
@@ -58,10 +62,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
 @Composable
 fun NavBar(navController: NavController) {
-
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 

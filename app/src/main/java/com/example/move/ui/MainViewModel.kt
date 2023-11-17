@@ -19,7 +19,6 @@ import kotlinx.coroutines.launch
 class MainViewModel(
     sessionManager: SessionManager,
     private val userRepository: UserRepository,
-    private val sportRepository: SportRepository,
     private val reviewRepository: ReviewRepository
 ) : ViewModel() {
 
@@ -45,6 +44,10 @@ class MainViewModel(
         { userRepository.getCurrentUser(uiState.currentUser == null) },
         { state, response -> state.copy(currentUser = response) }
     )
+
+    fun changeMode() {
+        uiState = uiState.copy(listMode = !uiState.listMode)
+    }
 
     private fun <R> runOnViewModelScope(
         block: suspend () -> R,

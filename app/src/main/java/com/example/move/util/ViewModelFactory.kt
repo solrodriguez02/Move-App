@@ -13,7 +13,6 @@ import com.example.move.ui.MainViewModel
 class ViewModelFactory constructor(
     private val sessionManager: SessionManager,
     private val userRepository: UserRepository,
-    private val sportRepository: SportRepository,
     private val reviewRepository: ReviewRepository,
     owner: SavedStateRegistryOwner,
     defaultArgs: Bundle? = null
@@ -26,7 +25,7 @@ class ViewModelFactory constructor(
     ) = with(modelClass) {
         when {
             isAssignableFrom(MainViewModel::class.java) ->
-                MainViewModel(sessionManager, userRepository, sportRepository, reviewRepository)
+                MainViewModel(sessionManager, userRepository, reviewRepository)
 
             else ->
                 throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

@@ -40,11 +40,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.move.R
+import com.example.move.util.getViewModelFactory
 
 @Composable
-fun FinishedRoutineScreen(onNavigateToHome :() -> Unit) {
+fun FinishedRoutineScreen(onNavigateToHome :() -> Unit, viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())) {
     val options = getButtonsOptions()
     var score by remember { mutableIntStateOf (0) }
     var showShareDialog by remember { mutableStateOf (false) }
@@ -78,7 +80,7 @@ fun FinishedRoutineScreen(onNavigateToHome :() -> Unit) {
             )
 
             Button(
-                onClick = { /* pending function */ },
+                onClick = { viewModel.addRoutineToFavourites(24) },
                 shape = RoundedCornerShape(20.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.secondary,

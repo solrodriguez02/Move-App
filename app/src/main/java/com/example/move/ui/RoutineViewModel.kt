@@ -26,16 +26,16 @@ class RoutineViewModel(
 
         fun getRoutine(routineId: Int) = runOnViewModelScope(
             { routineRepository.getRoutine(routineId)},
-            {state, response -> state.copy(currentRoutine = response, )}
+            {state, response -> state.copy(currentRoutine = response )}
         )
 
         fun addRoutineToFavourites(routineId: Int) = runOnViewModelScope(
-            { routineRepository.addRoutineToFavourites()},
+            { routineRepository.addRoutineToFavourites(routineId)},
             {state, response -> state.copy(isCurrentRoutineFav = response)}
         )
 
         fun removeRoutineToFavourites(routineId: Int) = runOnViewModelScope(
-            { routineRepository.removeRoutineFromFavourites()},
+            { routineRepository.removeRoutineFromFavourites(routineId)},
             {state, response -> state.copy(isCurrentRoutineFav = response)}
         )
 

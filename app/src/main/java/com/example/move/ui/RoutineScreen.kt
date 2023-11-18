@@ -73,12 +73,17 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.move.R
+import com.example.move.data.model.Review
 import com.example.move.util.getViewModelFactory
 
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit, navController: NavController) {
+fun RoutineScreen(
+    onNavigateToExecute :(routineId:Int)->Unit,
+    navController: NavController,
+    mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory())
+    ) {
 
     val config = LocalConfiguration.current
     val orientation = config.orientation
@@ -86,8 +91,9 @@ fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit, navController: Nav
     var showRate by remember { mutableStateOf(false) }
     var showDescription by remember { mutableStateOf(false) }
     var showModeDialog by remember { mutableStateOf(false) }
-    var score by remember { mutableIntStateOf (3) }
+    var score by remember { mutableIntStateOf (0) }
     var cycleIndex by remember { mutableIntStateOf(0) }
+    var isRated by remember { mutableStateOf(false) }
 
     @Composable
     fun RoutineDetail() {
@@ -130,7 +136,7 @@ fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit, navController: Nav
                         .weight(1f)
                 )
                 Text(
-                    text = routine.score.toString(),
+                    text = routine.score.toString() + stringResource(id = R.string.max_score),
                     color = MaterialTheme.colorScheme.primary
                 )
                 Icon(
@@ -199,21 +205,62 @@ fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit, navController: Nav
             }
 
             if (showRate) {
-                Row(
-                    modifier = Modifier.padding(top = 10.dp)
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = MaterialTheme.colorScheme.inversePrimary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp)
+                        .height(50.dp)
                 ) {
-                    for (i in 1..5) {
-                        IconButton(
-                            onClick = { score = i },
-                            modifier = Modifier.size(30.dp)
-                        ) {
-                            Icon(
-                                painter = if (i <= score) painterResource(id = R.drawable.star) else painterResource(
-                                    id = R.drawable.empty_star
-                                ),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .padding(horizontal = 10.dp)
+                            .fillMaxSize()
+                    ) {
+                        if (isRated) {
+                            Text(
+                                text = stringResource(id = R.string.Thanks_rating),
+                                color = MaterialTheme.colorScheme.primary
                             )
+                        } else {
+                            for (i in 1..5) {
+                                IconButton(
+                                    onClick = {
+                                        score = i
+                                    },
+                                    modifier = Modifier.size(30.dp)
+                                ) {
+                                    Icon(
+                                        painter = if (i <= score) painterResource(id = R.drawable.star) else painterResource(
+                                            id = R.drawable.empty_star
+                                        ),
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                            if(score > 0) {
+                                Button(
+                                    contentPadding = PaddingValues(0.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color.Transparent,
+                                        contentColor = MaterialTheme.colorScheme.surfaceTint,
+                                    ),
+                                    onClick = {
+                                        mainViewModel.makeReview(routine.id, Review(score))
+                                        isRated = true
+                                    },
+                                    modifier = Modifier.padding(start = 15.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(id = R.string.send_name),
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp
+                                    )
+                                }
+                            }
                         }
                     }
                 }

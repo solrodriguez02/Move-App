@@ -107,4 +107,7 @@
     <string name="copy_name">Copy</string>
     <string name="logout_warning_title">Are you sure you want to log out?</string>
     <string name="logout_warning_message">If you do so, you session will be closed.</string>
+    <string name="Thanks_rating">Thank you for rating this routine!</string>
+    <string name="send_name">Send</string>
+    <string name="max_score">" of 5"</string>
 </resources>

@@ -108,4 +108,7 @@
     <string name="copy_name">Copiar</string>
     <string name="logout_warning_title">Está seguro que quiere cerrar su sesión?</string>
     <string name="logout_warning_message">Si lo hace, su sesión se cerrará.</string>
+    <string name="Thanks_rating">Gracias por calificar esta rutina!</string>
+    <string name="send_name">Enviar</string>
+    <string name="max_score">" de 5"</string>
 </resources>

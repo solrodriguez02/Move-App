@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,15 +41,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.move.R
+import com.example.move.data.model.Review
+import com.example.move.util.getViewModelFactory
 
 @Composable
-fun FinishedRoutineScreen(onNavigateToHome :() -> Unit) {
+fun FinishedRoutineScreen(
+    onNavigateToHome :() -> Unit,
+    mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory())
+) {
     val options = getButtonsOptions()
     var score by remember { mutableIntStateOf (0) }
     var showShareDialog by remember { mutableStateOf (false) }
-    val rated = false
+    var rated by remember { mutableStateOf(false) }
 
     if(showShareDialog) {
         ShareDialog(onCancel = { showShareDialog = false }, id = 0)
@@ -143,7 +150,7 @@ fun FinishedRoutineScreen(onNavigateToHome :() -> Unit) {
             ) {
                 if (rated) {
                     Text(
-                        text = stringResource(id = R.string.already_scored),
+                        text = stringResource(id = R.string.Thanks_rating),
                         fontSize = 18.sp,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -170,6 +177,26 @@ fun FinishedRoutineScreen(onNavigateToHome :() -> Unit) {
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
+                        }
+                    }
+                    if(score > 0) {
+                        Button(
+                            contentPadding = PaddingValues(0.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Transparent,
+                                contentColor = MaterialTheme.colorScheme.surfaceTint,
+                            ),
+                            onClick = {
+                                mainViewModel.makeReview(routine.id, Review(score))
+                                rated = true
+                            },
+                            modifier = Modifier.padding(start = 15.dp)
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.send_name),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
                         }
                     }
                 }

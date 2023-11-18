@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.move.data.DataSourceException
 import com.example.move.data.model.Error
+import com.example.move.data.model.Review
 import com.example.move.data.repository.ReviewRepository
 import com.example.move.data.repository.RoutineRepository
 import com.example.move.data.repository.UserRepository
@@ -44,6 +45,11 @@ class MainViewModel(
     fun getCurrentUser() = runOnViewModelScope(
         { userRepository.getCurrentUser(uiState.currentUser == null) },
         { state, response -> state.copy(currentUser = response) }
+    )
+
+    fun makeReview(routineId :Int, review: Review) = runOnViewModelScope(
+        { reviewRepository.addReview(routineId, review)},
+        { state, response -> state }
     )
 
     fun changeMode() {

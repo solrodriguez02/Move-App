@@ -1,6 +1,5 @@
 package com.example.move
 
-import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -32,12 +31,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,7 +48,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -79,30 +77,97 @@ val routineData:  List<RoutineItemData> = listOf(
 )
 
 ///////////// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+@Preview(device = Devices.PHONE)
+@Composable
+fun phonePrev() {
+    var navController = rememberNavController()
+    ExploreScreen(
+        onNavigateToProfile = { id -> navController.navigate("profile/$id") },
+        onNavigateToRoutine = { id -> navController.navigate("routine/$id") },
+        windowSizeClass = WindowWidthSizeClass.Compact
+    )
+}
+
+@Preview(device = Devices.TABLET)
+@Composable
+fun tabletPrev() {
+    var navController = rememberNavController()
+    ExploreScreen(
+        onNavigateToProfile = { id -> navController.navigate("profile/$id") },
+        onNavigateToRoutine = { id -> navController.navigate("routine/$id") },
+        windowSizeClass = WindowWidthSizeClass.Expanded
+    )
+}
+*/
+private fun isCompact( windowSizeClass: WindowWidthSizeClass) : Boolean{
+    return windowSizeClass == WindowWidthSizeClass.Compact
+}
+
 
 
 @Composable
-fun ExploreScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(routineId:Int)->Unit) {
+fun ExploreScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(routineId:Int)->Unit,
+                  windowSizeClass: WindowWidthSizeClass
+) {
 
     val config = LocalConfiguration.current
-    val orientation = config.orientation
+    //val orientation = config.orientation
+
+    @Composable
+    fun headerAndFilters() {
+        Box(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column {
+                Header(
+                    title = stringResource(R.string.explore_name),
+                    onNavigateToProfile = onNavigateToProfile
+                )
+
+                /////////////////// Filters ///////////////////////
+
+                ExploreFilters(windowSizeClass)
+            }
+        }
+    }
+
 
     Box(modifier = Modifier.background(color = MaterialTheme.colorScheme.inversePrimary)) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            if ( isCompact(windowSizeClass))  //isCompact(windowSizeClass)
+                Spacer(modifier = Modifier.height(130.dp))
+            else {
+                headerAndFilters()
+            }
 
-            Spacer(modifier = Modifier.height(130.dp))
 
             /////////////////// Explore Routines ///////////////////////
 
             if (routineData.isNotEmpty()) {
 
-                val isVertical = orientation == Configuration.ORIENTATION_PORTRAIT
+                //val isVertical = orientation == Configuration.ORIENTATION_PORTRAIT
+                //if ( windowSize == WindowWidthSizeClass.Compact )
+                val isVertical = windowSizeClass == WindowWidthSizeClass.Compact
+                val columns = when (windowSizeClass) {
+                    WindowWidthSizeClass.Compact -> 2
+                    WindowWidthSizeClass.Medium -> 6
+                    WindowWidthSizeClass.Expanded -> 6
+                    else -> 1
+                }
+                var rows = when (windowSizeClass) {
+                    WindowWidthSizeClass.Compact -> 3
+                    WindowWidthSizeClass.Medium -> 4
+                    WindowWidthSizeClass.Expanded -> 2
+                    else -> 1
+                }
+                var distanceRoutines = if (isCompact(windowSizeClass)) 20.dp else 25.dp
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(if(isVertical) 2 else 4),
-                    horizontalArrangement = Arrangement.spacedBy(20.dp),
-                    modifier = Modifier.padding(start = if(isVertical) 0.dp else 20.dp)
+                    columns = GridCells.Fixed(columns),
+                    horizontalArrangement = Arrangement.spacedBy(distanceRoutines),
+                    modifier = Modifier.padding(start = if (isCompact(windowSizeClass)) 5.dp else 20.dp)
                 ) {
 
                     for((index, routine) in routineData.withIndex()) {
@@ -111,12 +176,12 @@ fun ExploreScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :
                                 imageUrl = routine.imageUrl,
                                 title = routine.title,
                                 time = routine.time,
-                                leftSide = if (isVertical) index % 2 == 0 else false,
+                                leftSide = (index % columns) == 0, //if (isVertical) index % columns == 0 else false,
                                 onNavigateToRoutine = onNavigateToRoutine
                             )
                         }
                     }
-                    for(i in 1..if(isVertical) 1 else 3) {
+                    for(i in 1..rows) {
                         item {
                             /* empty item for spacer in odd routine count */
                         }
@@ -148,27 +213,17 @@ fun ExploreScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :
         }
 
         /////////////////// Header ///////////////////////
+        if ( isCompact(windowSizeClass))
+            headerAndFilters()
 
-        Box(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column {
-                Header(title = stringResource(R.string.explore_name), onNavigateToProfile = onNavigateToProfile)
-
-                /////////////////// Filters ///////////////////////
-
-                ExploreFilters()
-            }
-        }
     }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ExploreFilters() {
+fun ExploreFilters( windowSizeClass: WindowWidthSizeClass ) {
 
     val config = LocalConfiguration.current
-    val orientation = config.orientation
 
     data class SelectedFilter (
         val category :String,
@@ -210,7 +265,8 @@ fun ExploreFilters() {
 
     val filtersSelected = remember { mutableStateListOf<SelectedFilter>() }
 
-    var showFilters by remember { mutableStateOf(false) }
+    var showFilters by remember { mutableStateOf( !isCompact(windowSizeClass) ) }
+    var isCompact = isCompact(windowSizeClass)
 
     @Composable
     fun Filter(category :String, isExpanded :Boolean, onExpanded :()->Unit, options :List<String>) {
@@ -262,74 +318,129 @@ fun ExploreFilters() {
         modifier = Modifier
             .background(MaterialTheme.colorScheme.inversePrimary)
             .fillMaxWidth()
+            .padding(bottom = if (isCompact) 0.dp else 10.dp)
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 20.dp)
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = if(isCompact) 0.dp else 10.dp)
             ) {
                 Text(
                     text = stringResource(id = R.string.filters_title),
                     color = MaterialTheme.colorScheme.primary
                 )
-                IconButton(onClick = { showFilters = !showFilters }) {
-                    Icon(
-                        if (showFilters) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
+                if ( isCompact(windowSizeClass))
+                    IconButton(onClick = { showFilters = !showFilters }) {
+                        Icon(
+                            if (showFilters) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
             }
+
 
             if (showFilters) {
 
-                LazyVerticalGrid(columns = GridCells.Fixed(if(orientation == Configuration.ORIENTATION_PORTRAIT) 2 else 4), horizontalArrangement = Arrangement.spacedBy(0.dp)) {
-                    item {
-                        Text(
-                            text = stringResource(id = R.string.categories_name),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    for (i in 1..if(orientation == Configuration.ORIENTATION_PORTRAIT) 1 else 3) {
-                        item {/* Empty item */}
-                    }
-                    item {
-                        Filter(category = stringResource(id = R.string.difficulty_filter), isExpanded = difficultyExpanded, onExpanded = {difficultyExpanded = !difficultyExpanded}, options = difficultyOptions)
-                    }
-                    item {
-                        Filter(category = stringResource(id = R.string.elements_filter), isExpanded = elementsExpanded, onExpanded = {elementsExpanded = !elementsExpanded}, options = elementsOptions)
-                    }
-                    item {
-                        Filter(category = stringResource(id = R.string.approach_filter), isExpanded = approachExpanded, onExpanded = {approachExpanded = !approachExpanded}, options = approachOptions)
-                    }
-                    item {
-                        Filter(category = stringResource(id = R.string.space_filter), isExpanded = spaceExpanded, onExpanded = {spaceExpanded = !spaceExpanded}, options = spaceOptions)
-                    }
-                    item {
-                        Text(
-                            text = stringResource(id = R.string.order_by_name),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    for (i in 1..if(orientation == Configuration.ORIENTATION_PORTRAIT) 1 else 3) {
-                        item {/* Empty item */}
-                    }
-                    item {
-                        Filter(category = stringResource(id = R.string.score_filter), isExpanded = scoreExpanded, onExpanded = {scoreExpanded = !scoreExpanded}, options = scoreOptions)
-                    }
-                    item {
-                        Filter(category = stringResource(id = R.string.date_filter), isExpanded = dateExpanded, onExpanded = {dateExpanded = !dateExpanded}, options = dateOptions)
-                    }
-                    if(filtersSelected.isEmpty()) {
+                @Composable
+                fun loadCategories(cols: Int){
+                    Text(
+                        text = stringResource(id = R.string.categories_name),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    LazyVerticalGrid(columns = GridCells.Fixed(cols), horizontalArrangement = Arrangement.spacedBy(0.dp)) {
                         item {
-                            Spacer(modifier = Modifier.height(20.dp))
+                            Filter(
+                                category = stringResource(id = R.string.difficulty_filter),
+                                isExpanded = difficultyExpanded,
+                                onExpanded = { difficultyExpanded = !difficultyExpanded },
+                                options = difficultyOptions
+                            )
+                        }
+                        item {
+                            Filter(
+                                category = stringResource(id = R.string.elements_filter),
+                                isExpanded = elementsExpanded,
+                                onExpanded = { elementsExpanded = !elementsExpanded },
+                                options = elementsOptions
+                            )
+                        }
+                        item {
+                            Filter(
+                                category = stringResource(id = R.string.approach_filter),
+                                isExpanded = approachExpanded,
+                                onExpanded = { approachExpanded = !approachExpanded },
+                                options = approachOptions
+                            )
+                        }
+                        item {
+                            Filter(
+                                category = stringResource(id = R.string.space_filter),
+                                isExpanded = spaceExpanded,
+                                onExpanded = { spaceExpanded = !spaceExpanded },
+                                options = spaceOptions
+                            )
+                        }
+                    }
+                }
+                @Composable
+                fun loadOrder(cols: Int){
+                    Text(
+                        text = stringResource(id = R.string.order_by_name),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    LazyVerticalGrid(columns = GridCells.Fixed(cols), horizontalArrangement = Arrangement.spacedBy(0.dp)) {
+                        item {
+                            Filter(
+                                category = stringResource(id = R.string.score_filter),
+                                isExpanded = scoreExpanded,
+                                onExpanded = { scoreExpanded = !scoreExpanded },
+                                options = scoreOptions
+                            )
+                        }
+                        item {
+                            Filter(
+                                category = stringResource(id = R.string.date_filter),
+                                isExpanded = dateExpanded,
+                                onExpanded = { dateExpanded = !dateExpanded },
+                                options = dateOptions
+                            )
+                        }
+
+                        /////////////////// Selected Filters ///////////////////////
+
+                        if (filtersSelected.isEmpty()) {
+                            item {
+                                Spacer(modifier = Modifier.height(20.dp))
+                            }
+                        }
+                    }
+                }
+
+                if (!isCompact) {// & height compact
+                    Box {
+                        Row {
+                            Column(
+                                modifier = Modifier
+                                    .width(400.dp)
+                                    .padding(end = 15.dp)
+                            ) {
+                                loadCategories(cols = 2)
+                            }
+                            Column(modifier = Modifier
+                                .width(400.dp)
+                                .padding(end = 5.dp)) {
+                                loadOrder(cols = 2)
+                            }
                         }
                     }
 
+                } else {
+                    loadCategories(cols = 2)
+                    loadOrder(cols = 2)
                 }
-
-                /////////////////// Selected Filters ///////////////////////
 
                 if (filtersSelected.isNotEmpty()) {
                     Column(
@@ -384,6 +495,8 @@ fun ExploreFilters() {
         }
     }
 }
+
+
 
 @Composable
 fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(routineId:Int)->Unit) {
@@ -493,7 +606,7 @@ fun RoutinePreview(imageUrl: String, title: String, time: Int, leftSide: Boolean
                         shape = RoundedCornerShape(40.dp)
                     )
                     .padding(8.dp)
-                    .width(140.dp)
+                    .width(1400.dp)
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally

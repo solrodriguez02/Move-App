@@ -1,5 +1,7 @@
 package com.example.move
 
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -9,22 +11,26 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 
-
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun MoveNavHost(
     navController: NavHostController = rememberNavController(),
+    windowSizeClass: WindowSizeClass,
 ) {
     val uri = "http://www.move.com"
     val secureUri = "https://www.move.com"
 
+
     NavHost(
         navController = navController, 
         startDestination = Screen.ExploreScreen.route
+
     ) {
         composable(Screen.ExploreScreen.route) {
             ExploreScreen(
                 onNavigateToProfile = { id -> navController.navigate("profile/$id") },
-                onNavigateToRoutine = { id -> navController.navigate("routine/$id") }
+                onNavigateToRoutine = { id -> navController.navigate("routine/$id") },
+                windowSizeClass = windowSizeClass.widthSizeClass
                 )
         }
         composable(Screen.HomeScreen.route) {

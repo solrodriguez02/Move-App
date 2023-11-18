@@ -131,10 +131,13 @@ fun RoutineExecutionScreen(
 
     if (showExitPopUp) {
         isTimerRunning = false
-        ExitPopUp(onCancel = {
+        WarningDialog(
+            onCancel = {
             showExitPopUp = false
             isTimerRunning = true },
-            navController = navController
+            onDo = { navController.popBackStack() },
+            title = stringResource(id = R.string.quit_routine_title),
+            message = stringResource(id = R.string.quit_routine_label)
         )
     }
 
@@ -327,69 +330,6 @@ fun RoutineExecutionScreen(
             }
         }
 
-    }
-}
-
-@Composable
-fun ExitPopUp(onCancel: () -> Unit, navController: NavController) {
-    Dialog(
-        onDismissRequest = onCancel,
-    ) {
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            color = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 30.dp, vertical = 20.dp)
-            ) {
-                Text(
-                    text = stringResource(id = R.string.quit_routine_title),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = stringResource(id = R.string.quit_routine_label),
-                    modifier = Modifier.padding(vertical = 10.dp),
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 30.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Button(
-                        onClick = onCancel,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = MaterialTheme.colorScheme.primary,
-                        ),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.cancel_name)
-                        )
-                    }
-                    Button(
-                        onClick = { navController.popBackStack() },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = MaterialTheme.colorScheme.error,
-                        ),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.quit_name)
-                        )
-                    }
-                }
-            }
-        }
     }
 }
 

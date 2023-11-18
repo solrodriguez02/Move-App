@@ -64,9 +64,17 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
     val currentUser = viewModel.uiState.currentUser
 
     var showModeDialog by remember { mutableStateOf(false) }
+    var showWarningDialog by remember { mutableStateOf(false) }
 
     if(showModeDialog) {
         ModeDialog(onShowMode = { showModeDialog = !showModeDialog })
+    }
+
+    if(showWarningDialog) {
+        WarningDialog(onCancel = { showWarningDialog = false },
+            onDo = { viewModel.logout() },
+            title = stringResource(id = R.string.logout_warning_title),
+            message = stringResource(id = R.string.logout_warning_message))
     }
 
     if(!viewModel.uiState.isAuthenticated) {
@@ -288,7 +296,7 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
             }
         }
         OutlinedButton(
-            onClick = { viewModel.logout() },
+            onClick = { showWarningDialog = true },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp)

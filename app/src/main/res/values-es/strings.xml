@@ -106,4 +106,6 @@
     <string name="logo_img">Imagen de logo</string>
     <string name="copy_share_title">Presione el botón para copiar el enlace y compartirlo con amigos!</string>
     <string name="copy_name">Copiar</string>
+    <string name="logout_warning_title">Está seguro que quiere cerrar su sesión?</string>
+    <string name="logout_warning_message">Si lo hace, su sesión se cerrará.</string>
 </resources>

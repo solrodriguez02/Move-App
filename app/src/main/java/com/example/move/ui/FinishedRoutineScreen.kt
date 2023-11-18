@@ -50,7 +50,8 @@ import com.example.move.util.getViewModelFactory
 @Composable
 fun FinishedRoutineScreen(
     onNavigateToHome :() -> Unit,
-    mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory())
+    mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory()),
+    viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
 ) {
     val options = getButtonsOptions()
     var score by remember { mutableIntStateOf (0) }
@@ -85,7 +86,7 @@ fun FinishedRoutineScreen(
             )
 
             Button(
-                onClick = { /* pending function */ },
+                onClick = { viewModel.addRoutineToFavourites(24) },
                 shape = RoundedCornerShape(20.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.secondary,

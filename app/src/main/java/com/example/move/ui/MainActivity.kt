@@ -35,6 +35,8 @@ import kotlinx.coroutines.*
 import androidx.compose.material.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -45,20 +47,21 @@ import com.example.move.util.getViewModelFactory
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen().setKeepOnScreenCondition{false}
         setContent {
             MoveTheme(dynamicColor = false) {
                 val navController = rememberNavController()
+                var windowSizeClass = calculateWindowSizeClass(this) // seguro q no se altera
                 val viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
                 val uiState = viewModel.uiState
                 // caso del Deep Link
                 Scaffold(
                     bottomBar = { NavBar(navController = navController) }
                 ) {
-                    MoveNavHost(navController = navController)
+                    MoveNavHost(navController = navController, windowSizeClass = windowSizeClass )
                 }
             }
         }

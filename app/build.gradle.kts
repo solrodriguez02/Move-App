@@ -31,7 +31,7 @@ android {
             // del emulador. La forma de salir del emulador para acceder al localhost
             // de host del mismo es usando la IP 10.0.2.2.
             buildConfigField("String", "API_BASE_URL",
-                "\"http://192.168.0.15:8080/api/\"")
+                "\"http://10.0.2.2:8080/api/\"")
         }
         debug {
             debug {
@@ -39,7 +39,7 @@ android {
                 // del emulador. La forma de salir del emulador para acceder al localhost
                 // de host del mismo es usando la IP 10.0.2.2.
                 buildConfigField("String", "API_BASE_URL",
-                    "\"http://192.168.0.15:8080/api/\"")
+                    "\"http://10.0.2.2:8080/api/\"")
             }
         }
     }
@@ -79,6 +79,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation("androidx.navigation:navigation-compose:2.7.5")
     implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation("androidx.compose.material3:material3-window-size-class")
     testImplementation("junit:junit:4.13.2")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")

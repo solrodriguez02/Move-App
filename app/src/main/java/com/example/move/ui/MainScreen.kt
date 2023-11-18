@@ -38,6 +38,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -83,11 +86,22 @@ val routineData:  List<RoutineItemData> = listOf(
 
 ///////////// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+private fun isCompact( windowSizeClass: WindowWidthSizeClass) : Boolean{
+    return windowSizeClass == WindowWidthSizeClass.Compact
+}
 
+private fun isPhone( windowSizeClass: WindowSizeClass) :Boolean {
+    return windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact || windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact
+}
+
+private fun isHorizontalTablet( windowSizeClass: WindowSizeClass) : Boolean {
+    return windowSizeClass.widthSizeClass==WindowWidthSizeClass.Expanded && windowSizeClass.heightSizeClass>= WindowHeightSizeClass.Medium
+}
 @Composable
 fun ExploreScreen(
     onNavigateToProfile :(userId:Int)->Unit,
     onNavigateToRoutine :(routineId:Int)->Unit,
+    windowSizeClass: WindowSizeClass,
     viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
 ) {
 
@@ -101,20 +115,48 @@ fun ExploreScreen(
     val routineData = viewModel.uiState.routinePreviews
 
     val config = LocalConfiguration.current
-    val orientation = config.orientation
+    val widthSizeClass = windowSizeClass.widthSizeClass
+    @Composable
+    fun headerAndFilters() {
+        Box(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column {
+                Header(
+                    title = stringResource(R.string.explore_name),
+                    onNavigateToProfile = onNavigateToProfile
+                )
+
+                /////////////////// Filters ///////////////////////
+
+                ExploreFilters(windowSizeClass)
+            }
+        }
+    }
+
 
     Box(modifier = Modifier.background(color = MaterialTheme.colorScheme.inversePrimary)) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-
-            Spacer(modifier = Modifier.height(130.dp))
+            if ( !isHorizontalTablet(windowSizeClass) )  //isCompact(windowSizeClass)
+                Spacer(modifier = Modifier.height(130.dp))
+            else {
+                headerAndFilters()
+            }
 
             /////////////////// Explore Routines ///////////////////////
 
             if (routineData?.isEmpty() == false) {
 
-                val isVertical = orientation == Configuration.ORIENTATION_PORTRAIT
+                val isVertical = widthSizeClass == WindowWidthSizeClass.Compact
+                val columns = when (widthSizeClass) {
+                    WindowWidthSizeClass.Compact -> 2
+                    WindowWidthSizeClass.Medium -> 6
+                    WindowWidthSizeClass.Expanded -> 6
+                    else -> 1
+                }
+                var distanceRoutines = if (isCompact(widthSizeClass)) 20.dp else 25.dp
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(if (isVertical) 2 else 4),
                     horizontalArrangement = Arrangement.spacedBy(20.dp),
@@ -176,7 +218,7 @@ fun ExploreScreen(
 
                 /////////////////// Filters ///////////////////////
 
-                ExploreFilters()
+                ExploreFilters(windowSizeClass)
             }
         }
     }
@@ -184,10 +226,9 @@ fun ExploreScreen(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ExploreFilters() {
+fun ExploreFilters(windowSizeClass: WindowSizeClass) {
 
     val config = LocalConfiguration.current
-    val orientation = config.orientation
 
     data class SelectedFilter (
         val category :String,
@@ -229,7 +270,12 @@ fun ExploreFilters() {
 
     val filtersSelected = remember { mutableStateListOf<SelectedFilter>() }
 
-    var showFilters by remember { mutableStateOf(false) }
+    val widthSizeClass = windowSizeClass.widthSizeClass
+    val isPhone = isPhone(windowSizeClass)
+    val isHorizontalTablet = isHorizontalTablet(windowSizeClass)
+
+    var showFilters by remember { mutableStateOf(!isPhone) }
+
 
     @Composable
     fun Filter(category :String, isExpanded :Boolean, onExpanded :()->Unit, options :List<String>) {
@@ -281,74 +327,134 @@ fun ExploreFilters() {
         modifier = Modifier
             .background(MaterialTheme.colorScheme.inversePrimary)
             .fillMaxWidth()
+            .padding(bottom = if (isPhone) 0.dp else 10.dp)
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 20.dp)
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = if(isPhone) 0.dp else 10.dp)
             ) {
                 Text(
                     text = stringResource(id = R.string.filters_title),
                     color = MaterialTheme.colorScheme.primary
                 )
-                IconButton(onClick = { showFilters = !showFilters }) {
-                    Icon(
-                        if (showFilters) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
+                if ( !isHorizontalTablet )
+                    IconButton(onClick = { showFilters = !showFilters }) {
+                        Icon(
+                            if (showFilters) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
             }
 
             if (showFilters) {
 
-                LazyVerticalGrid(columns = GridCells.Fixed(if(orientation == Configuration.ORIENTATION_PORTRAIT) 2 else 4), horizontalArrangement = Arrangement.spacedBy(0.dp)) {
-                    item {
-                        Text(
-                            text = stringResource(id = R.string.categories_name),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    for (i in 1..if(orientation == Configuration.ORIENTATION_PORTRAIT) 1 else 3) {
-                        item {/* Empty item */}
-                    }
-                    item {
-                        Filter(category = stringResource(id = R.string.difficulty_filter), isExpanded = difficultyExpanded, onExpanded = {difficultyExpanded = !difficultyExpanded}, options = difficultyOptions)
-                    }
-                    item {
-                        Filter(category = stringResource(id = R.string.elements_filter), isExpanded = elementsExpanded, onExpanded = {elementsExpanded = !elementsExpanded}, options = elementsOptions)
-                    }
-                    item {
-                        Filter(category = stringResource(id = R.string.approach_filter), isExpanded = approachExpanded, onExpanded = {approachExpanded = !approachExpanded}, options = approachOptions)
-                    }
-                    item {
-                        Filter(category = stringResource(id = R.string.space_filter), isExpanded = spaceExpanded, onExpanded = {spaceExpanded = !spaceExpanded}, options = spaceOptions)
-                    }
-                    item {
-                        Text(
-                            text = stringResource(id = R.string.order_by_name),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    for (i in 1..if(orientation == Configuration.ORIENTATION_PORTRAIT) 1 else 3) {
-                        item {/* Empty item */}
-                    }
-                    item {
-                        Filter(category = stringResource(id = R.string.score_filter), isExpanded = scoreExpanded, onExpanded = {scoreExpanded = !scoreExpanded}, options = scoreOptions)
-                    }
-                    item {
-                        Filter(category = stringResource(id = R.string.date_filter), isExpanded = dateExpanded, onExpanded = {dateExpanded = !dateExpanded}, options = dateOptions)
-                    }
-                    if(filtersSelected.isEmpty()) {
+                @Composable
+                fun loadCategories(cols: Int){
+                    Text(
+                        text = stringResource(id = R.string.categories_name),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    LazyVerticalGrid(columns = GridCells.Fixed(cols), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         item {
-                            Spacer(modifier = Modifier.height(20.dp))
+                            Filter(
+                                category = stringResource(id = R.string.difficulty_filter),
+                                isExpanded = difficultyExpanded,
+                                onExpanded = { difficultyExpanded = !difficultyExpanded },
+                                options = difficultyOptions
+                            )
+                        }
+                        item {
+                            Filter(
+                                category = stringResource(id = R.string.elements_filter),
+                                isExpanded = elementsExpanded,
+                                onExpanded = { elementsExpanded = !elementsExpanded },
+                                options = elementsOptions
+                            )
+                        }
+                        item {
+                            Filter(
+                                category = stringResource(id = R.string.approach_filter),
+                                isExpanded = approachExpanded,
+                                onExpanded = { approachExpanded = !approachExpanded },
+                                options = approachOptions
+                            )
+                        }
+                        item {
+                            Filter(
+                                category = stringResource(id = R.string.space_filter),
+                                isExpanded = spaceExpanded,
+                                onExpanded = { spaceExpanded = !spaceExpanded },
+                                options = spaceOptions
+                            )
+                        }
+                    }
+                }
+                @Composable
+                fun loadOrder(cols: Int){
+                    Text(
+                        text = stringResource(id = R.string.order_by_name),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    LazyVerticalGrid(columns = GridCells.Fixed(cols), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        item {
+                            Filter(
+                                category = stringResource(id = R.string.score_filter),
+                                isExpanded = scoreExpanded,
+                                onExpanded = { scoreExpanded = !scoreExpanded },
+                                options = scoreOptions
+                            )
+                        }
+                        item {
+                            Filter(
+                                category = stringResource(id = R.string.date_filter),
+                                isExpanded = dateExpanded,
+                                onExpanded = { dateExpanded = !dateExpanded },
+                                options = dateOptions
+                            )
+                        }
+
+                        /////////////////// Selected Filters ///////////////////////
+
+                        if (filtersSelected.isEmpty()) {
+                            item {
+                                Spacer(modifier = Modifier.height(20.dp))
+                            }
+                        }
+                    }
+                }
+
+                if (isHorizontalTablet) {
+                    Box {
+                        Row {
+                            Column(
+                                modifier = Modifier
+                                    .width(600.dp)
+                            ) {
+                                loadCategories(cols = 4)
+                            }
+                            Column(modifier = Modifier
+                                .width(320.dp)
+                                .padding(start = 25.dp)) {
+                                loadOrder(cols = 2)
+                            }
                         }
                     }
 
+                } else {
+                    if ( isCompact(widthSizeClass)) {
+                        loadCategories(cols = 2)
+                        loadOrder(cols = 2)
+                    } else {
+                        loadCategories(cols = 4)
+                        loadOrder(cols = 4)
+
+                    }
                 }
 
-                /////////////////// Selected Filters ///////////////////////
 
                 if (filtersSelected.isNotEmpty()) {
                     Column(

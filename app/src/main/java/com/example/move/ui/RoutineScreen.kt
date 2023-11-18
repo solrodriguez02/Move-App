@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -82,7 +83,8 @@ import com.example.move.util.getViewModelFactory
 fun RoutineScreen(
     onNavigateToExecute :(routineId:Int)->Unit,
     navController: NavController,
-    mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory())
+    mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory()),
+    routineViewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
     ) {
 
     val config = LocalConfiguration.current
@@ -523,7 +525,7 @@ fun RoutineScreen(
                 )
                 .height(80.dp)
         ) {
-            RoutineMenu(routine.time, navController)
+            RoutineMenu(time = routine.time, navController = navController, routineViewModel = routineViewModel)
         }
 
         if(orientation == Configuration.ORIENTATION_PORTRAIT) {
@@ -630,11 +632,12 @@ fun getOptions(): List<PopUpOption> {
 }
 
 @Composable
-fun RoutineMenu(time :Int, navController: NavController) {
+fun RoutineMenu(time :Int, navController: NavController, routineViewModel: RoutineViewModel) {
 
     val popUpOptions = getOptions()
     var showPopUp by remember { mutableStateOf(false) }
     var showShareDialog by remember { mutableStateOf(false) }
+    var liked by remember { mutableStateOf(routineViewModel.isRoutineInFavourites(routine.id)) }
 
     if(showShareDialog) {
         ShareDialog(onCancel = { showShareDialog = false }, id = 0)
@@ -697,11 +700,22 @@ fun RoutineMenu(time :Int, navController: NavController) {
             modifier = Modifier.padding(horizontal = 10.dp)
         ) {
             DropdownMenuItem(
-                text = { Text(text = popUpOptions[0].label, color = MaterialTheme.colorScheme.primary) },
-                onClick = {  },
+                text = { 
+                    Text(
+                        text = if(liked) stringResource(id = R.string.remove_liked) else popUpOptions[0].label, 
+                        color = MaterialTheme.colorScheme.primary
+                    ) },
+                onClick = {
+                    if(liked) {
+                        routineViewModel.removeRoutineToFavourites(routine.id)
+                    } else {
+                        routineViewModel.addRoutineToFavourites(routine.id)
+                    }
+                    liked = !liked
+                },
                 leadingIcon = {
                     Icon(
-                        popUpOptions[0].icon,
+                        if(liked) Icons.Filled.Favorite else popUpOptions[0].icon,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )

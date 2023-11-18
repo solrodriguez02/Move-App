@@ -1,5 +1,6 @@
 package com.example.move.ui
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -38,6 +39,17 @@ class RoutineViewModel(
             { routineRepository.removeRoutineFromFavourites(routineId)},
             {state, response -> state.copy(isCurrentRoutineFav = response)}
         )
+
+        fun isRoutineInFavourites(routineId: Int) :Boolean {
+            var routineInFavourites = false
+            viewModelScope.launch {
+                runCatching {
+                    routineInFavourites = routineRepository.isRoutineInFavourites(routineId)
+                }
+            }
+            Log.i("", routineInFavourites.toString())
+            return routineInFavourites
+        }
 
         private fun <R> runOnViewModelScope(
             block: suspend () -> R,

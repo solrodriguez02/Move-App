@@ -34,7 +34,7 @@ class RoutineRepository (
     suspend fun getRoutine(routineId: Int): RoutineDetail{
         this.currentRoutine = remoteDataSource.getRoutine(routineId).asModelDetailed()
         this.getRoutineCyclesAndExercises(currentRoutine!!.id)
-        this.currentRoutine?.isFavourite = isRoutineInFavourites()
+        this.currentRoutine?.isFavourite = isRoutineInFavourites(currentRoutine!!.id)
         return currentRoutine as RoutineDetail
     }
 
@@ -45,25 +45,22 @@ class RoutineRepository (
         }
     }
 
-    private suspend fun isRoutineInFavourites(): Boolean{
+    suspend fun isRoutineInFavourites(routineId: Int): Boolean{
         val routines = remoteDataSource.getFavouriteRoutines().content.map { it.asModelPreview() }
         for (i in 0 until routines.lastIndex){
-            if (routines[i].id == this.currentRoutine?.id)
+            if (routines[i].id == routineId)
                 return true
         }
         return false
     }
-    suspend fun addRoutineToFavourites(routineId: Int): Boolean{
 
+    suspend fun addRoutineToFavourites(routineId: Int): Boolean{
             remoteDataSource.addRoutineToFavourites(routineId)
             return true
-
     }
 
     suspend fun removeRoutineFromFavourites(routineId: Int):Boolean{
-
             remoteDataSource.removeRoutineFromFavourites(routineId)
             return false
-
     }
 }

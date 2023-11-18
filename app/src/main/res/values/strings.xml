@@ -110,4 +110,6 @@
     <string name="Thanks_rating">Thank you for rating this routine!</string>
     <string name="send_name">Send</string>
     <string name="max_score">" of 5"</string>
+    <string name="already_liked">This routine is in your favourites</string>
+    <string name="remove_liked">Remove from favourites</string>
 </resources>

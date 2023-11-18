@@ -15,7 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Share
@@ -42,7 +42,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import com.example.move.R
 import com.example.move.data.model.Review
 import com.example.move.util.getViewModelFactory
@@ -51,12 +50,13 @@ import com.example.move.util.getViewModelFactory
 fun FinishedRoutineScreen(
     onNavigateToHome :() -> Unit,
     mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory()),
-    viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
+    routineViewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
 ) {
     val options = getButtonsOptions()
     var score by remember { mutableIntStateOf (0) }
     var showShareDialog by remember { mutableStateOf (false) }
     var rated by remember { mutableStateOf(false) }
+    var liked by remember { mutableStateOf(routineViewModel.isRoutineInFavourites(routine.id)) }
 
     if(showShareDialog) {
         ShareDialog(onCancel = { showShareDialog = false }, id = 0)
@@ -86,7 +86,14 @@ fun FinishedRoutineScreen(
             )
 
             Button(
-                onClick = { viewModel.addRoutineToFavourites(24) },
+                onClick = {
+                    if(liked) {
+                        routineViewModel.removeRoutineToFavourites(routine.id)
+                    } else {
+                        routineViewModel.addRoutineToFavourites(routine.id)
+                    }
+                    liked = !liked
+                },
                 shape = RoundedCornerShape(20.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.secondary,
@@ -103,12 +110,12 @@ fun FinishedRoutineScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        options[0].icon,
+                        if(liked) Icons.Filled.Favorite else options[0].icon,
                         contentDescription = null,
                         modifier = Modifier.padding(end = 15.dp)
                     )
                     Text(
-                        text = options[0].label
+                        text = if(liked) stringResource(id = R.string.already_liked) else options[0].label
                     )
                 }
             }

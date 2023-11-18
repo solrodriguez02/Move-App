@@ -111,4 +111,6 @@
     <string name="Thanks_rating">Gracias por calificar esta rutina!</string>
     <string name="send_name">Enviar</string>
     <string name="max_score">" de 5"</string>
+    <string name="already_liked">Esta rutina está en sus favoritos</string>
+    <string name="remove_liked">Quitar de favoritos</string>
 </resources>

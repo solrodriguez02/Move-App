@@ -20,3 +20,4 @@ val MainUiState.canGetCurrentUser: Boolean get() = isAuthenticated
 val MainUiState.canGetAllRoutines: Boolean get() = isAuthenticated
 val MainUiState.canGetCurrentRoutine: Boolean get() = isAuthenticated
 val MainUiState.isCurrentRoutineFavourite: Boolean get() = isCurrentRoutineFavourite
+val MainUiState.areRoutinesPreviewsReady: Boolean get() = routinePreviews?.isEmpty()== true

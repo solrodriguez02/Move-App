@@ -27,9 +27,6 @@ data class NetworkRoutine (
     @SerializedName("score")
     var score: Int,
 
-    @SerializedName("metadata")
-    var metadata: String
-
 ){
 
     fun asModelPreview(): RoutinePreview {
@@ -38,7 +35,6 @@ data class NetworkRoutine (
             name = name,
             detail = detail,
             difficulty= difficulty,
-            metadata= metadata,
         )
     }
 

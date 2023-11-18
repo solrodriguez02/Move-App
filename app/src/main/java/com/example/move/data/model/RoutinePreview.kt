@@ -5,5 +5,4 @@ class RoutinePreview (
     var name: String,
     var detail: String? = "No description",
     var difficulty: String,
-    var metadata: String
 )

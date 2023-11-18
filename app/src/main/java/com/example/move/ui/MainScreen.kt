@@ -61,6 +61,8 @@ import androidx.compose.ui.unit.sp
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.move.R
+import com.example.move.util.getViewModelFactory
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 
 ///////////// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -83,7 +85,20 @@ val routineData:  List<RoutineItemData> = listOf(
 
 
 @Composable
-fun ExploreScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(routineId:Int)->Unit) {
+fun ExploreScreen(
+    onNavigateToProfile :(userId:Int)->Unit,
+    onNavigateToRoutine :(routineId:Int)->Unit,
+    viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
+) {
+
+    var count by remember {
+        mutableStateOf(true)
+    }
+    if(count) {
+        viewModel.getRoutinePreviews()
+        count = false
+    }
+    val routineData = viewModel.uiState.routinePreviews
 
     val config = LocalConfiguration.current
     val orientation = config.orientation
@@ -97,27 +112,27 @@ fun ExploreScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :
 
             /////////////////// Explore Routines ///////////////////////
 
-            if (routineData.isNotEmpty()) {
+            if (routineData?.isEmpty() == false) {
 
                 val isVertical = orientation == Configuration.ORIENTATION_PORTRAIT
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(if(isVertical) 2 else 4),
+                    columns = GridCells.Fixed(if (isVertical) 2 else 4),
                     horizontalArrangement = Arrangement.spacedBy(20.dp),
-                    modifier = Modifier.padding(start = if(isVertical) 0.dp else 20.dp)
+                    modifier = Modifier.padding(start = if (isVertical) 0.dp else 20.dp)
                 ) {
 
-                    for((index, routine) in routineData.withIndex()) {
+                    for ((index, routine) in routineData.withIndex()) {
                         item {
                             RoutinePreview(
-                                imageUrl = routine.imageUrl,
-                                title = routine.title,
-                                time = routine.time,
+                                imageUrl = routine.detail ?: "",
+                                title = routine.name,
+                                time = 0,
                                 leftSide = if (isVertical) index % 2 == 0 else false,
                                 onNavigateToRoutine = onNavigateToRoutine
                             )
                         }
                     }
-                    for(i in 1..if(isVertical) 1 else 3) {
+                    for (i in 1..if (isVertical) 1 else 3) {
                         item {
                             /* empty item for spacer in odd routine count */
                         }
@@ -154,7 +169,10 @@ fun ExploreScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :
             modifier = Modifier.fillMaxWidth()
         ) {
             Column {
-                Header(title = stringResource(R.string.explore_name), onNavigateToProfile = onNavigateToProfile)
+                Header(
+                    title = stringResource(R.string.explore_name),
+                    onNavigateToProfile = onNavigateToProfile
+                )
 
                 /////////////////// Filters ///////////////////////
 

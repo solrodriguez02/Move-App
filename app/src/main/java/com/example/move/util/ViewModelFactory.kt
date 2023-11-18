@@ -9,6 +9,7 @@ import com.example.move.data.repository.ReviewRepository
 import com.example.move.data.repository.RoutineRepository
 import com.example.move.data.repository.UserRepository
 import com.example.move.ui.MainViewModel
+import com.example.move.ui.RoutineViewModel
 
 class ViewModelFactory constructor(
     private val sessionManager: SessionManager,
@@ -27,6 +28,9 @@ class ViewModelFactory constructor(
         when {
             isAssignableFrom(MainViewModel::class.java) ->
                 MainViewModel(sessionManager, userRepository, reviewRepository, routineRepository)
+
+            isAssignableFrom(RoutineViewModel::class.java) ->
+                RoutineViewModel(sessionManager, routineRepository)
 
             else ->
                 throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

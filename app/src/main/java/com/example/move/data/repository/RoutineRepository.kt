@@ -1,5 +1,6 @@
 package com.example.move.data.repository
 
+import android.util.Log
 import com.example.move.data.model.Cycle
 import com.example.move.data.model.CycleExercise
 import com.example.move.data.model.RoutineDetail
@@ -8,7 +9,9 @@ import com.example.move.data.model.User
 import com.example.move.data.network.RoutineDataSource
 import com.example.move.data.network.model.NetworkCycleExercise
 import com.example.move.data.network.model.NetworkPagedContent
+import com.example.move.data.network.model.NetworkRoutine
 import com.example.move.data.network.model.NetworkRoutineCycle
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import retrofit2.Response
 import retrofit2.http.GET
@@ -20,9 +23,11 @@ class RoutineRepository (
 ){
     private var currentRoutine: RoutineDetail = RoutineDetail(-1, "none", "no detail", 0, "Rookie", emptyMap<Cycle, List<CycleExercise>>().toMutableMap())
     private var routinePreviews: List<RoutinePreview> = emptyList()
+
     suspend fun getRoutinePreviews(refresh: Boolean): List<RoutinePreview>{
-        if (refresh || routinePreviews.isEmpty()) {
-            this.routinePreviews = remoteDataSource.getRoutines().content.map { it.asModelPreview() }
+        if (refresh || routinePreviews.isEmpty() ) {
+            val result = remoteDataSource.getRoutines()
+            this.routinePreviews = result.content.map { it.asModelPreview() }
         }
         return routinePreviews
     }

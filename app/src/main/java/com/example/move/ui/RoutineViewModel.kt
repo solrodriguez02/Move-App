@@ -20,13 +20,13 @@ class RoutineViewModel(
             private set
 
         fun getRoutinePreviews() = runOnViewModelScope(
-            { routineRepository.getRoutinePreviews(refresh = false) },
+            { routineRepository.getRoutinePreviews(refresh = true) },
             { state, response -> state.copy(routinePreviews = response) }
         )
 
         fun getRoutine(routineId: Int) = runOnViewModelScope(
             { routineRepository.getRoutine(routineId)},
-            {state, response -> state.copy(currentRoutine = response)}
+            {state, response -> state.copy(currentRoutine = response, )}
         )
 
         fun addRoutineToFavourites(routineId: Int) = runOnViewModelScope(

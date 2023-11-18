@@ -42,8 +42,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.move.util.getViewModelFactory
 
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.move.util.getViewModelFactory
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")

@@ -1,5 +1,6 @@
 package com.example.move.data.network
 
+import android.util.Log
 import com.example.move.data.DataSourceException
 import com.example.move.data.network.model.NetworkError
 import com.google.gson.Gson

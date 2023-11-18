@@ -1,15 +1,12 @@
 package com.example.move
 
 import android.app.Application
-import com.example.move.data.model.Review
 import com.example.move.data.network.ReviewRemoteDataSource
 import com.example.move.data.network.RoutineDataSource
-import com.example.move.data.network.SportRemoteDataSource
 import com.example.move.data.network.UserRemoteDataSource
 import com.example.move.data.network.api.RetrofitClient
 import com.example.move.data.repository.ReviewRepository
 import com.example.move.data.repository.RoutineRepository
-import com.example.move.data.repository.SportRepository
 import com.example.move.data.repository.UserRepository
 import com.example.move.util.SessionManager
 

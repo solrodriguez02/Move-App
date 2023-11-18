@@ -71,9 +71,18 @@ import com.example.move.util.getViewModelFactory
 
 
 @Composable
-fun RoutineExecutionScreen(onNavigateToFinish :(routineId:Int)->Unit, navController: NavController) {
+fun RoutineExecutionScreen(
+    onNavigateToFinish :(routineId:Int)->Unit,
+    navController: NavController,
+    viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
+) {
 
-    val viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
+    var setListMode by remember { mutableStateOf(true) }
+
+    if(setListMode) {
+        setListMode = false
+        viewModel.setIsListMode()
+    }
 
     val isDetailedMode = !viewModel.uiState.listMode
 

@@ -499,11 +499,21 @@ fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit, navController: Nav
 
 
 @Composable
-fun RoutineExecutionMenu(showModeDialog :Boolean, onShowMode :() -> Unit, onNavigateToExecute :(routineId:Int)->Unit) {
+fun RoutineExecutionMenu(
+    showModeDialog :Boolean,
+    onShowMode :() -> Unit,
+    onNavigateToExecute :(routineId:Int)->Unit,
+    viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
+) {
 
-    val viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
+    var setListMode by remember { mutableStateOf(true) }
+
+    if(setListMode) {
+        setListMode = false
+        viewModel.setIsListMode()
+    }
+
     val modeIcon: Painter = if(viewModel.uiState.listMode) painterResource(id = R.drawable.list_mode) else painterResource(id = R.drawable.detail_mode)
-
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(40.dp)

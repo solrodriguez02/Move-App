@@ -53,6 +53,14 @@ import com.example.move.util.getViewModelFactory
 fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewModel(factory = getViewModelFactory())) {
 
     viewModel.getCurrentUser()
+
+    var setListMode by remember { mutableStateOf(true) }
+
+    if(setListMode) {
+        setListMode = false
+        viewModel.setIsListMode()
+    }
+
     val currentUser = viewModel.uiState.currentUser
 
     var showModeDialog by remember { mutableStateOf(false) }

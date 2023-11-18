@@ -19,6 +19,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,6 +38,13 @@ import com.example.move.util.getViewModelFactory
 
 @Composable
 fun ModeDialog(onShowMode: () -> Unit, viewModel: MainViewModel = viewModel(factory = getViewModelFactory())) {
+
+    var setListMode by remember { mutableStateOf(true) }
+
+    if(setListMode) {
+        setListMode = false
+        viewModel.setIsListMode()
+    }
 
     data class ModeOption (
         val label :String,

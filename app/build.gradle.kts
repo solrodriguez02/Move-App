@@ -27,17 +27,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // No usar localhost o la IP 127.0.0.1 porque es la interfaz de loopback
-            // del emulador. La forma de salir del emulador para acceder al localhost
-            // de host del mismo es usando la IP 10.0.2.2.
             buildConfigField("String", "API_BASE_URL",
                 "\"http://192.168.1.108:8080/api/\"")
         }
         debug {
             debug {
-                // No usar localhost o la IP 127.0.0.1 porque es la interfaz de loopback
-                // del emulador. La forma de salir del emulador para acceder al localhost
-                // de host del mismo es usando la IP 10.0.2.2.
                 buildConfigField("String", "API_BASE_URL",
                     "\"http://192.168.1.108:8080/api/\"")
             }

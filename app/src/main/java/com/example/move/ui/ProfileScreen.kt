@@ -150,7 +150,7 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "Male",
+                        text = currentUser?.gender ?: "",
                         modifier = Modifier
                             .align(Alignment.CenterStart)
                             .padding(top = 42.dp)

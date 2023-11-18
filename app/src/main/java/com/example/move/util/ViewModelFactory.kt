@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.savedstate.SavedStateRegistryOwner
 import com.example.move.data.repository.ReviewRepository
 import com.example.move.data.repository.RoutineRepository
-import com.example.move.data.repository.SportRepository
 import com.example.move.data.repository.UserRepository
 import com.example.move.ui.MainViewModel
 

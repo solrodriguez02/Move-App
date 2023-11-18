@@ -7,11 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.move.data.DataSourceException
 import com.example.move.data.model.Error
-import com.example.move.data.model.RoutineDetail
-import com.example.move.data.model.Sport
 import com.example.move.data.repository.RoutineRepository
-import com.example.move.data.repository.SportRepository
-import com.example.move.data.repository.UserRepository
 import com.example.move.util.SessionManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch

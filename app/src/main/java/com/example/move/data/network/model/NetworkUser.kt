@@ -15,7 +15,7 @@ class NetworkUser(
     @SerializedName("lastName")
     var lastName: String,
     @SerializedName("gender")
-    var gender: String? = null,
+    var gender: String,
     @SerializedName("birthdate")
     var birthdate: Date? = null,
     @SerializedName("email")
@@ -41,7 +41,8 @@ class NetworkUser(
             firstName = firstName,
             lastName = lastName,
             email = email,
-            lastActivity = lastActivity
+            lastActivity = lastActivity,
+            gender = gender
         )
     }
 }

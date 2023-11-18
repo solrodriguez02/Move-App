@@ -54,11 +54,10 @@ class RoutineRepository (
         return false
     }
     suspend fun addRoutineToFavourites(routineId: Int): Boolean{
-        if (currentRoutine?.isFavourite == false){
+
             remoteDataSource.addRoutineToFavourites(routineId)
             return true
-        }
-        return false
+
     }
 
     suspend fun removeRoutineFromFavourites(routineId: Int):Boolean{

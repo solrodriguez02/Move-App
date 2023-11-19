@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -74,20 +75,29 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.move.R
+import com.example.move.data.model.Review
 import com.example.move.util.getViewModelFactory
 
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit, navController: NavController, widthSizeClass: WindowWidthSizeClass) {
+
+fun RoutineScreen(
+    onNavigateToExecute :(routineId:Int)->Unit,
+    navController: NavController,
+    widthSizeClass: WindowWidthSizeClass,
+    mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory()),
+    routineViewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
+    ) {
 
     val isVertical = widthSizeClass == WindowWidthSizeClass.Compact
 
     var showRate by remember { mutableStateOf(false) }
     var showDescription by remember { mutableStateOf(false) }
     var showModeDialog by remember { mutableStateOf(false) }
-    var score by remember { mutableIntStateOf (3) }
+    var score by remember { mutableIntStateOf (0) }
     var cycleIndex by remember { mutableIntStateOf(0) }
+    var isRated by remember { mutableStateOf(false) }
 
     @Composable
     fun RoutineDetail() {
@@ -130,7 +140,7 @@ fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit, navController: Nav
                         .weight(1f)
                 )
                 Text(
-                    text = routine.score.toString(),
+                    text = routine.score.toString() + stringResource(id = R.string.max_score),
                     color = MaterialTheme.colorScheme.primary
                 )
                 Icon(
@@ -199,21 +209,62 @@ fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit, navController: Nav
             }
 
             if (showRate) {
-                Row(
-                    modifier = Modifier.padding(top = 10.dp)
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = MaterialTheme.colorScheme.inversePrimary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp)
+                        .height(50.dp)
                 ) {
-                    for (i in 1..5) {
-                        IconButton(
-                            onClick = { score = i },
-                            modifier = Modifier.size(30.dp)
-                        ) {
-                            Icon(
-                                painter = if (i <= score) painterResource(id = R.drawable.star) else painterResource(
-                                    id = R.drawable.empty_star
-                                ),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .padding(horizontal = 10.dp)
+                            .fillMaxSize()
+                    ) {
+                        if (isRated) {
+                            Text(
+                                text = stringResource(id = R.string.Thanks_rating),
+                                color = MaterialTheme.colorScheme.primary
                             )
+                        } else {
+                            for (i in 1..5) {
+                                IconButton(
+                                    onClick = {
+                                        score = i
+                                    },
+                                    modifier = Modifier.size(30.dp)
+                                ) {
+                                    Icon(
+                                        painter = if (i <= score) painterResource(id = R.drawable.star) else painterResource(
+                                            id = R.drawable.empty_star
+                                        ),
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                            if(score > 0) {
+                                Button(
+                                    contentPadding = PaddingValues(0.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color.Transparent,
+                                        contentColor = MaterialTheme.colorScheme.surfaceTint,
+                                    ),
+                                    onClick = {
+                                        mainViewModel.makeReview(routine.id, Review(score))
+                                        isRated = true
+                                    },
+                                    modifier = Modifier.padding(start = 15.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(id = R.string.send_name),
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -476,7 +527,7 @@ fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit, navController: Nav
                 )
                 .height(80.dp)
         ) {
-            RoutineMenu(routine.time, navController)
+            RoutineMenu(time = routine.time, navController = navController, routineViewModel = routineViewModel)
         }
 
         if(isVertical) {
@@ -499,11 +550,21 @@ fun RoutineScreen(onNavigateToExecute :(routineId:Int)->Unit, navController: Nav
 
 
 @Composable
-fun RoutineExecutionMenu(showModeDialog :Boolean, onShowMode :() -> Unit, onNavigateToExecute :(routineId:Int)->Unit) {
+fun RoutineExecutionMenu(
+    showModeDialog :Boolean,
+    onShowMode :() -> Unit,
+    onNavigateToExecute :(routineId:Int)->Unit,
+    viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
+) {
 
-    val viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
+    var setListMode by remember { mutableStateOf(true) }
+
+    if(setListMode) {
+        setListMode = false
+        viewModel.setIsListMode()
+    }
+
     val modeIcon: Painter = if(viewModel.uiState.listMode) painterResource(id = R.drawable.list_mode) else painterResource(id = R.drawable.detail_mode)
-
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(40.dp)
@@ -573,11 +634,12 @@ fun getOptions(): List<PopUpOption> {
 }
 
 @Composable
-fun RoutineMenu(time :Int, navController: NavController) {
+fun RoutineMenu(time :Int, navController: NavController, routineViewModel: RoutineViewModel) {
 
     val popUpOptions = getOptions()
     var showPopUp by remember { mutableStateOf(false) }
     var showShareDialog by remember { mutableStateOf(false) }
+    var liked by remember { mutableStateOf(routineViewModel.isRoutineInFavourites(routine.id)) }
 
     if(showShareDialog) {
         ShareDialog(onCancel = { showShareDialog = false }, id = 0)
@@ -640,11 +702,22 @@ fun RoutineMenu(time :Int, navController: NavController) {
             modifier = Modifier.padding(horizontal = 10.dp)
         ) {
             DropdownMenuItem(
-                text = { Text(text = popUpOptions[0].label, color = MaterialTheme.colorScheme.primary) },
-                onClick = {  },
+                text = { 
+                    Text(
+                        text = if(liked) stringResource(id = R.string.remove_liked) else popUpOptions[0].label, 
+                        color = MaterialTheme.colorScheme.primary
+                    ) },
+                onClick = {
+                    if(liked) {
+                        routineViewModel.removeRoutineToFavourites(routine.id)
+                    } else {
+                        routineViewModel.addRoutineToFavourites(routine.id)
+                    }
+                    liked = !liked
+                },
                 leadingIcon = {
                     Icon(
-                        popUpOptions[0].icon,
+                        if(liked) Icons.Filled.Favorite else popUpOptions[0].icon,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )

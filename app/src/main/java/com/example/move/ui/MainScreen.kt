@@ -142,13 +142,13 @@ fun ExploreScreen(
                 val isVertical = widthSizeClass == WindowWidthSizeClass.Compact
                 val columns = when (widthSizeClass) {
                     WindowWidthSizeClass.Compact -> 2
-                    WindowWidthSizeClass.Medium -> 6
+                    WindowWidthSizeClass.Medium -> 4
                     WindowWidthSizeClass.Expanded -> 6
                     else -> 1
                 }
                 var distanceRoutines = if (isCompact(widthSizeClass)) 20.dp else 25.dp
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(if (isVertical) 2 else 4),
+                    columns = GridCells.Fixed(columns),
                     horizontalArrangement = Arrangement.spacedBy(20.dp),
                     modifier = Modifier.padding(start = if (isVertical) 0.dp else 20.dp)
                 ) {
@@ -322,6 +322,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
         Column(
             modifier = Modifier.padding(horizontal = 20.dp)
         ) {
+            if ( !isHorizontalTablet )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = if(isPhone) 0.dp else 10.dp)
@@ -330,7 +331,6 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                     text = stringResource(id = R.string.filters_title),
                     color = MaterialTheme.colorScheme.primary
                 )
-                if ( !isHorizontalTablet )
                     IconButton(onClick = { showFilters = !showFilters }) {
                         Icon(
                             if (showFilters) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,

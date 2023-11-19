@@ -1,5 +1,6 @@
 package com.example.move.ui
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -7,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.move.data.DataSourceException
 import com.example.move.data.model.Error
+import com.example.move.data.model.Review
 import com.example.move.data.repository.ReviewRepository
 import com.example.move.data.repository.RoutineRepository
 import com.example.move.data.repository.UserRepository
@@ -15,7 +17,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class MainViewModel(
-    sessionManager: SessionManager,
+    private val sessionManager: SessionManager,
     private val userRepository: UserRepository,
     private val reviewRepository: ReviewRepository,
     private val routineRepository: RoutineRepository,
@@ -23,6 +25,7 @@ class MainViewModel(
 
     var uiState by mutableStateOf(MainUiState(isAuthenticated = sessionManager.loadAuthToken() != null))
         private set
+
 
     fun login(username: String, password: String) = runOnViewModelScope(
         { userRepository.login(username, password) },
@@ -44,8 +47,18 @@ class MainViewModel(
         { state, response -> state.copy(currentUser = response) }
     )
 
+    fun makeReview(routineId :Int, review: Review) = runOnViewModelScope(
+        { reviewRepository.addReview(routineId, review)},
+        { state, response -> state }
+    )
+
     fun changeMode() {
-        uiState = uiState.copy(listMode = !uiState.listMode)
+        sessionManager.saveMode(!sessionManager.loadMode())
+        uiState = uiState.copy(listMode = sessionManager.loadMode())
+    }
+
+    fun setIsListMode() {
+        uiState = uiState.copy(listMode = sessionManager.loadMode())
     }
 
     private fun <R> runOnViewModelScope(

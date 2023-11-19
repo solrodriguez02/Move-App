@@ -8,6 +8,15 @@ class SessionManager(context: Context) {
     private var preferences: SharedPreferences =
         context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
 
+    fun loadMode(): Boolean {
+        return preferences.getBoolean(IS_LIST_MODE, false)
+    }
+    fun saveMode(mode: Boolean) {
+        val editor = preferences.edit()
+        editor.putBoolean(IS_LIST_MODE, mode)
+        editor.apply()
+    }
+
     fun loadAuthToken(): String? {
         return preferences.getString(AUTH_TOKEN, null)
     }
@@ -27,5 +36,6 @@ class SessionManager(context: Context) {
     companion object {
         const val PREFERENCES_NAME = "my_app"
         const val AUTH_TOKEN = "auth_token"
+        const val IS_LIST_MODE = "mode"
     }
 }

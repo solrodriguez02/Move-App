@@ -55,7 +55,7 @@ fun MoveNavHost(
             arguments = listOf(navArgument("id") {type = NavType.IntType}),
             deepLinks = listOf(navDeepLink { uriPattern = "$uri/routine?id={id}" }, navDeepLink { uriPattern = "$secureUri/routine?id={id}" }),
             ) {
-            if ( isPhone(windowSizeClass) )
+
                 RoutineScreen(
                     onNavigateToExecute = { id -> navController.navigate("routine/$id/execute") },
                     navController = navController,

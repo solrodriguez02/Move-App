@@ -15,6 +15,7 @@ data class Cycle(
 )
 
 data class RoutineItem(
+    val id :Int,
     val title: String,
     val imageUrl :String,
     val difficulty :String,
@@ -52,5 +53,5 @@ val cycles :List<Cycle> = listOf(
     Cycle("Cooling", exercises, 1)
 )
 
-val routine :RoutineItem = RoutineItem("Senta-Senta", "https://s3.abcstatics.com/media/bienestar/2020/11/17/abdominales-kfHF--620x349@abc.jpeg",
+val routine :RoutineItem = RoutineItem(14, "Senta-Senta", "https://s3.abcstatics.com/media/bienestar/2020/11/17/abdominales-kfHF--620x349@abc.jpeg",
     "Medium", listOf("Dumbells", "Rope"), listOf("Cardio"), "Ideal for reduced spaces", "Very fun exercise", cycles, 15, 3.4f)

@@ -43,6 +43,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -80,15 +81,16 @@ import com.example.move.util.getViewModelFactory
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
+
 fun RoutineScreen(
     onNavigateToExecute :(routineId:Int)->Unit,
     navController: NavController,
+    widthSizeClass: WindowWidthSizeClass,
     mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory()),
     routineViewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
     ) {
 
-    val config = LocalConfiguration.current
-    val orientation = config.orientation
+    val isVertical = widthSizeClass == WindowWidthSizeClass.Compact
 
     var showRate by remember { mutableStateOf(false) }
     var showDescription by remember { mutableStateOf(false) }
@@ -405,7 +407,7 @@ fun RoutineScreen(
         val state = rememberScrollState()
         LaunchedEffect(Unit) { state.animateScrollTo(100) }
 
-        if(orientation == Configuration.ORIENTATION_PORTRAIT) {
+        if(isVertical) {
             Column(
                 modifier = Modifier
                     .verticalScroll(state)
@@ -528,7 +530,7 @@ fun RoutineScreen(
             RoutineMenu(time = routine.time, navController = navController, routineViewModel = routineViewModel)
         }
 
-        if(orientation == Configuration.ORIENTATION_PORTRAIT) {
+        if(isVertical) {
             Box(
                 contentAlignment = Alignment.BottomCenter,
                 modifier = Modifier

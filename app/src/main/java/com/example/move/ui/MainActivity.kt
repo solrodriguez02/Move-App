@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -34,7 +35,12 @@ import com.example.move.ui.theme.MoveTheme
 import kotlinx.coroutines.*
 import androidx.compose.material.*
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -45,106 +51,29 @@ import com.example.move.util.getViewModelFactory
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen().setKeepOnScreenCondition{false}
         setContent {
             MoveTheme(dynamicColor = false) {
                 val navController = rememberNavController()
+                var windowSizeClass = calculateWindowSizeClass(this)
+                val showNavigationRail = showNavRail(windowSizeClass, LocalConfiguration.current)
                 val viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
                 val uiState = viewModel.uiState
+
                 // caso del Deep Link
                 Scaffold(
-                    bottomBar = { NavBar(navController = navController) }
+                    bottomBar = { if ( !showNavigationRail )
+                                    NavBar(navController = navController)
+                                else
+                                    NavigationRailBar( navController = navController )
+                                },
                 ) {
-                    MoveNavHost(navController = navController)
+                    MoveNavHost(navController = navController, windowSizeClass = windowSizeClass )
                 }
             }
         }
     }
 }
-
-
-@Composable
-fun NavBar(navController: NavController) {
-
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    if(currentRoute == Screen.ExploreScreen.route || currentRoute == Screen.HomeScreen.route) {
-        var selectedItem by remember { mutableIntStateOf(0) }
-        val items = listOf(Screen.ExploreScreen, Screen.HomeScreen)
-        selectedItem =
-            if (currentRoute == Screen.ExploreScreen.route) 0 else if (currentRoute == Screen.HomeScreen.route) 1 else -1
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(vertical = 25.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .clip(shape = RoundedCornerShape(100.dp))
-                    .height(60.dp)
-                    .background(MaterialTheme.colorScheme.tertiary)
-                    .padding(horizontal = 30.dp)
-                    .width(130.dp)
-            ) {
-                items.forEachIndexed { index, item ->
-
-                    val selectedPosition =
-                        if (selectedItem == index) Modifier.padding(15.dp) else Modifier.padding(16.dp)
-                    val selectedColor =
-                        if (selectedItem == index) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.inversePrimary
-
-                    Button(
-                        onClick = {
-                            navController.navigate(item.route) {
-                                navController.graph.startDestinationRoute?.let { screenRoute ->
-                                    popUpTo(screenRoute) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                        },
-                        contentPadding = PaddingValues(0.dp),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = Color.Transparent,
-                        ),
-                        modifier = Modifier.width(60.dp)
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = selectedPosition.then(Modifier.fillMaxSize())
-                        ) {
-                            Icon(
-                                item.icon,
-                                contentDescription = "item $index",
-                                tint = selectedColor,
-
-                                )
-                            if (selectedItem == index) {
-                                Divider(
-                                    color = MaterialTheme.colorScheme.surfaceTint,
-                                    thickness = 3.dp,
-                                    modifier = Modifier
-                                        .width(25.dp)
-                                        .padding(top = 1.dp)
-                                        .clip(shape = RoundedCornerShape(20.dp))
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-

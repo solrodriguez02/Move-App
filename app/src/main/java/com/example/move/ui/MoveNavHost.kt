@@ -1,6 +1,7 @@
 package com.example.move.ui
 
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -38,8 +39,9 @@ fun MoveNavHost(
         composable(Screen.HomeScreen.route) {
             HomeScreen(
                 onNavigateToProfile = { id -> navController.navigate("profile/$id") },
-                onNavigateToRoutine = { id -> navController.navigate("routine/$id") }
-                )
+                onNavigateToRoutine = { id -> navController.navigate("routine/$id") },
+                windowSizeClass = windowSizeClass
+            )
         }
         composable(
             Screen.ProfileScreen.route,
@@ -53,10 +55,20 @@ fun MoveNavHost(
             arguments = listOf(navArgument("id") {type = NavType.IntType}),
             deepLinks = listOf(navDeepLink { uriPattern = "$uri/routine?id={id}" }, navDeepLink { uriPattern = "$secureUri/routine?id={id}" }),
             ) {
-            RoutineScreen(
-                onNavigateToExecute = { id -> navController.navigate("routine/$id/execute") },
-                navController = navController
-            )
+            if ( isPhone(windowSizeClass) )
+                RoutineScreen(
+                    onNavigateToExecute = { id -> navController.navigate("routine/$id/execute") },
+                    navController = navController,
+                    widthSizeClass = windowSizeClass.widthSizeClass
+                )
+            /*
+            else
+                RoutineScreenModal(
+                    onNavigateToExecute = { id -> navController.navigate("routine/$id/execute") },
+                    navController = navController
+                )
+
+             */
         }
 
         composable(

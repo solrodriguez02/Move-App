@@ -67,7 +67,6 @@ import com.example.move.R
 import com.example.move.util.getViewModelFactory
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-
 ///////////// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 data class RoutineItemData(
@@ -86,17 +85,6 @@ val routineData:  List<RoutineItemData> = listOf(
 
 ///////////// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-private fun isCompact( windowSizeClass: WindowWidthSizeClass) : Boolean{
-    return windowSizeClass == WindowWidthSizeClass.Compact
-}
-
-private fun isPhone( windowSizeClass: WindowSizeClass) :Boolean {
-    return windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact || windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact
-}
-
-private fun isHorizontalTablet( windowSizeClass: WindowSizeClass) : Boolean {
-    return windowSizeClass.widthSizeClass==WindowWidthSizeClass.Expanded && windowSizeClass.heightSizeClass>= WindowHeightSizeClass.Medium
-}
 @Composable
 fun ExploreScreen(
     onNavigateToProfile :(userId:Int)->Unit,
@@ -114,7 +102,6 @@ fun ExploreScreen(
     }
     val routineData = viewModel.uiState.routinePreviews
 
-    val config = LocalConfiguration.current
     val widthSizeClass = windowSizeClass.widthSizeClass
     @Composable
     fun headerAndFilters() {
@@ -135,7 +122,10 @@ fun ExploreScreen(
     }
 
 
-    Box(modifier = Modifier.background(color = MaterialTheme.colorScheme.inversePrimary)) {
+    Box(
+        modifier = Modifier.background(color = MaterialTheme.colorScheme.inversePrimary)
+            .padding( start = if (isHorizontalTablet(windowSizeClass)) 65.dp else 0.dp)
+    ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -511,11 +501,13 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
 }
 
 @Composable
-fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(routineId:Int)->Unit) {
+fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(routineId:Int)->Unit,
+               windowSizeClass: WindowSizeClass) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.inversePrimary)
+            .padding( start = if (isHorizontalTablet(windowSizeClass)) 65.dp else 0.dp)
     ) {
         val state = rememberScrollState()
         LaunchedEffect(Unit) { state.animateScrollTo(100) }

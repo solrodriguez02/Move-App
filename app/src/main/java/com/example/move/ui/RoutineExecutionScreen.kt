@@ -79,6 +79,7 @@ import java.util.logging.Handler
 fun RoutineExecutionScreen(
     onNavigateToFinish :(routineId:Int)->Unit,
     navController: NavController,
+    routineId: Int,
     viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
 ) {
 

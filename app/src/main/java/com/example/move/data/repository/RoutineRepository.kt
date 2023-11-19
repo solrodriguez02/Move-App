@@ -40,7 +40,7 @@ class RoutineRepository (
 
     private suspend fun getRoutineCyclesAndExercises(routineId: Int){
         var cycles = remoteDataSource.getRoutineCycles(routineId).content.toMutableList().map { it.asModel() }
-        for (i in 0 until cycles.lastIndex){
+        for (i in 0..cycles.lastIndex){
             this.currentRoutine?.cycles?.put(cycles[i], remoteDataSource.getRoutineCycleExercises(cycles[i].id).content.map { it.asModel() })
         }
     }

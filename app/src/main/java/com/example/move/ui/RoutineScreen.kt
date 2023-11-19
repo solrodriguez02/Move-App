@@ -94,10 +94,12 @@ fun RoutineScreen(
     var count by remember {
         mutableStateOf(true)
     }
+
     if(count) {
         routineViewModel.getRoutine(routineId)
         count = false
     }
+
     val isVertical = widthSizeClass == WindowWidthSizeClass.Compact
 
     var showRate by remember { mutableStateOf(false) }
@@ -368,10 +370,10 @@ fun RoutineScreen(
 
             /////////////////// Cycle exercises ///////////////////////
             if (routineData?.cycles?.isNotEmpty() == true) {
-                for ((index, cycle) in routineData?.cycles?.entries?.withIndex()!!) {
-                    if (cycleIndex == 0 && index == 0 ||
-                        cycleIndex == 1 && index > 0 && index < routineData?.cycles?.size?.minus(1) ?: 0 ||
-                        cycleIndex == 2 && index == routineData?.cycles?.size?.minus(1) ?: 0
+                for ((index, cycle) in routineData.cycles.entries.withIndex()) {
+                    if ((cycleIndex == 0 && index == 0) ||
+                        (cycleIndex == 1 && index > 0 && index < (routineData.cycles.size.minus(1) ?: 0)) ||
+                        (cycleIndex == 2 && index == (routineData.cycles.size.minus(1) ?: 0))
                     ) {
 
                         Row(
@@ -415,6 +417,7 @@ fun RoutineScreen(
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
 

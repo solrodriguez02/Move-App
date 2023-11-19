@@ -1,5 +1,6 @@
 package com.example.move.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -22,6 +24,7 @@ import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -29,11 +32,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.move.R
 
 private fun navigate(item : Screen, navController: NavController){
     navController.navigate(item.route) {
@@ -61,7 +68,7 @@ fun NavigationIcon(item: Screen, isSelected: Boolean, selectedColor: Color ) {
             thickness = 3.dp,
             modifier = Modifier
                 .width(25.dp)
-                .padding(top = 25.dp)
+                .padding(top = 26.dp)
                 .clip(shape = RoundedCornerShape(20.dp))
         )
     }
@@ -155,12 +162,18 @@ fun NavigationRailBar(navController: NavController) {
          modifier = Modifier
              .width(80.dp)
              .padding(all = 12.dp)
-             .clip(shape = RoundedCornerShape(100.dp)).fillMaxHeight(),
+             .clip(shape = RoundedCornerShape(100.dp))
+             .fillMaxHeight(),
         containerColor = MaterialTheme.colorScheme.tertiary,
-
+        header = {
+            Image(painter = painterResource(R.drawable.logo_with_color)
+                , contentDescription = "icon", modifier = Modifier.padding(top = 20.dp).size(25.dp))
+        }
     ) {
         Column(
-            modifier = Modifier.background(MaterialTheme.colorScheme.tertiary).fillMaxHeight()
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.tertiary)
+                .fillMaxHeight()
                 .padding(bottom = 15.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.Bottom)
         ) {
@@ -173,21 +186,15 @@ fun NavigationRailBar(navController: NavController) {
                     colors = NavigationRailItemDefaults.colors(
                         indicatorColor = MaterialTheme.colorScheme.tertiary
                     ),
-
                     icon = {
                         NavigationIcon(
                             item = item, isSelected = selectedItem == index, selectedColor = selectedColor
                         )
                     },
-
-                    /*
-                    label = {
-                        Text(text = item.title)
-                    },
-                     */
                     onClick = {
                         navigate(item, navController)
                     },
+
                 )
             }
         }

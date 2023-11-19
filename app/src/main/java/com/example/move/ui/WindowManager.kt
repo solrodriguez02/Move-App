@@ -1,8 +1,12 @@
 package com.example.move.ui
 
+import android.content.res.Configuration
+import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.ui.platform.AndroidViewConfiguration
+import androidx.compose.ui.platform.LocalConfiguration
 
 // useful functions
 
@@ -16,4 +20,8 @@ public fun isPhone( windowSizeClass: WindowSizeClass) :Boolean {
 
 public fun isHorizontalTablet( windowSizeClass: WindowSizeClass) : Boolean {
     return windowSizeClass.widthSizeClass== WindowWidthSizeClass.Expanded && windowSizeClass.heightSizeClass>= WindowHeightSizeClass.Medium
+}
+
+fun showNavRail( windowSizeClass: WindowSizeClass, configuration: Configuration) : Boolean {
+    return windowSizeClass.widthSizeClass== WindowWidthSizeClass.Expanded && configuration.orientation ==  ORIENTATION_LANDSCAPE
 }

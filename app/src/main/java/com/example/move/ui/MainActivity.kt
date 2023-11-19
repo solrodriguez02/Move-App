@@ -38,7 +38,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -57,7 +59,7 @@ class MainActivity : ComponentActivity() {
             MoveTheme(dynamicColor = false) {
                 val navController = rememberNavController()
                 var windowSizeClass = calculateWindowSizeClass(this)
-                val showNavigationRail = isHorizontalTablet(windowSizeClass)
+                val showNavigationRail = showNavRail(windowSizeClass, LocalConfiguration.current)
                 val viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
                 val uiState = viewModel.uiState
 
@@ -66,10 +68,9 @@ class MainActivity : ComponentActivity() {
                     bottomBar = { if ( !showNavigationRail )
                                     NavBar(navController = navController)
                                 else
-                        NavigationRailBar( navController = navController )
+                                    NavigationRailBar( navController = navController )
                                 },
                 ) {
-
                     MoveNavHost(navController = navController, windowSizeClass = windowSizeClass )
                 }
             }

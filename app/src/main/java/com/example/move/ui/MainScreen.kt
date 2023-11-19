@@ -124,7 +124,7 @@ fun ExploreScreen(
 
     Box(
         modifier = Modifier.background(color = MaterialTheme.colorScheme.inversePrimary)
-            .padding( start = if (isHorizontalTablet(windowSizeClass)) 65.dp else 0.dp)
+            .padding( start = if (showNavRail(windowSizeClass, LocalConfiguration.current)) 65.dp else 0.dp)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -507,7 +507,7 @@ fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(ro
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.inversePrimary)
-            .padding( start = if (isHorizontalTablet(windowSizeClass)) 65.dp else 0.dp)
+            .padding( start = if (showNavRail(windowSizeClass, LocalConfiguration.current)) 65.dp else 0.dp)
     ) {
         val state = rememberScrollState()
         LaunchedEffect(Unit) { state.animateScrollTo(100) }

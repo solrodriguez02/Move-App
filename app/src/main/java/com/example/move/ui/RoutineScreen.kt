@@ -702,7 +702,7 @@ fun RoutineMenu(time :Int, navController: NavController, routineViewModel: Routi
             DropdownMenuItem(
                 text = { 
                     Text(
-                        text = if(liked) stringResource(id = R.string.remove_liked) else popUpOptions[0].label, 
+                        text = if(liked) stringResource(id = R.string.remove_liked) else popUpOptions[0].label,
                         color = MaterialTheme.colorScheme.primary
                     ) },
                 onClick = {

@@ -17,6 +17,15 @@ class SessionManager(context: Context) {
         editor.apply()
     }
 
+    fun loadSound(): Boolean {
+        return preferences.getBoolean(SOUND_ON, true)
+    }
+    fun saveSound(sound: Boolean) {
+        val editor = preferences.edit()
+        editor.putBoolean(SOUND_ON, sound)
+        editor.apply()
+    }
+
     fun loadAuthToken(): String? {
         return preferences.getString(AUTH_TOKEN, null)
     }
@@ -37,5 +46,6 @@ class SessionManager(context: Context) {
         const val PREFERENCES_NAME = "my_app"
         const val AUTH_TOKEN = "auth_token"
         const val IS_LIST_MODE = "mode"
+        const val SOUND_ON = "sound"
     }
 }

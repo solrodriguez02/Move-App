@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Face
@@ -23,6 +24,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchColors
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,6 +41,8 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,19 +58,26 @@ import com.example.move.util.getViewModelFactory
 @Composable
 fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewModel(factory = getViewModelFactory())) {
 
-    viewModel.getCurrentUser()
+    var setValues by remember { mutableStateOf(true) }
+
+    if(setValues) {
+        setValues = false
+        viewModel.getCurrentUser()
+        viewModel.setSound()
+    }
+
+    val currentUser = viewModel.uiState.currentUser
 
     var setListMode by remember { mutableStateOf(true) }
+    var showModeDialog by remember { mutableStateOf(false) }
+    var showWarningDialog by remember { mutableStateOf(false) }
+    var showShareDialog by remember { mutableStateOf(false) }
+    var soundOn by remember { mutableStateOf(viewModel.uiState.sound) }
 
     if(setListMode) {
         setListMode = false
         viewModel.setIsListMode()
     }
-
-    val currentUser = viewModel.uiState.currentUser
-
-    var showModeDialog by remember { mutableStateOf(false) }
-    var showWarningDialog by remember { mutableStateOf(false) }
 
     if(showModeDialog) {
         ModeDialog(onShowMode = { showModeDialog = !showModeDialog })
@@ -77,8 +90,27 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
             message = stringResource(id = R.string.logout_warning_message))
     }
 
+    if(showShareDialog) {
+        ShareDialog(
+            onCancel = { showShareDialog = false },
+            isWeb = true
+       )
+    }
+
     if(!viewModel.uiState.isAuthenticated) {
         navController.navigate(Screen.SignInScreen.route)
+    }
+
+    val icon: (@Composable () -> Unit)? = if (soundOn) {
+        {
+            Icon(
+                imageVector = Icons.Filled.Check,
+                contentDescription = null,
+                modifier = Modifier.size(SwitchDefaults.IconSize),
+            )
+        }
+    } else {
+        null
     }
 
     Column {
@@ -256,6 +288,35 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
             fontSize = 24.sp,
             color = MaterialTheme.colorScheme.primary
         )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 40.dp).padding(bottom = 5.dp),
+        ) {
+            Text(
+                text = stringResource(id = R.string.sound_title),
+                modifier = Modifier.weight(1f)
+            )
+            Switch(
+                checked = soundOn,
+                onCheckedChange = {
+                    soundOn = it
+                    viewModel.changeSound()
+                },
+                thumbContent = icon,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.inversePrimary,
+                    checkedTrackColor = MaterialTheme.colorScheme.surfaceTint,
+                    checkedBorderColor = Color.Transparent,
+                    uncheckedTrackColor = Color.Transparent,
+                    uncheckedBorderColor = MaterialTheme.colorScheme.surfaceTint,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        }
+
         Button(
             onClick = { showModeDialog = true },
             modifier = Modifier
@@ -266,35 +327,36 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val icon: Painter = if(viewModel.uiState.listMode) painterResource(id = R.drawable.list_mode) else painterResource(id = R.drawable.detail_mode)
-                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                val modeIcon: Painter = if(viewModel.uiState.listMode) painterResource(id = R.drawable.list_mode) else painterResource(id = R.drawable.detail_mode)
+                Icon(modeIcon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 Text(
-                    text = stringResource(id = R.string.mode_dialog_title),
+                    text = stringResource(id = R.string.mode_dialog_title) +
+                        if(viewModel.uiState.listMode) stringResource(id = R.string.list_mode) else stringResource(id = R.string.detail_mode),
                     modifier = Modifier.padding(start = 10.dp),
                     color= MaterialTheme.colorScheme.primary,
                 )
             }
         }
+
         Button(
-            onClick = {
-                /* TODO */
-            },
+            onClick = { showShareDialog = true },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 28.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(imageVector = Icons.Filled.Info, contentDescription = null, tint= MaterialTheme.colorScheme.primary)
+                Icon(Icons.Filled.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 Text(
                     text = stringResource(id = R.string.check_website_name),
                     modifier = Modifier.padding(start = 10.dp),
-                    color = MaterialTheme.colorScheme.primary,
+                    color= MaterialTheme.colorScheme.primary,
                 )
             }
         }
+
         OutlinedButton(
             onClick = { showWarningDialog = true },
             modifier = Modifier

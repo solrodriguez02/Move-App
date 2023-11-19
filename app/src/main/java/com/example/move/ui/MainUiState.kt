@@ -14,6 +14,7 @@ data class MainUiState(
     val isCurrentRoutineFav: Boolean = false,
     val error: Error? = null,
     val listMode: Boolean = false,
+    val sound: Boolean = true
 )
 
 val MainUiState.canGetCurrentUser: Boolean get() = isAuthenticated

@@ -34,7 +34,7 @@ import androidx.navigation.NavController
 import com.example.move.R
 
 @Composable
-fun ShareDialog(onCancel: () -> Unit, id :Int) {
+fun ShareDialog(onCancel: () -> Unit, id :Int = 0, isWeb: Boolean = false) {
 
     val clipboardManager: ClipboardManager = LocalClipboardManager.current
 
@@ -66,13 +66,17 @@ fun ShareDialog(onCancel: () -> Unit, id :Int) {
                     modifier = Modifier.padding(horizontal = 30.dp)
                 ) {
                     Text(
-                        text = stringResource(id = R.string.copy_share_title),
+                        text = stringResource(id = if(isWeb) R.string.copy_web_title else R.string.copy_share_title),
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                     Button(
-                        onClick = { clipboardManager.setText(AnnotatedString("https://www.move.com/routine/$id")) },
+                        onClick = {
+                            clipboardManager.setText(AnnotatedString(
+                                if(isWeb) "http://localhost:3000/" else "https://www.move.com/routine/$id"
+                            ))
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.surfaceTint,
                             contentColor = MaterialTheme.colorScheme.inversePrimary,

@@ -14,7 +14,7 @@
     <string name="share">Share</string>
     <string name="rate_routine">Rate this routine</string>
     <string name="start_routine">Start</string>
-    <string name="mode_dialog_title">Execution mode</string>
+    <string name="mode_dialog_title">"Execution mode: "</string>
     <string name="detail_mode">Detailed</string>
     <string name="list_mode">List</string>
     <string name="difficulty_filter">Difficulty</string>
@@ -112,4 +112,6 @@
     <string name="max_score">" of 5"</string>
     <string name="already_liked">This routine is in your favourites</string>
     <string name="remove_liked">Remove from favourites</string>
+    <string name="copy_web_title">Press the button to copy the web site link</string>
+    <string name="sound_title">Routine execution sound</string>
 </resources>

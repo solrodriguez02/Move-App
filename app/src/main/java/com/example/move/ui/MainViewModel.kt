@@ -61,6 +61,15 @@ class MainViewModel(
         uiState = uiState.copy(listMode = sessionManager.loadMode())
     }
 
+    fun changeSound() {
+        sessionManager.saveSound(!sessionManager.loadSound())
+        uiState = uiState.copy(sound = sessionManager.loadSound())
+    }
+
+    fun setSound() {
+        uiState = uiState.copy(sound = sessionManager.loadSound())
+    }
+
     private fun <R> runOnViewModelScope(
         block: suspend () -> R,
         updateState: (MainUiState, R) -> MainUiState

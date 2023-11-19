@@ -1,6 +1,10 @@
 package com.example.move.ui
 
 import android.content.res.Configuration
+import android.media.AudioAttributes
+import android.media.AudioManager
+import android.media.ToneGenerator
+import android.os.Looper
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -68,6 +72,7 @@ import coil.compose.rememberImagePainter
 import kotlinx.coroutines.delay
 import com.example.move.R
 import com.example.move.util.getViewModelFactory
+import java.util.logging.Handler
 
 
 @Composable
@@ -77,14 +82,17 @@ fun RoutineExecutionScreen(
     viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
 ) {
 
-    var setListMode by remember { mutableStateOf(true) }
+    var setSettings by remember { mutableStateOf(true) }
 
-    if(setListMode) {
-        setListMode = false
+    if(setSettings) {
+        setSettings = false
         viewModel.setIsListMode()
+        viewModel.setSound()
     }
 
     val isDetailedMode = !viewModel.uiState.listMode
+
+    val isSoundOn = viewModel.uiState.sound
 
     var cycleIndex by remember { mutableIntStateOf(0) }
 
@@ -128,6 +136,10 @@ fun RoutineExecutionScreen(
     val config = LocalConfiguration.current
 
     val orientation = config.orientation
+
+    if (isSoundOn && (currentTime == 1 * 1000L || currentTime == 2 * 1000L || currentTime == 3 * 1000L)) {
+        ToneGenerator(AudioManager.STREAM_MUSIC, 100).startTone(ToneGenerator.TONE_PROP_BEEP, 200)
+    }
 
     if (showExitPopUp) {
         isTimerRunning = false
@@ -258,7 +270,8 @@ fun RoutineExecutionScreen(
                         },
                         onPlay = { isTimerRunning = !isTimerRunning },
                         onNext = { nextExercise = true },
-                        isPaused = isTimerRunning && currentTime > 0L
+                        isPaused = isTimerRunning && currentTime > 0L,
+                        isSoundOn = isSoundOn
                     )
 
                     if (isDetailedMode) NextExerciseBox(
@@ -300,7 +313,8 @@ fun RoutineExecutionScreen(
                             cycleIcon = cycleIcon,
                             exerciseCount = exerciseCount,
                             exerciseIndex = exerciseIndex,
-                            cycleIndex = cycleIndex
+                            cycleIndex = cycleIndex,
+                            isSoundOn = isSoundOn
                         )
                     else
                         HorizontalListMode(
@@ -324,7 +338,8 @@ fun RoutineExecutionScreen(
                             value = value,
                             cycleIcon = cycleIcon,
                             exerciseIndex = exerciseIndex,
-                            cycleIndex = cycleIndex
+                            cycleIndex = cycleIndex,
+                            isSoundOn = isSoundOn
                         )
                 }
             }
@@ -334,7 +349,7 @@ fun RoutineExecutionScreen(
 }
 
 @Composable
-fun ExecutionMenu(hasOnlyReps :Boolean, onRefresh :() -> Unit, onPlay :() -> Unit, onNext :() -> Unit, isPaused :Boolean) {
+fun ExecutionMenu(hasOnlyReps :Boolean, onRefresh :() -> Unit, onPlay :() -> Unit, onNext :() -> Unit, isPaused :Boolean, isSoundOn: Boolean) {
     Surface(
         shape = RoundedCornerShape(50.dp),
         color = MaterialTheme.colorScheme.surfaceTint,
@@ -365,7 +380,14 @@ fun ExecutionMenu(hasOnlyReps :Boolean, onRefresh :() -> Unit, onPlay :() -> Uni
                     )
                 }
             }
-            IconButton(onClick = onNext) {
+            IconButton(
+                onClick = {
+                    onNext()
+                    if(isSoundOn) {
+                        ToneGenerator(AudioManager.STREAM_MUSIC, 100).startTone(ToneGenerator.TONE_PROP_BEEP, 200)
+                    }
+                }
+            ) {
                 Icon(
                     painterResource(id = R.drawable.skip_next),
                     contentDescription = null,
@@ -501,7 +523,7 @@ fun Time(currentTime :Long, totalTime :Long, textColor: Color, currentExercise: 
 @Composable
 fun HorizontalListMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :() -> Unit, onNext: () -> Unit,
                        isPaused: Boolean, textColor: Color, isRestExercise: Boolean, currentExercise: Exercise, hasOnlyReps: Boolean,
-                       totalTime: Long, currentTime: Long, value: Float, cycleIcon: Painter, exerciseIndex: Int, cycleIndex: Int)
+                       totalTime: Long, currentTime: Long, value: Float, cycleIcon: Painter, exerciseIndex: Int, cycleIndex: Int, isSoundOn: Boolean)
 {
     Row {
         IconButton(
@@ -619,7 +641,7 @@ fun HorizontalListMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :() ->
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            ExecutionMenu(hasOnlyReps = hasOnlyReps, onRefresh = onRefresh, onPlay = onPlay, onNext = onNext, isPaused = isPaused)
+            ExecutionMenu(hasOnlyReps = hasOnlyReps, onRefresh = onRefresh, onPlay = onPlay, onNext = onNext, isPaused = isPaused, isSoundOn = isSoundOn)
         }
     }
 }
@@ -711,7 +733,7 @@ fun HorizontalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : P
 fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :() -> Unit, onNext: () -> Unit,
                            isPaused: Boolean, textColor: Color, isRestExercise: Boolean, currentExercise: Exercise,
                            hasOnlyReps: Boolean, totalTime: Long, currentTime: Long, value: Float, cycleIcon: Painter,
-                           exerciseCount: Int, exerciseIndex: Int, cycleIndex: Int) {
+                           exerciseCount: Int, exerciseIndex: Int, cycleIndex: Int, isSoundOn: Boolean) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.fillMaxSize()
@@ -765,7 +787,8 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
                 onRefresh = onRefresh,
                 onPlay = onPlay,
                 onNext = onNext,
-                isPaused = isPaused
+                isPaused = isPaused,
+                isSoundOn = isSoundOn
             )
         }
 
@@ -776,7 +799,7 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
                 .weight(0.2f)
         ) {
             Time(currentTime = currentTime, totalTime = totalTime, textColor = textColor, currentExercise = currentExercise)
-            HorizontalTimer(currentExercise = currentExercise, value = value,)
+            HorizontalTimer(currentExercise = currentExercise, value = value)
         }
 
         Column(

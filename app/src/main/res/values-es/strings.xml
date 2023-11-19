@@ -15,7 +15,7 @@
     <string name="share">Compartir</string>
     <string name="rate_routine">Califique la rutina</string>
     <string name="start_routine">Empezar</string>
-    <string name="mode_dialog_title">Modo de ejecución</string>
+    <string name="mode_dialog_title">"Modo de ejecución: "</string>
     <string name="detail_mode">Detallado</string>
     <string name="list_mode">Lista</string>
     <string name="difficulty_filter">Dificultad</string>
@@ -113,4 +113,6 @@
     <string name="max_score">" de 5"</string>
     <string name="already_liked">Esta rutina está en sus favoritos</string>
     <string name="remove_liked">Quitar de favoritos</string>
+    <string name="copy_web_title">Presione el botón para copiar el enlace del sitio web</string>
+    <string name="sound_title">Sonido en la ejecución de rutinas</string>
 </resources>

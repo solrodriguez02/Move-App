@@ -8,6 +8,9 @@ data class NetworkCycleExercise (
     @SerializedName("exercise")
     var exercise: NetworkExercise,
 
+    @SerializedName("duration")
+    var duration: Int,
+
     @SerializedName("order")
     var order: Int,
 
@@ -23,7 +26,7 @@ data class NetworkCycleExercise (
             exercise = exercise.asModel(),
             order = order,
             repetitions = repetitions,
-            metadata = metadata
+            duration = duration
         )
     }
 }

@@ -86,10 +86,18 @@ fun RoutineScreen(
     onNavigateToExecute :(routineId:Int)->Unit,
     navController: NavController,
     widthSizeClass: WindowWidthSizeClass,
+    routineId: Int,
     mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory()),
     routineViewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
     ) {
 
+    var count by remember {
+        mutableStateOf(true)
+    }
+    if(count) {
+        routineViewModel.getRoutine(routineId)
+        count = false
+    }
     val isVertical = widthSizeClass == WindowWidthSizeClass.Compact
 
     var showRate by remember { mutableStateOf(false) }
@@ -98,6 +106,7 @@ fun RoutineScreen(
     var score by remember { mutableIntStateOf (0) }
     var cycleIndex by remember { mutableIntStateOf(0) }
     var isRated by remember { mutableStateOf(false) }
+    var routineData = routineViewModel.uiState.currentRoutine
 
     @Composable
     fun RoutineDetail() {
@@ -111,7 +120,7 @@ fun RoutineScreen(
         )
 
         val filters = arrayListOf(
-            FilterDetail(stringResource(id = R.string.difficulty_filter), routine.difficulty + stringResource(id = R.string.difficulty_lower), R.drawable.difficulty),
+            FilterDetail(stringResource(id = R.string.difficulty_filter), routineData?.difficulty + stringResource(id = R.string.difficulty_lower), R.drawable.difficulty),
             FilterDetail(stringResource(id = R.string.elements_required_filter), routine.elements.toString().substring(1, routine.elements.toString().length - 1), R.drawable.elements),
             FilterDetail(stringResource(id = R.string.approach_filter), routine.approach.toString().substring(1, routine.approach.toString().length - 1), R.drawable.approach),
             FilterDetail(stringResource(id = R.string.space_required_filter), routine.space, R.drawable.space)
@@ -132,7 +141,7 @@ fun RoutineScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = routine.title,
+                    text = routineData?.name ?: "",
                     fontSize = 25.sp,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
@@ -140,7 +149,7 @@ fun RoutineScreen(
                         .weight(1f)
                 )
                 Text(
-                    text = routine.score.toString() + stringResource(id = R.string.max_score),
+                    text = routineData?.score.toString() + stringResource(id = R.string.max_score),
                     color = MaterialTheme.colorScheme.primary
                 )
                 Icon(
@@ -245,7 +254,7 @@ fun RoutineScreen(
                                     )
                                 }
                             }
-                            if(score > 0) {
+                            if (score > 0) {
                                 Button(
                                     contentPadding = PaddingValues(0.dp),
                                     colors = ButtonDefaults.buttonColors(
@@ -253,7 +262,10 @@ fun RoutineScreen(
                                         contentColor = MaterialTheme.colorScheme.surfaceTint,
                                     ),
                                     onClick = {
-                                        mainViewModel.makeReview(routine.id, Review(score))
+                                        mainViewModel.makeReview(
+                                            routineData?.id ?: 0,
+                                            Review(score)
+                                        )
                                         isRated = true
                                     },
                                     modifier = Modifier.padding(start = 15.dp)
@@ -281,7 +293,7 @@ fun RoutineScreen(
                 )
 
                 Button(
-                    onClick = {showDescription = !showDescription},
+                    onClick = { showDescription = !showDescription },
                     contentPadding = PaddingValues(0.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,
@@ -303,7 +315,7 @@ fun RoutineScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = routine.description,
+                        text = routineData?.detail ?: "no details",
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(10.dp)
@@ -355,45 +367,50 @@ fun RoutineScreen(
 
 
             /////////////////// Cycle exercises ///////////////////////
-            for ((index, cycle) in routine.cycles.withIndex()) {
-                if (cycleIndex == 0 && index == 0 ||
-                    cycleIndex == 1 && index > 0 && index < routine.cycles.size - 1 ||
-                    cycleIndex == 2 && index == routine.cycles.size - 1
-                ) {
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 15.dp)
+            if (routineData?.cycles?.isNotEmpty() == true) {
+                for ((index, cycle) in routineData?.cycles?.entries?.withIndex()!!) {
+                    if (cycleIndex == 0 && index == 0 ||
+                        cycleIndex == 1 && index > 0 && index < routineData?.cycles?.size?.minus(1) ?: 0 ||
+                        cycleIndex == 2 && index == routineData?.cycles?.size?.minus(1) ?: 0
                     ) {
-                        Text(
-                            text = cycle.name,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(end = 10.dp)
-                        )
-                        Surface(
-                            color = MaterialTheme.colorScheme.inversePrimary,
-                            shape = RoundedCornerShape(8.dp),
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(vertical = 15.dp)
                         ) {
                             Text(
-                                text = stringResource(id = R.string.repetitions_upper) + cycle.reps,
-                                color = MaterialTheme.colorScheme.surfaceTint,
+                                text = cycle.key.name ?: "",
                                 fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(end = 10.dp)
                             )
+                            Surface(
+                                color = MaterialTheme.colorScheme.inversePrimary,
+                                shape = RoundedCornerShape(8.dp),
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.repetitions_upper) + cycle.key.repetitions,
+                                    color = MaterialTheme.colorScheme.surfaceTint,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                )
+                            }
                         }
-                    }
 
-                    for (exercise in cycle.exercises) {
-                        if (exercise.title == stringResource(id = R.string.rest_compare)) {
-                            RestExercise(title = exercise.title, secs = exercise.secs)
-                        } else {
-                            ExerciseBox(
-                                title = exercise.title,
-                                secs = exercise.secs,
-                                reps = exercise.reps,
-                                imgUrl = exercise.imageUrl
-                            )
+                        for (exercise in cycle.value) {
+                            if (exercise.exercise.name == stringResource(id = R.string.rest_compare)) {
+                                RestExercise(
+                                    title = exercise.exercise.name!!,
+                                    secs = exercise.repetitions
+                                )
+                            } else {
+                                ExerciseBox(
+                                    title = exercise.exercise.name ?: "",
+                                    secs = exercise.duration,
+                                    reps = exercise.repetitions,
+                                    imgUrl = exercise.exercise.detail ?: ""
+                                )
+                            }
                         }
                     }
                 }
@@ -422,9 +439,9 @@ fun RoutineScreen(
                 ) {
                     Image(
                         painter = rememberImagePainter(
-                            data = routine.imageUrl
+                            data = routineData?.detail
                         ),
-                        contentDescription = routine.imageUrl,
+                        contentDescription = routineData?.detail,
                         modifier = Modifier
                             .clip(
                                 RoundedCornerShape(
@@ -470,9 +487,9 @@ fun RoutineScreen(
                     ) {
                         Image(
                             painter = rememberImagePainter(
-                                data = routine.imageUrl
+                                data = routineData?.detail
                             ),
-                            contentDescription = routine.imageUrl,
+                            contentDescription = routineData?.detail,
                             modifier = Modifier
                                 .clip(
                                     RoundedCornerShape(

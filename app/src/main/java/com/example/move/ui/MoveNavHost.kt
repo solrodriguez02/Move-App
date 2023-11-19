@@ -56,11 +56,13 @@ fun MoveNavHost(
             deepLinks = listOf(navDeepLink { uriPattern = "$uri/routine?id={id}" }, navDeepLink { uriPattern = "$secureUri/routine?id={id}" }),
             ) {
 
-                RoutineScreen(
+                backStackEntry ->RoutineScreen(
                     onNavigateToExecute = { id -> navController.navigate("routine/$id/execute") },
                     navController = navController,
-                    widthSizeClass = windowSizeClass.widthSizeClass
-                )
+                    widthSizeClass = windowSizeClass.widthSizeClass,
+                    routineId = backStackEntry.arguments?.getInt("id") ?: 0
+
+        )
             /*
             else
                 RoutineScreenModal(

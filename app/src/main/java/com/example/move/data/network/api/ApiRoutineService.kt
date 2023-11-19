@@ -15,7 +15,7 @@ import retrofit2.http.Query
 
 interface ApiRoutineService {
     @GET("routines")
-    suspend fun getAllRoutines(@Query("size") size: Int = 5): Response<NetworkPagedContent<NetworkRoutine>>
+    suspend fun getAllRoutines(@Query("size") size: Int = 100): Response<NetworkPagedContent<NetworkRoutine>>
 
     @GET("routines/{routineId}")
     suspend fun getRoutineById(@Path("routineId") routineId: Int): Response<NetworkRoutine>
@@ -23,10 +23,10 @@ interface ApiRoutineService {
     @GET("routines/{routineId}/cycles")
     suspend fun getRoutineCycles(@Path("routineId") routineId: Int): Response<NetworkPagedContent<NetworkRoutineCycle>>
 
-    @GET("/cycles/{cycleId}")
+    @GET("cycles/{cycleId}/exercises")
     suspend fun getRoutineCycleExercises(@Path("cycleId") cycleId: Int): Response<NetworkPagedContent<NetworkCycleExercise>>
 
-    @GET("/favourites")
+    @GET("favourites")
     suspend fun getFavouriteRoutines(): Response<NetworkPagedContent<NetworkRoutine>>
 
     @POST("favourites/{routineId}")

@@ -66,22 +66,9 @@ import coil.compose.rememberImagePainter
 import com.example.move.R
 import com.example.move.util.getViewModelFactory
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.move.data.model.RoutinePreview
 
 ///////////// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-data class RoutineItemData(
-    val imageUrl: String,
-    val title: String,
-    val time: Int
-)
-
-val routineData:  List<RoutineItemData> = listOf(
-    RoutineItemData("https://hips.hearstapps.com/hmg-prod/images/12-ejercicios-para-abdominales-elle-1632239590.jpg", "Abs routine 1", 15),
-    RoutineItemData("https://hips.hearstapps.com/hmg-prod/images/12-ejercicios-para-abdominales-elle-1632239590.jpg", "Abs routine 2", 60),
-    RoutineItemData("https://hips.hearstapps.com/hmg-prod/images/12-ejercicios-para-abdominales-elle-1632239590.jpg", "Abs routine 3", 25),
-    RoutineItemData("https://hips.hearstapps.com/hmg-prod/images/12-ejercicios-para-abdominales-elle-1632239590.jpg", "Abs routine 4", 40),
-    RoutineItemData("https://hips.hearstapps.com/hmg-prod/images/12-ejercicios-para-abdominales-elle-1632239590.jpg", "Abs routine 5", 60),
-)
 
 ///////////// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -159,6 +146,7 @@ fun ExploreScreen(
                                 imageUrl = routine.detail ?: "",
                                 title = routine.name,
                                 time = 0,
+                                routineId = routine.id ?:0,
                                 leftSide = if (isVertical) index % 2 == 0 else false,
                                 onNavigateToRoutine = onNavigateToRoutine
                             )
@@ -502,7 +490,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
 
 @Composable
 fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(routineId:Int)->Unit,
-               windowSizeClass: WindowSizeClass) {
+               windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -516,15 +504,15 @@ fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(ro
         Column(
             modifier = Modifier.verticalScroll(state)
         ) {
-            RoutinesCarousel(title = stringResource(id = R.string.favourites_title), routines = routineData, onNavigateToRoutine = onNavigateToRoutine)
-            RoutinesCarousel(title = stringResource(id = R.string.your_routines_title), routines = routineData, onNavigateToRoutine = onNavigateToRoutine)
+            RoutinesCarousel(title = stringResource(id = R.string.favourites_title), routineData = viewModel.uiState.routinePreviews ?: emptyList(), onNavigateToRoutine = onNavigateToRoutine)
+            RoutinesCarousel(title = stringResource(id = R.string.your_routines_title), routineData = viewModel.uiState.routinePreviews ?: emptyList(), onNavigateToRoutine = onNavigateToRoutine)
             Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
 
 @Composable
-fun RoutinesCarousel(title :String, routines :List<RoutineItemData>, onNavigateToRoutine :(routineId:Int)->Unit) {
+fun RoutinesCarousel(title :String, routineData :List<RoutinePreview>, onNavigateToRoutine :(routineId:Int)->Unit) {
     Text(
         text = title,
         fontSize = 20.sp,
@@ -533,12 +521,13 @@ fun RoutinesCarousel(title :String, routines :List<RoutineItemData>, onNavigateT
     )
 
     LazyRow {
-        items(routines) { routine ->
+        items(routineData) { routine ->
             Box(modifier = Modifier.padding(start = 10.dp, top = 10.dp)) {
                 RoutinePreview(
-                    imageUrl = routine.imageUrl,
-                    title = routine.title,
-                    time = routine.time,
+                    imageUrl = routine.detail?:"",
+                    title = routine.name,
+                    time = 0,
+                    routineId = routine.id?:0,
                     onNavigateToRoutine = onNavigateToRoutine
                 )
             }
@@ -589,14 +578,14 @@ fun Header(title: String, onNavigateToProfile :(userId:Int)->Unit, isHome :Boole
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun RoutinePreview(imageUrl: String, title: String, time: Int, leftSide: Boolean = false, onNavigateToRoutine :(routineId:Int)->Unit) {
-    Column(
+fun RoutinePreview(imageUrl: String, title: String, time: Int, routineId: Int, leftSide: Boolean = false, onNavigateToRoutine :(routineId:Int)->Unit,
+                   viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())) {    Column(
         horizontalAlignment = if(leftSide) Alignment.End else Alignment.Start,
         modifier = Modifier.padding(bottom = 20.dp)
     ) {
         Button(
             shape = RoundedCornerShape(40.dp),
-            onClick = { onNavigateToRoutine(0) },
+            onClick = { onNavigateToRoutine(routineId) },
             contentPadding = PaddingValues(0.dp),
             colors =  ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent,

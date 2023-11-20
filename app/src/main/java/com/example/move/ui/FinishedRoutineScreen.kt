@@ -49,6 +49,7 @@ import com.example.move.util.getViewModelFactory
 @Composable
 fun FinishedRoutineScreen(
     onNavigateToHome :() -> Unit,
+    routineId :Int,
     mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory()),
     routineViewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
 ) {
@@ -56,10 +57,10 @@ fun FinishedRoutineScreen(
     var score by remember { mutableIntStateOf (0) }
     var showShareDialog by remember { mutableStateOf (false) }
     var rated by remember { mutableStateOf(false) }
-    var liked by remember { mutableStateOf(routineViewModel.isRoutineInFavourites(routine.id)) }
+    var liked by remember { mutableStateOf(routineViewModel.isRoutineInFavourites(routineId)) }
 
     if(showShareDialog) {
-        ShareDialog(onCancel = { showShareDialog = false }, id = 0)
+        ShareDialog(onCancel = { showShareDialog = false }, id = routineId)
     }
 
     Box(
@@ -88,9 +89,9 @@ fun FinishedRoutineScreen(
             Button(
                 onClick = {
                     if(liked) {
-                        routineViewModel.removeRoutineToFavourites(routine.id)
+                        routineViewModel.removeRoutineToFavourites(routineId)
                     } else {
-                        routineViewModel.addRoutineToFavourites(routine.id)
+                        routineViewModel.addRoutineToFavourites(routineId)
                     }
                     liked = !liked
                 },
@@ -195,7 +196,7 @@ fun FinishedRoutineScreen(
                                 contentColor = MaterialTheme.colorScheme.surfaceTint,
                             ),
                             onClick = {
-                                mainViewModel.makeReview(routine.id, Review(score))
+                                mainViewModel.makeReview(routineId, Review(score))
                                 rated = true
                             },
                             modifier = Modifier.padding(start = 15.dp)

@@ -1,11 +1,8 @@
 package com.example.move.ui
 
 import android.content.res.Configuration
-import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.ToneGenerator
-import android.os.Looper
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -64,23 +61,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import kotlinx.coroutines.delay
 import com.example.move.R
+import com.example.move.data.model.Cycle
+import com.example.move.data.model.CycleExercise
 import com.example.move.util.getViewModelFactory
-import java.util.logging.Handler
 
+
+//var cycles :MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>> = emptyList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>().toMutableList()
 
 @Composable
 fun RoutineExecutionScreen(
     onNavigateToFinish :(routineId:Int)->Unit,
     navController: NavController,
     routineId: Int,
-    viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
+    viewModel: MainViewModel = viewModel(factory = getViewModelFactory()),
+    routineViewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
 ) {
 
     var setSettings by remember { mutableStateOf(true) }
@@ -89,263 +89,286 @@ fun RoutineExecutionScreen(
         setSettings = false
         viewModel.setIsListMode()
         viewModel.setSound()
+        routineViewModel.getRoutine(routineId)
     }
 
-    val isDetailedMode = !viewModel.uiState.listMode
+    val cycles = routineViewModel.uiState.currentRoutine?.cycles?.entries?.toMutableList() ?: emptyList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>().toMutableList()
 
-    val isSoundOn = viewModel.uiState.sound
+    if(cycles.isNotEmpty()) {
+        val isDetailedMode = !viewModel.uiState.listMode
 
-    var cycleIndex by remember { mutableIntStateOf(0) }
+        val isSoundOn = viewModel.uiState.sound
 
-    var exerciseIndex by remember { mutableIntStateOf(0) }
+        var cycleIndex by remember { mutableIntStateOf(0) }
 
-    var currentExercise by remember { mutableStateOf<Exercise>(routine.cycles[cycleIndex].exercises[exerciseIndex]) }
+        var exerciseIndex by remember { mutableIntStateOf(0) }
 
-    val exerciseCount = routine.cycles[cycleIndex].exercises.size
+        var currentExercise by remember { mutableStateOf<CycleExercise>(cycles[cycleIndex].value[exerciseIndex]) }
 
-    var nextExercise by remember { mutableStateOf(false) }
+        val exerciseCount = cycles.get(cycleIndex).value.size
 
-    val initialValue = 1f
+        var nextExercise by remember { mutableStateOf(false) }
 
-    var totalTime by remember { mutableLongStateOf(currentExercise.secs * 1000L) }
+        val initialValue = 1f
 
-    var size by remember {
-        mutableStateOf(IntSize.Zero)
-    }
-    var value by remember {
-        mutableFloatStateOf(initialValue)
-    }
-    var currentTime by remember {
-        mutableLongStateOf(totalTime)
-    }
-    var isTimerRunning by remember {
-        mutableStateOf(false)
-    }
+        var totalTime by remember { mutableLongStateOf(currentExercise.duration * 1000L) }
 
-    val cycleIcon = if(cycleIndex == 0) painterResource(id = R.drawable.warm_up) else if (cycleIndex == routine.cycles.size-1) painterResource(id = R.drawable.cooling) else painterResource(id = R.drawable.exercise)
+        var size by remember {
+            mutableStateOf(IntSize.Zero)
+        }
+        var value by remember {
+            mutableFloatStateOf(initialValue)
+        }
+        var currentTime by remember {
+            mutableLongStateOf(totalTime)
+        }
+        var isTimerRunning by remember {
+            mutableStateOf(false)
+        }
 
-    val isRestExercise = currentExercise.title == stringResource(id = R.string.rest_compare)
+        val cycleIcon =
+            if (cycleIndex == 0) painterResource(id = R.drawable.warm_up) else if (cycleIndex == cycles.size.minus(
+                    1
+                )
+            ) painterResource(id = R.drawable.cooling) else painterResource(id = R.drawable.exercise)
 
-    val textColor = if(isRestExercise && isDetailedMode) MaterialTheme.colorScheme.inversePrimary else MaterialTheme.colorScheme.primary
+        val isRestExercise =
+            currentExercise.exercise?.name == stringResource(id = R.string.rest_compare)
 
-    var newCycle by remember { mutableStateOf(true) }
+        val textColor =
+            if (isRestExercise && isDetailedMode) MaterialTheme.colorScheme.inversePrimary else MaterialTheme.colorScheme.primary
 
-    val hasOnlyReps = currentExercise.secs == 0
+        var newCycle by remember { mutableStateOf(true) }
 
-    var showExitPopUp by remember { mutableStateOf(false) }
+        val hasOnlyReps = currentExercise.duration == 0
 
-    val config = LocalConfiguration.current
+        var showExitPopUp by remember { mutableStateOf(false) }
 
-    val orientation = config.orientation
+        val config = LocalConfiguration.current
 
-    if (isSoundOn && (currentTime == 1 * 1000L || currentTime == 2 * 1000L || currentTime == 3 * 1000L)) {
-        ToneGenerator(AudioManager.STREAM_MUSIC, 100).startTone(ToneGenerator.TONE_PROP_BEEP, 200)
-    }
+        val orientation = config.orientation
 
-    if (showExitPopUp) {
-        isTimerRunning = false
-        WarningDialog(
-            onCancel = {
-            showExitPopUp = false
-            isTimerRunning = true },
-            onDo = { navController.popBackStack() },
-            title = stringResource(id = R.string.quit_routine_title),
-            message = stringResource(id = R.string.quit_routine_label)
-        )
-    }
+        if (isSoundOn && (currentTime == 1 * 1000L || currentTime == 2 * 1000L || currentTime == 3 * 1000L)) {
+            ToneGenerator(AudioManager.STREAM_MUSIC, 100).startTone(
+                ToneGenerator.TONE_PROP_BEEP,
+                200
+            )
+        }
 
-    if(!hasOnlyReps) {
-        LaunchedEffect(key1 = currentTime, key2 = isTimerRunning) {
-            if (currentTime > 0 && isTimerRunning) {
-                delay(100L)
-                currentTime -= 100L
-                value = 1 - (currentTime / totalTime.toFloat())
+        if (showExitPopUp) {
+            isTimerRunning = false
+            WarningDialog(
+                onCancel = {
+                    showExitPopUp = false
+                    isTimerRunning = true
+                },
+                onDo = { navController.popBackStack() },
+                title = stringResource(id = R.string.quit_routine_title),
+                message = stringResource(id = R.string.quit_routine_label)
+            )
+        }
+
+        if (!hasOnlyReps) {
+            LaunchedEffect(key1 = currentTime, key2 = isTimerRunning) {
+                if (currentTime > 0 && isTimerRunning) {
+                    delay(100L)
+                    currentTime -= 100L
+                    value = 1 - (currentTime / totalTime.toFloat())
+                }
             }
         }
-    }
 
-    if(cycleIndex == routine.cycles.size-1 && exerciseIndex == exerciseCount-1 && (currentTime.toInt() == 0 && !hasOnlyReps || nextExercise)) {
-        onNavigateToFinish(0)
-    } else {
-        if (currentTime <= 0L && currentExercise.secs != 0 || nextExercise) {
-            exerciseIndex++
-            nextExercise = false
-            if (exerciseIndex < exerciseCount) {
-                LaunchedEffect(key1 = exerciseIndex) {
-                    currentExercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
-                    currentTime = currentExercise.secs * 1000L
-                    totalTime = currentExercise.secs * 1000L
-                    delay(5000L)
-                }
-                isTimerRunning = true
-            } else {
-                cycleIndex++
-                if (cycleIndex < routine.cycles.size) {
+        if (cycleIndex == cycles.size.minus(1) && (exerciseIndex == exerciseCount || exerciseIndex == exerciseCount.minus(1)) && (currentTime.toInt() == 0 && !hasOnlyReps || nextExercise)) {
+            onNavigateToFinish(routineViewModel.uiState.currentRoutine?.id ?: 0)
+        } else {
+            if (currentTime <= 0L && currentExercise.duration != 0 || nextExercise) {
+                exerciseIndex++
+                nextExercise = false
+                if (exerciseIndex < (exerciseCount)) {
                     LaunchedEffect(key1 = exerciseIndex) {
-                        exerciseIndex = 0
-                        currentExercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
-                        currentTime = currentExercise.secs * 1000L
-                        totalTime = currentExercise.secs * 1000L
+                        currentExercise = cycles[cycleIndex].value[exerciseIndex]
+                        currentTime = currentExercise.duration * 1000L
+                        totalTime = currentExercise.duration * 1000L
                         delay(5000L)
                     }
-                    isTimerRunning = false
-                    newCycle = true
+                    isTimerRunning = true
+                } else {
+                    cycleIndex++
+                    if (cycleIndex < (cycles.size)) {
+                        LaunchedEffect(key1 = exerciseIndex) {
+                            exerciseIndex = 0
+                            currentExercise = cycles[cycleIndex].value[exerciseIndex]
+                            currentTime = currentExercise.duration * 1000L
+                            totalTime = currentExercise.duration * 1000L
+                            delay(5000L)
+                        }
+                        isTimerRunning = false
+                        newCycle = true
+                    }
                 }
             }
         }
-    }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(if (isRestExercise && isDetailedMode) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.inversePrimary)
-    ) {
-        val state = rememberScrollState()
-        LaunchedEffect(Unit) { state.animateScrollTo(100) }
-
-
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+        Box(
             modifier = Modifier
-                .verticalScroll(state)
-                .padding(20.dp)
+                .fillMaxSize()
+                .background(if (isRestExercise && isDetailedMode) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.inversePrimary)
         ) {
+            val state = rememberScrollState()
+            LaunchedEffect(Unit) { state.animateScrollTo(100) }
 
-            if (orientation == Configuration.ORIENTATION_PORTRAIT) {
 
-                ExecutionHeader(
-                    showExitPopUp = { showExitPopUp = true },
-                    textColor = textColor,
-                    newCycle = newCycle,
-                    cycleIcon = cycleIcon,
-                    isDetailedMode = isDetailedMode,
-                    currentExercise = currentExercise
-                )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .verticalScroll(state)
+                    .padding(20.dp)
+            ) {
 
-                if (newCycle) {
-                    NewCycleVerticalScreen(onStart = {
-                        newCycle = false
-                        isTimerRunning = true
-                    }, cycleIcon = cycleIcon, cycleIndex = cycleIndex)
-                } else {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .height(150.dp)
-                            .width(400.dp)
-                            .onSizeChanged { size = it }
-                            .padding(top = if (isDetailedMode) 30.dp else 0.dp)
-                    ) {
-                        VerticalTimer(
-                            totalTime = totalTime,
-                            size = size,
-                            currentExercise = currentExercise,
-                            currentTime = currentTime,
-                            value = value,
-                            textColor = textColor
+                if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+
+                    ExecutionHeader(
+                        showExitPopUp = { showExitPopUp = true },
+                        textColor = textColor,
+                        newCycle = newCycle,
+                        cycleIcon = cycleIcon,
+                        isDetailedMode = isDetailedMode,
+                        currentExercise = currentExercise
+                    )
+
+                    if (newCycle) {
+                        NewCycleVerticalScreen(onStart = {
+                            newCycle = false
+                            isTimerRunning = true
+                        }, cycleIcon = cycleIcon, cycleIndex = cycleIndex, cycles = cycles)
+                    } else {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .height(150.dp)
+                                .width(400.dp)
+                                .onSizeChanged { size = it }
+                                .padding(top = if (isDetailedMode) 30.dp else 0.dp)
+                        ) {
+                            VerticalTimer(
+                                totalTime = totalTime,
+                                size = size,
+                                currentExercise = currentExercise,
+                                currentTime = currentTime,
+                                value = value,
+                                textColor = textColor
+                            )
+                        }
+
+                        if (isDetailedMode)
+                            VerticalDetailedMode(
+                                currentExercise = currentExercise,
+                                exerciseIndex = exerciseIndex,
+                                exerciseCount = exerciseCount,
+                                isRestExercise = isRestExercise,
+                                textColor = textColor
+                            )
+                        else
+                            VerticalListMode(
+                                currentExercise = currentExercise,
+                                exerciseIndex = exerciseIndex,
+                                cycleIndex = cycleIndex,
+                                isRestExercise = isRestExercise,
+                                cycleIcon = cycleIcon,
+                                cycles = cycles
+                            )
+
+                        ExecutionMenu(
+                            hasOnlyReps = hasOnlyReps,
+                            onRefresh = {
+                                currentTime = totalTime
+                                isTimerRunning = true
+                            },
+                            onPlay = { isTimerRunning = !isTimerRunning },
+                            onNext = { nextExercise = true },
+                            isPaused = isTimerRunning && currentTime > 0L,
+                            isSoundOn = isSoundOn
+                        )
+
+                        if (isDetailedMode) NextExerciseBox(
+                            exerciseIndex = exerciseIndex,
+                            exerciseCount = exerciseCount,
+                            cycleIndex = cycleIndex,
+                            cycleIcon = cycleIcon,
+                            isRestExercise = isRestExercise,
+                            cycles = cycles
                         )
                     }
-
-                    if (isDetailedMode)
-                        VerticalDetailedMode(
-                            currentExercise = currentExercise,
-                            exerciseIndex = exerciseIndex,
-                            exerciseCount = exerciseCount,
-                            isRestExercise = isRestExercise,
-                            textColor = textColor
-                        )
-                    else
-                        VerticalListMode(
-                            currentExercise = currentExercise,
-                            exerciseIndex = exerciseIndex,
-                            cycleIndex = cycleIndex,
-                            isRestExercise = isRestExercise,
-                            cycleIcon = cycleIcon
-                        )
-
-                    ExecutionMenu(
-                        hasOnlyReps = hasOnlyReps,
-                        onRefresh = {
-                            currentTime = totalTime
+                } else {
+                    if (newCycle) {
+                        NewCycleHorizontalScreen(onStart = {
+                            newCycle = false
                             isTimerRunning = true
                         },
-                        onPlay = { isTimerRunning = !isTimerRunning },
-                        onNext = { nextExercise = true },
-                        isPaused = isTimerRunning && currentTime > 0L,
-                        isSoundOn = isSoundOn
-                    )
-
-                    if (isDetailedMode) NextExerciseBox(
-                        exerciseIndex = exerciseIndex,
-                        exerciseCount = exerciseCount,
-                        cycleIndex = cycleIndex,
-                        cycleIcon = cycleIcon,
-                        isRestExercise = isRestExercise
-                    )
-                }
-            } else {
-                if(newCycle) {
-                    NewCycleHorizontalScreen(onStart = {
-                        newCycle = false
-                        isTimerRunning = true
-                    }, cycleIcon = cycleIcon, cycleIndex = cycleIndex,
-                        textColor = textColor, onClose = { showExitPopUp = true })
-                } else {
-                    if (isDetailedMode)
-                        HorizontalDetailedMode(
-                            onClose = {
-                                showExitPopUp = true
-                                isTimerRunning = false
-                            },
-                            onRefresh = {
-                                currentTime = totalTime
-                                isTimerRunning = true
-                            },
-                            onPlay = { isTimerRunning = !isTimerRunning },
-                            onNext = { nextExercise = true },
-                            isPaused = isTimerRunning && currentTime > 0L,
-                            textColor = textColor,
-                            isRestExercise = isRestExercise,
-                            currentExercise = currentExercise,
-                            hasOnlyReps = hasOnlyReps,
-                            totalTime = totalTime,
-                            currentTime = currentTime,
-                            value = value,
                             cycleIcon = cycleIcon,
-                            exerciseCount = exerciseCount,
-                            exerciseIndex = exerciseIndex,
                             cycleIndex = cycleIndex,
-                            isSoundOn = isSoundOn
-                        )
-                    else
-                        HorizontalListMode(
-                            onClose = {
-                                showExitPopUp = true
-                                isTimerRunning = false
-                            },
-                            onRefresh = {
-                                currentTime = totalTime
-                                isTimerRunning = true
-                            },
-                            onPlay = { isTimerRunning = !isTimerRunning },
-                            onNext = { nextExercise = true },
-                            isPaused = isTimerRunning && currentTime > 0L,
                             textColor = textColor,
-                            isRestExercise = isRestExercise,
-                            currentExercise = currentExercise,
-                            hasOnlyReps = hasOnlyReps,
-                            totalTime = totalTime,
-                            currentTime = currentTime,
-                            value = value,
-                            cycleIcon = cycleIcon,
-                            exerciseIndex = exerciseIndex,
-                            cycleIndex = cycleIndex,
-                            isSoundOn = isSoundOn
+                            onClose = { showExitPopUp = true },
+                            cycles = cycles
                         )
+                    } else {
+                        if (isDetailedMode)
+                            HorizontalDetailedMode(
+                                onClose = {
+                                    showExitPopUp = true
+                                    isTimerRunning = false
+                                },
+                                onRefresh = {
+                                    currentTime = totalTime
+                                    isTimerRunning = true
+                                },
+                                onPlay = { isTimerRunning = !isTimerRunning },
+                                onNext = { nextExercise = true },
+                                isPaused = isTimerRunning && currentTime > 0L,
+                                textColor = textColor,
+                                isRestExercise = isRestExercise,
+                                currentExercise = currentExercise,
+                                hasOnlyReps = hasOnlyReps,
+                                totalTime = totalTime,
+                                currentTime = currentTime,
+                                value = value,
+                                cycleIcon = cycleIcon,
+                                exerciseCount = exerciseCount,
+                                exerciseIndex = exerciseIndex,
+                                cycleIndex = cycleIndex,
+                                isSoundOn = isSoundOn,
+                                cycles = cycles
+                            )
+                        else
+                            HorizontalListMode(
+                                onClose = {
+                                    showExitPopUp = true
+                                    isTimerRunning = false
+                                },
+                                onRefresh = {
+                                    currentTime = totalTime
+                                    isTimerRunning = true
+                                },
+                                onPlay = { isTimerRunning = !isTimerRunning },
+                                onNext = { nextExercise = true },
+                                isPaused = isTimerRunning && currentTime > 0L,
+                                textColor = textColor,
+                                isRestExercise = isRestExercise,
+                                currentExercise = currentExercise,
+                                hasOnlyReps = hasOnlyReps,
+                                totalTime = totalTime,
+                                currentTime = currentTime,
+                                value = value,
+                                cycleIcon = cycleIcon,
+                                exerciseIndex = exerciseIndex,
+                                cycleIndex = cycleIndex,
+                                isSoundOn = isSoundOn,
+                                cycles = cycles
+                            )
+                    }
                 }
             }
         }
-
     }
 }
 
@@ -400,7 +423,7 @@ fun ExecutionMenu(hasOnlyReps :Boolean, onRefresh :() -> Unit, onPlay :() -> Uni
 }
 
 @Composable
-fun ExecutionHeader(showExitPopUp :() -> Unit, textColor : Color, newCycle :Boolean, cycleIcon: Painter, isDetailedMode: Boolean, currentExercise: Exercise) {
+fun ExecutionHeader(showExitPopUp :() -> Unit, textColor : Color, newCycle :Boolean, cycleIcon: Painter, isDetailedMode: Boolean, currentExercise: CycleExercise) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -417,7 +440,7 @@ fun ExecutionHeader(showExitPopUp :() -> Unit, textColor : Color, newCycle :Bool
         }
         if (isDetailedMode && !newCycle) {
             Text(
-                text = currentExercise.title,
+                text = currentExercise.exercise?.name ?: "",
                 fontSize = 24.sp,
                 color = textColor
             )
@@ -434,7 +457,7 @@ fun ExecutionHeader(showExitPopUp :() -> Unit, textColor : Color, newCycle :Bool
 }
 
 @Composable
-fun HorizontalTimer(currentExercise :Exercise, value :Float, isList :Boolean = false) {
+fun HorizontalTimer(currentExercise :CycleExercise, value :Float, isList :Boolean = false) {
     Canvas(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -453,7 +476,7 @@ fun HorizontalTimer(currentExercise :Exercise, value :Float, isList :Boolean = f
         drawLine(
             color = Color(0xFF5370F8),
             start = Offset(if(isList) 0f else size.width / 2, if(isList) 0f else 0f),
-            end = Offset(if(isList) 1000 * if(currentExercise.secs == 0) 1f else (value) else size.width / 2, if(isList) 0f else if(currentExercise.secs == 0) 500f else value*500f ),
+            end = Offset(if(isList) 1000 * if(currentExercise.duration == 0) 1f else (value) else size.width / 2, if(isList) 0f else if(currentExercise.duration == 0) 500f else value*500f ),
             strokeWidth = 30f,
             cap = StrokeCap.Round
 
@@ -462,7 +485,7 @@ fun HorizontalTimer(currentExercise :Exercise, value :Float, isList :Boolean = f
 }
 
 @Composable
-fun VerticalTimer(totalTime :Long, size : IntSize, currentExercise :Exercise, currentTime :Long, value :Float, textColor : Color) {
+fun VerticalTimer(totalTime :Long, size : IntSize, currentExercise :CycleExercise, currentTime :Long, value :Float, textColor : Color) {
     Canvas(modifier = Modifier.fillMaxSize()) {
         drawArc(
             color = Color.LightGray,
@@ -478,7 +501,7 @@ fun VerticalTimer(totalTime :Long, size : IntSize, currentExercise :Exercise, cu
         drawArc(
             color = Color(0xFF5370F8),
             startAngle = -160f,
-            sweepAngle = 140f * if(currentExercise.secs == 0) 1f else value,
+            sweepAngle = 140f * if(currentExercise.duration == 0) 1f else value,
             useCenter = false,
             size = Size(
                 size.width.toFloat(),
@@ -491,7 +514,7 @@ fun VerticalTimer(totalTime :Long, size : IntSize, currentExercise :Exercise, cu
 }
 
 @Composable
-fun Time(currentTime :Long, totalTime :Long, textColor: Color, currentExercise: Exercise, isHorizontalList :Boolean = false) {
+fun Time(currentTime :Long, totalTime :Long, textColor: Color, currentExercise: CycleExercise, isHorizontalList :Boolean = false) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.padding(bottom = 20.dp)
@@ -500,14 +523,14 @@ fun Time(currentTime :Long, totalTime :Long, textColor: Color, currentExercise: 
         val stringSecs = String.format("%02d:%02d", currentSecs / 60, currentSecs % 60)
 
         Text(
-            text = if (totalTime.toInt() != 0) stringSecs else stringResource(id = R.string.repetitions) + currentExercise.reps.toString(),
+            text = if (totalTime.toInt() != 0) stringSecs else stringResource(id = R.string.repetitions) + currentExercise.repetitions.toString(),
             fontSize = if(isHorizontalList) 30.sp else 44.sp,
             color = textColor
         )
 
-        if (totalTime.toInt() != 0 && currentExercise.reps != 0 && !isHorizontalList) {
+        if (totalTime.toInt() != 0 && currentExercise.repetitions != 0 && !isHorizontalList) {
             Text(
-                text = stringResource(id = R.string.repetitions) + currentExercise.reps.toString(),
+                text = stringResource(id = R.string.repetitions) + currentExercise.repetitions.toString(),
                 fontSize = 20.sp,
                 color = textColor
             )
@@ -523,8 +546,9 @@ fun Time(currentTime :Long, totalTime :Long, textColor: Color, currentExercise: 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun HorizontalListMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :() -> Unit, onNext: () -> Unit,
-                       isPaused: Boolean, textColor: Color, isRestExercise: Boolean, currentExercise: Exercise, hasOnlyReps: Boolean,
-                       totalTime: Long, currentTime: Long, value: Float, cycleIcon: Painter, exerciseIndex: Int, cycleIndex: Int, isSoundOn: Boolean)
+                       isPaused: Boolean, textColor: Color, isRestExercise: Boolean, currentExercise: CycleExercise, hasOnlyReps: Boolean,
+                       totalTime: Long, currentTime: Long, value: Float, cycleIcon: Painter, exerciseIndex: Int, cycleIndex: Int, isSoundOn: Boolean,
+                       cycles: MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>)
 {
     Row {
         IconButton(
@@ -548,7 +572,8 @@ fun HorizontalListMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :() ->
                     HorizontalExerciseListBox(
                         exerciseIndex = exerciseIndex - i,
                         cycleIndex = cycleIndex,
-                        cycleIcon = cycleIcon
+                        cycleIcon = cycleIcon,
+                        cycles = cycles
                     )
                 }
             }
@@ -593,15 +618,15 @@ fun HorizontalListMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :() ->
                                     .clip(RoundedCornerShape(10.dp)),
                             ) {
                                 Image(
-                                    painter = rememberImagePainter(data = currentExercise.imageUrl),
-                                    contentDescription = currentExercise.title,
+                                    painter = rememberImagePainter(data = ""), // IMAGEN !!!!
+                                    contentDescription = currentExercise.exercise?.name,
                                     modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Crop,
                                 )
                             }
                         }
                         Text(
-                            text = currentExercise.title,
+                            text = currentExercise.exercise?.name ?: "",
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             color = if (isRestExercise) MaterialTheme.colorScheme.inversePrimary else MaterialTheme.colorScheme.primary
@@ -618,7 +643,8 @@ fun HorizontalListMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :() ->
                     HorizontalExerciseListBox(
                         exerciseIndex = exerciseIndex + i,
                         cycleIndex = cycleIndex,
-                        cycleIcon = cycleIcon
+                        cycleIcon = cycleIcon,
+                        cycles = cycles
                     )
                 }
             }
@@ -649,13 +675,13 @@ fun HorizontalListMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :() ->
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun HorizontalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : Painter) {
+fun HorizontalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : Painter, cycles :MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>) {
     var type = -1
 
     if(exerciseIndex == -2) type = -1
     else if(exerciseIndex == -1) type = 0
-    else if(exerciseIndex < routine.cycles[cycleIndex].exercises.size) {
-        type = if(routine.cycles[cycleIndex].exercises[exerciseIndex].title == stringResource(id = R.string.rest_compare)) 2 else 1
+    else if(exerciseIndex < cycles[cycleIndex].value.size) {
+        type = if(cycles[cycleIndex].value[exerciseIndex].exercise?.name == stringResource(id = R.string.rest_compare)) 2 else 1
     }
 
     Surface(
@@ -678,14 +704,14 @@ fun HorizontalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : P
                     modifier = Modifier.padding(bottom = 20.dp)
                 )
                 Text(
-                    text = routine.cycles[cycleIndex].name,
+                    text = cycles[cycleIndex].key.name ?: "",
                     color = MaterialTheme.colorScheme.surfaceTint,
                     fontWeight = FontWeight.Bold
                 )
             }
 
         } else if (type > 0) {
-            val exercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
+            val exercise = cycles[cycleIndex].value[exerciseIndex]
 
             Column(
                 verticalArrangement = Arrangement.Center,
@@ -708,20 +734,20 @@ fun HorizontalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : P
                             .clip(RoundedCornerShape(10.dp)),
                     ) {
                         Image(
-                            painter = rememberImagePainter(data = exercise.imageUrl),
-                            contentDescription = exercise.title,
+                            painter = rememberImagePainter(data = ""), // IMAGE !!!
+                            contentDescription = exercise.exercise?.name,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop,
                         )
                     }
                     Text(
-                        text = exercise.title,
+                        text = exercise.exercise?.name ?: "",
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
                 Text(
-                    text = exercise.secs.toString() + stringResource(id = R.string.seconds),
+                    text = exercise.duration.toString() + stringResource(id = R.string.seconds),
                     color = if(type == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.inversePrimary
                 )
             }
@@ -732,9 +758,10 @@ fun HorizontalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : P
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :() -> Unit, onNext: () -> Unit,
-                           isPaused: Boolean, textColor: Color, isRestExercise: Boolean, currentExercise: Exercise,
+                           isPaused: Boolean, textColor: Color, isRestExercise: Boolean, currentExercise: CycleExercise,
                            hasOnlyReps: Boolean, totalTime: Long, currentTime: Long, value: Float, cycleIcon: Painter,
-                           exerciseCount: Int, exerciseIndex: Int, cycleIndex: Int, isSoundOn: Boolean) {
+                           exerciseCount: Int, exerciseIndex: Int, cycleIndex: Int, isSoundOn: Boolean,
+                           cycles :MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.fillMaxSize()
@@ -776,8 +803,8 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
                         .clip(RoundedCornerShape(10.dp)),
                 ) {
                     Image(
-                        painter = rememberImagePainter(data = currentExercise.imageUrl),
-                        contentDescription = currentExercise.title,
+                        painter = rememberImagePainter(data = ""), // IMAGE !!!
+                        contentDescription = currentExercise.exercise?.name ?: "",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
                     )
@@ -821,14 +848,14 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
                     modifier = Modifier.padding(10.dp)
                 ) {
                     Text(
-                        text = currentExercise.title,
+                        text = currentExercise.exercise?.name ?: "",
                         modifier = Modifier.padding(bottom = 10.dp),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = currentExercise.description,
+                        text = currentExercise.exercise?.detail ?: "",
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -839,7 +866,8 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
                 cycleIndex = cycleIndex,
                 cycleIcon = cycleIcon,
                 isRestExercise = isRestExercise,
-                isHorizontal = true
+                isHorizontal = true,
+                cycles = cycles
             )
         }
     }
@@ -847,11 +875,11 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun VerticalListMode(currentExercise: Exercise, exerciseIndex: Int, cycleIndex: Int, isRestExercise: Boolean, cycleIcon: Painter) {
+fun VerticalListMode(currentExercise: CycleExercise, exerciseIndex: Int, cycleIndex: Int, isRestExercise: Boolean, cycleIcon: Painter, cycles :MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>) {
     Column(
         modifier = Modifier.padding(horizontal = 20.dp)
     ){
-        VerticalExerciseListBox(exerciseIndex = exerciseIndex-1, cycleIndex = cycleIndex, cycleIcon = cycleIcon)
+        VerticalExerciseListBox(exerciseIndex = exerciseIndex-1, cycleIndex = cycleIndex, cycleIcon = cycleIcon, cycles = cycles)
         Surface(
             shape = RoundedCornerShape(10.dp),
             color = if(isRestExercise) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
@@ -864,7 +892,7 @@ fun VerticalListMode(currentExercise: Exercise, exerciseIndex: Int, cycleIndex: 
                 modifier = Modifier.padding(horizontal = 40.dp, vertical = 20.dp)
             ) {
                 Text(
-                    text = currentExercise.title,
+                    text = currentExercise.exercise?.name ?: "",
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = if(isRestExercise) MaterialTheme.colorScheme.inversePrimary else MaterialTheme.colorScheme.primary
@@ -891,8 +919,8 @@ fun VerticalListMode(currentExercise: Exercise, exerciseIndex: Int, cycleIndex: 
                             .clip(RoundedCornerShape(10.dp)),
                     ) {
                         Image(
-                            painter = rememberImagePainter(data = currentExercise.imageUrl),
-                            contentDescription = currentExercise.title,
+                            painter = rememberImagePainter(data = ""), // IMAGE !!!
+                            contentDescription = currentExercise.exercise?.name,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop,
                         )
@@ -902,19 +930,19 @@ fun VerticalListMode(currentExercise: Exercise, exerciseIndex: Int, cycleIndex: 
         }
 
         for(i in 1..3) {
-            VerticalExerciseListBox(exerciseIndex = exerciseIndex+i, cycleIndex = cycleIndex, cycleIcon = cycleIcon)
+            VerticalExerciseListBox(exerciseIndex = exerciseIndex+i, cycleIndex = cycleIndex, cycleIcon = cycleIcon, cycles = cycles)
         }
     }
 }
 
 @Composable
-fun VerticalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : Painter) {
+fun VerticalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : Painter, cycles :MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>) {
 
     var type = -1
 
     if(exerciseIndex == -1) type = 0
-    else if(exerciseIndex < routine.cycles[cycleIndex].exercises.size) {
-        type = if(routine.cycles[cycleIndex].exercises[exerciseIndex].title == stringResource(id = R.string.rest_compare)) 2 else 1
+    else if(exerciseIndex < cycles[cycleIndex].value.size) {
+        type = if(cycles[cycleIndex].value[exerciseIndex].exercise?.name == stringResource(id = R.string.rest_compare)) 2 else 1
     }
 
     Surface(
@@ -938,14 +966,14 @@ fun VerticalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : Pai
                     modifier = Modifier.padding(end = 20.dp)
                 )
                 Text(
-                    text = routine.cycles[cycleIndex].name,
+                    text = cycles[cycleIndex].key.name ?: "",
                     color = MaterialTheme.colorScheme.surfaceTint,
                     fontWeight = FontWeight.Bold
                 )
             }
 
         } else if (type > 0) {
-            val exercise = routine.cycles[cycleIndex].exercises[exerciseIndex]
+            val exercise = cycles[cycleIndex].value[exerciseIndex]
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -961,12 +989,12 @@ fun VerticalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : Pai
                     )
                 } else {
                     Text(
-                        text = exercise.title,
+                        text = exercise.exercise?.name ?: "",
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
                 Text(
-                    text = exercise.secs.toString() + stringResource(id = R.string.seconds),
+                    text = exercise.duration.toString() + stringResource(id = R.string.seconds),
                     color = if(type == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.inversePrimary
                 )
             }
@@ -976,7 +1004,7 @@ fun VerticalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : Pai
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun VerticalDetailedMode(currentExercise: Exercise, exerciseIndex :Int, exerciseCount :Int, isRestExercise :Boolean, textColor: Color) {
+fun VerticalDetailedMode(currentExercise: CycleExercise, exerciseIndex :Int, exerciseCount :Int, isRestExercise :Boolean, textColor: Color) {
 
     if(isRestExercise) {
         Row(
@@ -999,8 +1027,8 @@ fun VerticalDetailedMode(currentExercise: Exercise, exerciseIndex :Int, exercise
                 .clip(RoundedCornerShape(50.dp)),
         ) {
             Image(
-                painter = rememberImagePainter(data = currentExercise.imageUrl),
-                contentDescription = currentExercise.title,
+                painter = rememberImagePainter(data = ""), // IMAGE !!!
+                contentDescription = currentExercise.exercise?.name,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
             )
@@ -1023,7 +1051,7 @@ fun VerticalDetailedMode(currentExercise: Exercise, exerciseIndex :Int, exercise
                 .padding(top = 10.dp)
         ) {
             Text(
-                text = currentExercise.description,
+                text = currentExercise.exercise?.detail ?: "",
                 modifier = Modifier.padding(10.dp),
                 color = MaterialTheme.colorScheme.primary
             )
@@ -1037,7 +1065,7 @@ fun VerticalDetailedMode(currentExercise: Exercise, exerciseIndex :Int, exercise
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cycleIcon : Painter, isRestExercise: Boolean, isHorizontal :Boolean = false) {
+fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cycleIcon : Painter, isRestExercise: Boolean, isHorizontal :Boolean = false, cycles: MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>) {
 
     val textColor = if(isRestExercise) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.inversePrimary
 
@@ -1055,7 +1083,7 @@ fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cyc
 
             ) {
             if (exerciseIndex == exerciseCount - 1) {
-                val lastCycle = cycleIndex == routine.cycles.size - 1
+                val lastCycle = cycleIndex == cycles.size - 1
                 Row {
                     Icon(
                         if (lastCycle) painterResource(id = R.drawable.last_exercise) else cycleIcon,
@@ -1064,14 +1092,14 @@ fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cyc
                         modifier = Modifier.padding(horizontal = 30.dp)
                     )
                     Text(
-                        text = if (lastCycle) stringResource(id = R.string.last_exercise) else routine.cycles[cycleIndex+1].name,
+                        text = if (lastCycle) stringResource(id = R.string.last_exercise) else cycles[cycleIndex+1].key.name ?: "",
                         color = textColor
                     )
                 }
             } else {
-                val followingExercise = routine.cycles[cycleIndex].exercises[exerciseIndex + 1]
+                val followingExercise = cycles[cycleIndex].value[exerciseIndex + 1]
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if(followingExercise.title == stringResource(id = R.string.rest_compare)) {
+                    if(followingExercise.exercise?.name == stringResource(id = R.string.rest_compare)) {
                         Icon(
                             painterResource(id = R.drawable.rest),
                             contentDescription = null,
@@ -1088,22 +1116,22 @@ fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cyc
                                 .clip(RoundedCornerShape(10.dp)),
                         ) {
                             Image(
-                                painter = rememberImagePainter(data = followingExercise.imageUrl),
-                                contentDescription = followingExercise.title,
+                                painter = rememberImagePainter(data = ""), // IMAGE !!!
+                                contentDescription = followingExercise.exercise?.name,
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop,
                             )
                         }
                     }
                     Column {
-                        if(followingExercise.title != stringResource(id = R.string.rest_compare)) {
+                        if(followingExercise.exercise?.name != stringResource(id = R.string.rest_compare)) {
                             Text(
                                 text = if(isHorizontal) stringResource(id = R.string.next_name) else stringResource(id = R.string.next_exercise),
                                 color = textColor
                             )
                         }
                         Text(
-                            text = followingExercise.title,
+                            text = followingExercise.exercise?.name ?: "",
                             color = textColor
                         )
                     }
@@ -1114,7 +1142,7 @@ fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cyc
 }
 
 @Composable
-fun NewCycleHorizontalScreen(onStart :() -> Unit, cycleIcon: Painter, cycleIndex :Int, textColor: Color, onClose: () -> Unit) {
+fun NewCycleHorizontalScreen(onStart :() -> Unit, cycleIcon: Painter, cycleIndex :Int, textColor: Color, onClose: () -> Unit, cycles :MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>) {
     Row {
         IconButton(
             onClick = onClose
@@ -1142,7 +1170,7 @@ fun NewCycleHorizontalScreen(onStart :() -> Unit, cycleIcon: Painter, cycleIndex
                 )
 
                 Text(
-                    text = routine.cycles[cycleIndex].name,
+                    text = cycles[cycleIndex].key.name ?: "",
                     fontSize = 40.sp,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -1177,7 +1205,7 @@ fun NewCycleHorizontalScreen(onStart :() -> Unit, cycleIcon: Painter, cycleIndex
 
 
 @Composable
-fun NewCycleVerticalScreen(onStart :() -> Unit, cycleIcon: Painter, cycleIndex :Int) {
+fun NewCycleVerticalScreen(onStart :() -> Unit, cycleIcon: Painter, cycleIndex :Int, cycles: MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -1191,7 +1219,7 @@ fun NewCycleVerticalScreen(onStart :() -> Unit, cycleIcon: Painter, cycleIndex :
         )
 
         Text(
-            text = routine.cycles[cycleIndex].name,
+            text = cycles[cycleIndex].key.name ?: "",
             fontSize = 40.sp,
             color = MaterialTheme.colorScheme.primary
         )

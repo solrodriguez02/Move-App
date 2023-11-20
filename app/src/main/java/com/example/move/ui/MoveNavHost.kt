@@ -88,7 +88,10 @@ fun MoveNavHost(
             Screen.RoutineFinishedScreen.route,
             arguments = listOf(navArgument("id") {type = NavType.IntType}),
         ) {
-            FinishedRoutineScreen(onNavigateToHome = { navController.navigate("home") { popUpTo("explore") {inclusive = true} } })
+                backStackEntry -> FinishedRoutineScreen(
+                onNavigateToHome = { navController.navigate("home") { popUpTo("explore") {inclusive = true} } },
+                routineId = backStackEntry.arguments?.getInt("id") ?: 0
+                )
         }
 
         composable(Screen.SignInScreen.route) {

@@ -47,7 +47,7 @@ class RoutineRepository (
 
     suspend fun isRoutineInFavourites(routineId: Int): Boolean{
         val routines = remoteDataSource.getFavouriteRoutines().content.map { it.asModelPreview() }
-        for (i in 0 until routines.lastIndex){
+        for (i in 0 ..routines.lastIndex){
             if (routines[i].id == routineId)
                 return true
         }

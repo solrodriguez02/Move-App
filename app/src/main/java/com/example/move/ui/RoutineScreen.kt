@@ -1,6 +1,7 @@
 package com.example.move.ui
 
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -75,7 +76,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.move.R
+import com.example.move.data.model.Cycle
+import com.example.move.data.model.CycleExercise
 import com.example.move.data.model.Review
+import com.example.move.data.model.RoutineDetail
 import com.example.move.util.getViewModelFactory
 
 
@@ -108,7 +112,7 @@ fun RoutineScreen(
     var score by remember { mutableIntStateOf (0) }
     var cycleIndex by remember { mutableIntStateOf(0) }
     var isRated by remember { mutableStateOf(false) }
-    var routineData = routineViewModel.uiState.currentRoutine
+    val routineData = routineViewModel.uiState.currentRoutine
 
     @Composable
     fun RoutineDetail() {
@@ -400,17 +404,17 @@ fun RoutineScreen(
                         }
 
                         for (exercise in cycle.value) {
-                            if (exercise.exercise.name == stringResource(id = R.string.rest_compare)) {
+                            if (exercise.exercise?.name == stringResource(id = R.string.rest_compare)) {
                                 RestExercise(
-                                    title = exercise.exercise.name!!,
+                                    title = exercise.exercise?.name!!,
                                     secs = exercise.repetitions
                                 )
                             } else {
                                 ExerciseBox(
-                                    title = exercise.exercise.name ?: "",
+                                    title = exercise.exercise?.name ?: "",
                                     secs = exercise.duration,
                                     reps = exercise.repetitions,
-                                    imgUrl = exercise.exercise.detail ?: ""
+                                    imgUrl = exercise.exercise?.detail ?: ""
                                 )
                             }
                         }
@@ -514,6 +518,7 @@ fun RoutineScreen(
                             .padding(bottom = 20.dp)
                     ) {
                         RoutineExecutionMenu(
+                            routineData = routineData ?: RoutineDetail(id = -1, name = "", score = 0, difficulty = "", cycles = emptyMap<Cycle, List<CycleExercise>>().toMutableMap()),
                             showModeDialog = showModeDialog,
                             onShowMode = { showModeDialog = !showModeDialog },
                             onNavigateToExecute = onNavigateToExecute)
@@ -559,6 +564,7 @@ fun RoutineScreen(
                     .padding(bottom = 20.dp)
             ) {
                 RoutineExecutionMenu(
+                    routineData = routineData ?: RoutineDetail(id = -1, name = "", score = 0, difficulty = "", cycles = emptyMap<Cycle, List<CycleExercise>>().toMutableMap()),
                     showModeDialog = showModeDialog,
                     onShowMode = { showModeDialog = !showModeDialog },
                     onNavigateToExecute = onNavigateToExecute)
@@ -571,6 +577,7 @@ fun RoutineScreen(
 
 @Composable
 fun RoutineExecutionMenu(
+    routineData : RoutineDetail,
     showModeDialog :Boolean,
     onShowMode :() -> Unit,
     onNavigateToExecute :(routineId:Int)->Unit,
@@ -592,7 +599,7 @@ fun RoutineExecutionMenu(
         Spacer(modifier = Modifier.width(30.dp))
 
         Button(
-            onClick = { onNavigateToExecute(0) },
+            onClick = { onNavigateToExecute(routineData.id) },
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.surfaceTint,
                 contentColor = Color.Transparent,
@@ -659,10 +666,11 @@ fun RoutineMenu(time :Int, navController: NavController, routineViewModel: Routi
     val popUpOptions = getOptions()
     var showPopUp by remember { mutableStateOf(false) }
     var showShareDialog by remember { mutableStateOf(false) }
-    var liked by remember { mutableStateOf(routineViewModel.isRoutineInFavourites(routine.id)) }
+    var liked by remember { mutableStateOf(false) }
+    liked = routineViewModel.isRoutineInFavourites(routineViewModel.uiState.currentRoutine?.id ?: 0)
 
     if(showShareDialog) {
-        ShareDialog(onCancel = { showShareDialog = false }, id = 0)
+        ShareDialog(onCancel = { showShareDialog = false }, id = routineViewModel.uiState.currentRoutine?.id ?: 0)
     }
 
     Row(
@@ -729,9 +737,9 @@ fun RoutineMenu(time :Int, navController: NavController, routineViewModel: Routi
                     ) },
                 onClick = {
                     if(liked) {
-                        routineViewModel.removeRoutineToFavourites(routine.id)
+                        routineViewModel.removeRoutineToFavourites(routineViewModel.uiState.currentRoutine?.id ?: 0)
                     } else {
-                        routineViewModel.addRoutineToFavourites(routine.id)
+                        routineViewModel.addRoutineToFavourites(routineViewModel.uiState.currentRoutine?.id ?: 0)
                     }
                     liked = !liked
                 },

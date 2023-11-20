@@ -15,7 +15,11 @@ import retrofit2.http.Query
 
 interface ApiRoutineService {
     @GET("routines")
-    suspend fun getAllRoutines(@Query("size") size: Int = 100): Response<NetworkPagedContent<NetworkRoutine>>
+    suspend fun getAllRoutines(
+        @Query("size") size: Int = 100,
+        @Query("orderBy") orderBy: String = "date",
+        @Query("direction") direction: String = "asc",
+        ): Response<NetworkPagedContent<NetworkRoutine>>
 
     @GET("users/current/routines")
     suspend fun getPersonalRoutines(@Query("size") size: Int = 100): Response<NetworkPagedContent<NetworkRoutine>>

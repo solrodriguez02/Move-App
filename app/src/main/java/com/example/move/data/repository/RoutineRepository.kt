@@ -25,9 +25,9 @@ class RoutineRepository (
     private var routinePreviews: List<RoutinePreview> = emptyList<RoutinePreview>().toMutableList()
     private var personalRoutinePreviews: List<RoutinePreview> = emptyList<RoutinePreview>().toMutableList()
 
-    suspend fun getRoutinePreviews(refresh: Boolean): List<RoutinePreview>{
+    suspend fun getRoutinePreviews(refresh: Boolean, orderBy :String= "date", direction :String = "asc"): List<RoutinePreview>{
         if (refresh || routinePreviews.isEmpty() ) {
-            val result = remoteDataSource.getRoutines()
+            val result = remoteDataSource.getRoutines(orderBy = orderBy, direction = direction)
             this.routinePreviews = result.content.map { it.asModelPreview() }
         }
         return routinePreviews

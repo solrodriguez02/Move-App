@@ -129,16 +129,16 @@ fun RoutineScreen(
         )
         var elementsRequired = "no details"
         var approach = "no details"
-        if (routineData != null && routineData?.metadata?.filters?.elements.toString() != "[]") {
-            elementsRequired = routineData?.metadata?.filters?.elements.toString()
-                .substring(1, routineData?.metadata?.filters?.elements.toString().length - 1)
+        if (routineData != null && routineData.metadata.filters.elements.toString() != "[]") {
+            elementsRequired = routineData.metadata.filters.elements.toString()
+                .substring(1, routineData.metadata.filters.elements.toString().length - 1)
         }
 
-        if (routineData != null && routineData?.metadata?.filters?.approach.toString() != "[]"){
-            approach = routineData?.metadata?.filters?.approach.toString().substring(1, routineData?.metadata?.filters?.approach.toString().length-1)
+        if (routineData != null && routineData.metadata.filters.approach.toString() != "[]"){
+            approach = routineData.metadata.filters.approach.toString().substring(1, routineData.metadata.filters.approach.toString().length-1)
         }
         val filters = arrayListOf(
-            FilterDetail(stringResource(id = R.string.difficulty_filter), routineData?.metadata?.filters?.difficulty + " " +stringResource(id = R.string.difficulty_lower), R.drawable.difficulty),
+            FilterDetail(stringResource(id = R.string.difficulty_filter), stringResource(id = R.string.difficulty_lower) + routineData?.metadata?.filters?.difficulty, R.drawable.difficulty),
             FilterDetail(stringResource(id = R.string.elements_required_filter), elementsRequired, R.drawable.elements),
             FilterDetail(stringResource(id = R.string.approach_filter), approach, R.drawable.approach),
             FilterDetail(stringResource(id = R.string.space_required_filter), routineData?.metadata?.filters?.requiredSpace ?: "", R.drawable.space)

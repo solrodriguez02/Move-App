@@ -11,9 +11,9 @@ import retrofit2.Response
 data class RoutineDataSource (
     private val apiRoutineService: ApiRoutineService
 ) : RemoteDataSource(){
-    suspend fun getRoutines(): NetworkPagedContent<NetworkRoutine> {
+    suspend fun getRoutines(orderBy :String = "date", direction :String = "asc"): NetworkPagedContent<NetworkRoutine> {
         return handleApiResponse {
-            apiRoutineService.getAllRoutines()
+            apiRoutineService.getAllRoutines(orderBy = orderBy, direction = direction)
         }
     }
 

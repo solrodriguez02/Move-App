@@ -83,7 +83,7 @@
     <string name="profile_image">Profile image</string>
     <string name="elements_required_filter">Elements required</string>
     <string name="space_required_filter">Space required</string>
-    <string name="difficulty_lower">"difficulty "</string>
+    <string name="difficulty_lower">"Difficulty: "</string>
     <string name="repetitions_upper">X</string>
     <string name="categories_name">Categories:</string>
     <string name="order_by_name">Order by:</string>
@@ -114,4 +114,9 @@
     <string name="remove_liked">Remove from favourites</string>
     <string name="copy_web_title">Press the button to copy the web site link</string>
     <string name="sound_title">Routine execution sound</string>
+    <string name="apply_filters">Apply filters</string>
+    <string name="difficulty_category">difficulty</string>
+    <string name="approach_category">approach</string>
+    <string name="space_category">requiredSpace</string>
+    <string name="elements_category">elements</string>
 </resources>

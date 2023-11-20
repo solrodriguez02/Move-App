@@ -113,6 +113,7 @@ fun RoutineScreen(
     var cycleIndex by remember { mutableIntStateOf(0) }
     var isRated by remember { mutableStateOf(false) }
     val routineData = routineViewModel.uiState.currentRoutine
+    val isFavourite = routineViewModel.uiState.currentRoutine?.isFavourite
 
     @Composable
     fun RoutineDetail() {
@@ -552,7 +553,14 @@ fun RoutineScreen(
                 )
                 .height(80.dp)
         ) {
-            RoutineMenu(time = routine.time, navController = navController, routineViewModel = routineViewModel)
+            if(isFavourite != null) {
+                RoutineMenu(
+                    time = routine.time,
+                    isFavourite = isFavourite ?: true,
+                    navController = navController,
+                    routineViewModel = routineViewModel
+                )
+            }
         }
 
         if(isVertical) {
@@ -661,13 +669,13 @@ fun getOptions(): List<PopUpOption> {
 }
 
 @Composable
-fun RoutineMenu(time :Int, navController: NavController, routineViewModel: RoutineViewModel) {
+fun RoutineMenu(time :Int, isFavourite :Boolean, navController: NavController, routineViewModel: RoutineViewModel) {
 
     val popUpOptions = getOptions()
     var showPopUp by remember { mutableStateOf(false) }
     var showShareDialog by remember { mutableStateOf(false) }
-    var liked by remember { mutableStateOf(false) }
-    liked = routineViewModel.isRoutineInFavourites(routineViewModel.uiState.currentRoutine?.id ?: 0)
+
+    var liked by remember { mutableStateOf(isFavourite) }
 
     if(showShareDialog) {
         ShareDialog(onCancel = { showShareDialog = false }, id = routineViewModel.uiState.currentRoutine?.id ?: 0)
@@ -732,20 +740,20 @@ fun RoutineMenu(time :Int, navController: NavController, routineViewModel: Routi
             DropdownMenuItem(
                 text = { 
                     Text(
-                        text = if(liked) stringResource(id = R.string.remove_liked) else popUpOptions[0].label,
+                        text = if(liked != false) stringResource(id = R.string.remove_liked) else popUpOptions[0].label,
                         color = MaterialTheme.colorScheme.primary
                     ) },
                 onClick = {
-                    if(liked) {
+                    if(liked != false) {
                         routineViewModel.removeRoutineToFavourites(routineViewModel.uiState.currentRoutine?.id ?: 0)
                     } else {
                         routineViewModel.addRoutineToFavourites(routineViewModel.uiState.currentRoutine?.id ?: 0)
                     }
-                    liked = !liked
+                    liked = if(liked != false) false else true
                 },
                 leadingIcon = {
                     Icon(
-                        if(liked) Icons.Filled.Favorite else popUpOptions[0].icon,
+                        if(liked != false) Icons.Filled.Favorite else popUpOptions[0].icon,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )

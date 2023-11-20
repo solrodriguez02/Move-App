@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -243,6 +244,8 @@ fun RoutineScreen(
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 
@@ -268,7 +271,7 @@ fun RoutineScreen(
         )
 
         val filters = arrayListOf(
-            FilterDetail(stringResource(id = R.string.difficulty_filter), routineData?.difficulty + stringResource(id = R.string.difficulty_lower), R.drawable.difficulty),
+            FilterDetail(stringResource(id = R.string.difficulty_filter), routineData?.difficulty + " " + stringResource(id = R.string.difficulty_lower), R.drawable.difficulty),
             FilterDetail(stringResource(id = R.string.elements_required_filter), routine.elements.toString().substring(1, routine.elements.toString().length - 1), R.drawable.elements),
             FilterDetail(stringResource(id = R.string.approach_filter), routine.approach.toString().substring(1, routine.approach.toString().length - 1), R.drawable.approach),
             FilterDetail(stringResource(id = R.string.space_required_filter), routine.space, R.drawable.space)
@@ -466,8 +469,8 @@ fun RoutineScreen(
 
             if (isPhone)
                 cycles()
-
-            Spacer(modifier = Modifier.height(80.dp))
+            else
+                Spacer(modifier = Modifier.height(80.dp))
         }
     }
 
@@ -542,7 +545,7 @@ fun RoutineScreen(
                 ) {
                     Column(
                         modifier = Modifier
-                            .width(400.dp)
+                            .width(if ( windowSizeClass.widthSizeClass == WindowWidthSizeClass.Medium ) 320.dp else 420.dp)
                             .padding(horizontal = 10.dp)
                     ) {
                         dataAndImage()
@@ -553,10 +556,9 @@ fun RoutineScreen(
                             .fillMaxHeight()
                             .verticalScroll(state)
                     ) {
-                        Box( modifier = colModifier.height(600.dp)) {
+                        Box( modifier = colModifier.defaultMinSize(minHeight = if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Medium) 800.dp else 650.dp)) {
                             cycles()
                         }
-
                     }
                 }
             } else

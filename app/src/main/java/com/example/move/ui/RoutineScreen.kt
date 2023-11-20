@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -44,7 +45,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,6 +60,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
@@ -67,12 +73,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.move.R
@@ -82,6 +92,22 @@ import com.example.move.data.model.Review
 import com.example.move.data.model.RoutineDetail
 import com.example.move.util.getViewModelFactory
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+@Preview(device = Devices.TABLET)
+@Composable
+fun myPreview() {
+    var navController = rememberNavController()
+    val windowSizeClass = WindowSizeClass.calculateFromSize( DpSize(2500.dp, 1000.dp) )
+    RoutineScreen(
+        onNavigateToExecute = { id -> navController.navigate("routine/$id/execute") },
+        navController = navController,
+        windowSizeClass = windowSizeClass,
+        routineId = 5
+    )
+
+}
+
+
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
@@ -89,7 +115,7 @@ import com.example.move.util.getViewModelFactory
 fun RoutineScreen(
     onNavigateToExecute :(routineId:Int)->Unit,
     navController: NavController,
-    widthSizeClass: WindowWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     routineId: Int,
     mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory()),
     routineViewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
@@ -104,15 +130,131 @@ fun RoutineScreen(
         count = false
     }
 
-    val isVertical = widthSizeClass == WindowWidthSizeClass.Compact
+    val isVerticalPhone = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
+    val isPhone = isPhone(windowSizeClass)
 
-    var showRate by remember { mutableStateOf(false) }
-    var showDescription by remember { mutableStateOf(false) }
+    var showRate by remember { mutableStateOf(!isPhone) }
+    var showDescription by remember { mutableStateOf(!isPhone) }
     var showModeDialog by remember { mutableStateOf(false) }
     var score by remember { mutableIntStateOf (0) }
     var cycleIndex by remember { mutableIntStateOf(0) }
     var isRated by remember { mutableStateOf(false) }
     val routineData = routineViewModel.uiState.currentRoutine
+
+    val cyclesOptions = listOf(R.drawable.warm_up, R.drawable.exercise, R.drawable.cooling)
+
+    /////////////////// Cycles ///////////////////////
+    @Composable
+    fun cycles() {
+        Column {
+
+            Text(
+                text = stringResource(R.string.cycles_name),
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(vertical = 10.dp)
+            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(30.dp),
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.padding(5.dp)
+                    ) {
+                        for ((index, option) in cyclesOptions.withIndex()) {
+                            Button(
+                                onClick = { cycleIndex = index },
+                                contentPadding = PaddingValues(0.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (cycleIndex == index) MaterialTheme.colorScheme.inversePrimary else Color.Transparent
+                                ),
+                                modifier = Modifier
+                                    .height(30.dp)
+                                    .weight(1f)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = option),
+                                    contentDescription = null,
+                                    tint = if (cycleIndex == index) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            /////////////////// Cycle exercises ///////////////////////
+            if (routineData?.cycles?.isNotEmpty() == true) {
+                for ((index, cycle) in routineData.cycles.entries.withIndex()) {
+                    if ((cycleIndex == 0 && index == 0) ||
+                        (cycleIndex == 1 && index > 0 && index < (routineData.cycles.size.minus(
+                            1
+                        ) ?: 0)) ||
+                        (cycleIndex == 2 && index == (routineData.cycles.size.minus(1) ?: 0))
+                    ) {
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(vertical = 15.dp)
+                        ) {
+                            Text(
+                                text = cycle.key.name ?: "",
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(end = 10.dp)
+                            )
+                            Surface(
+                                color = MaterialTheme.colorScheme.inversePrimary,
+                                shape = RoundedCornerShape(8.dp),
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.repetitions_upper) + cycle.key.repetitions,
+                                    color = MaterialTheme.colorScheme.surfaceTint,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(
+                                        horizontal = 10.dp,
+                                        vertical = 5.dp
+                                    )
+                                )
+                            }
+                        }
+
+                        for (exercise in cycle.value) {
+                            if (exercise.exercise?.name == stringResource(id = R.string.rest_compare)) {
+                                RestExercise(
+                                    title = exercise.exercise?.name!!,
+                                    secs = exercise.repetitions
+                                )
+                            } else {
+                                ExerciseBox(
+                                    title = exercise.exercise?.name ?: "",
+                                    secs = exercise.duration,
+                                    reps = exercise.repetitions,
+                                    imgUrl = exercise.exercise?.detail ?: ""
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    var colModifier = Modifier
+        .background(
+            color = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(40.dp)
+        )
+        .padding(vertical = 25.dp, horizontal = 30.dp)
+        .fillMaxWidth()
+    //colModifier = if ( isPhone  ) colModifier.fillMaxWidth() else colModifier.width(500.dp)
+
 
     @Composable
     fun RoutineDetail() {
@@ -132,16 +274,8 @@ fun RoutineScreen(
             FilterDetail(stringResource(id = R.string.space_required_filter), routine.space, R.drawable.space)
         )
 
-        val cyclesOptions = listOf(R.drawable.warm_up, R.drawable.exercise, R.drawable.cooling)
-
         Column(
-            modifier = Modifier
-                .background(
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(40.dp)
-                )
-                .fillMaxSize()
-                .padding(vertical = 25.dp, horizontal = 30.dp)
+            modifier = colModifier
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -203,24 +337,24 @@ fun RoutineScreen(
                     text = stringResource(R.string.rate_name),
                     color = MaterialTheme.colorScheme.primary
                 )
-
-                Button(
-                    onClick = { showRate = !showRate },
-                    contentPadding = PaddingValues(0.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.surface,
-                    ),
-                    modifier = Modifier
-                        .width(40.dp)
-                        .height(25.dp)
-                ) {
-                    Icon(
-                        rateIcon,
-                        contentDescription = stringResource(R.string.rate_name),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
+                if ( isPhone )
+                    Button(
+                        onClick = { showRate = !showRate },
+                        contentPadding = PaddingValues(0.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = MaterialTheme.colorScheme.surface,
+                        ),
+                        modifier = Modifier
+                            .width(40.dp)
+                            .height(25.dp)
+                    ) {
+                        Icon(
+                            rateIcon,
+                            contentDescription = stringResource(R.string.rate_name),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
             }
 
             if (showRate) {
@@ -295,24 +429,25 @@ fun RoutineScreen(
             ) {
                 Text(
                     text = stringResource(R.string.description_name),
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 15.dp, bottom = 10.dp)
                 )
-
-                Button(
-                    onClick = { showDescription = !showDescription },
-                    contentPadding = PaddingValues(0.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.surface,
-                    ),
-                    modifier = Modifier.width(40.dp)
-                ) {
-                    Icon(
-                        descriptionIcon,
-                        contentDescription = stringResource(R.string.description_name),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
+                if ( isPhone )
+                    Button(
+                        onClick = { showDescription = !showDescription },
+                        contentPadding = PaddingValues(0.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = MaterialTheme.colorScheme.surface,
+                        ),
+                        modifier = Modifier.width(40.dp)
+                    ) {
+                        Icon(
+                            descriptionIcon,
+                            contentDescription = stringResource(R.string.description_name),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
             }
             if (showDescription) {
                 Surface(
@@ -329,109 +464,22 @@ fun RoutineScreen(
                 }
             }
 
-            /////////////////// Cycles ///////////////////////
-            Text(
-                text = stringResource(R.string.cycles_name),
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(vertical = 10.dp)
-            )
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(30.dp),
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.padding(5.dp)
-                    ) {
-                        for ((index, option) in cyclesOptions.withIndex()) {
-                            Button(
-                                onClick = { cycleIndex = index },
-                                contentPadding = PaddingValues(0.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = if (cycleIndex == index) MaterialTheme.colorScheme.inversePrimary else Color.Transparent
-                                ),
-                                modifier = Modifier
-                                    .height(30.dp)
-                                    .weight(1f)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = option),
-                                    contentDescription = null,
-                                    tint = if (cycleIndex == index) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+            if (isPhone)
+                cycles()
 
-
-            /////////////////// Cycle exercises ///////////////////////
-            if (routineData?.cycles?.isNotEmpty() == true) {
-                for ((index, cycle) in routineData.cycles.entries.withIndex()) {
-                    if ((cycleIndex == 0 && index == 0) ||
-                        (cycleIndex == 1 && index > 0 && index < (routineData.cycles.size.minus(1) ?: 0)) ||
-                        (cycleIndex == 2 && index == (routineData.cycles.size.minus(1) ?: 0))
-                    ) {
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(vertical = 15.dp)
-                        ) {
-                            Text(
-                                text = cycle.key.name ?: "",
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(end = 10.dp)
-                            )
-                            Surface(
-                                color = MaterialTheme.colorScheme.inversePrimary,
-                                shape = RoundedCornerShape(8.dp),
-                            ) {
-                                Text(
-                                    text = stringResource(id = R.string.repetitions_upper) + cycle.key.repetitions,
-                                    color = MaterialTheme.colorScheme.surfaceTint,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                                )
-                            }
-                        }
-
-                        for (exercise in cycle.value) {
-                            if (exercise.exercise?.name == stringResource(id = R.string.rest_compare)) {
-                                RestExercise(
-                                    title = exercise.exercise?.name!!,
-                                    secs = exercise.repetitions
-                                )
-                            } else {
-                                ExerciseBox(
-                                    title = exercise.exercise?.name ?: "",
-                                    secs = exercise.duration,
-                                    reps = exercise.repetitions,
-                                    imgUrl = exercise.exercise?.detail ?: ""
-                                )
-                            }
-                        }
-                    }
-                }
-            }
             Spacer(modifier = Modifier.height(80.dp))
         }
     }
+
 
     Box(
         modifier = Modifier.background(MaterialTheme.colorScheme.inversePrimary)
     ) {
         val state = rememberScrollState()
-        LaunchedEffect(Unit) { state.animateScrollTo(100) }
+        LaunchedEffect(Unit) { state.animateScrollTo(if ( isPhone) 100 else 0 ) }
 
-        if(isVertical) {
+        @Composable
+        fun dataAndImage() {
             Column(
                 modifier = Modifier
                     .verticalScroll(state)
@@ -440,9 +488,9 @@ fun RoutineScreen(
             ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
                         .height(250.dp)
                         .padding(bottom = 20.dp)
+                        .fillMaxWidth()
                 ) {
                     Image(
                         painter = rememberImagePainter(
@@ -479,7 +527,42 @@ fun RoutineScreen(
                 }
                 RoutineDetail()
             }
-        } else {
+        }
+
+        if( !isHorizontalPhone(windowSizeClass) ) {
+            if ( !isPhone) {
+                val state = rememberScrollState()
+                LaunchedEffect(Unit) { state.animateScrollTo(0) }
+
+                Row(
+                    modifier = Modifier
+                        .width(1500.dp)
+                        .padding(vertical = 20.dp, horizontal = 50.dp)
+
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .width(400.dp)
+                            .padding(horizontal = 10.dp)
+                    ) {
+                        dataAndImage()
+                    }
+                    Column(
+                        modifier = Modifier
+                            .padding(top = 60.dp, start = 20.dp, end = 10.dp)
+                            .fillMaxHeight()
+                            .verticalScroll(state)
+                    ) {
+                        Box( modifier = colModifier.height(600.dp)) {
+                            cycles()
+                        }
+
+                    }
+                }
+            } else
+                dataAndImage()
+        }
+        else {
             Row(
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -490,7 +573,7 @@ fun RoutineScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(250.dp)
-                            .padding(bottom = 20.dp)
+                            .padding(bottom = 20.dp,top = 20.dp)
                     ) {
                         Image(
                             painter = rememberImagePainter(
@@ -555,13 +638,13 @@ fun RoutineScreen(
             RoutineMenu(time = routine.time, navController = navController, routineViewModel = routineViewModel)
         }
 
-        if(isVertical) {
+        if( !isHorizontalPhone(windowSizeClass)) {
             Box(
-                contentAlignment = Alignment.BottomCenter,
+                contentAlignment = if (isVerticalPhone) Alignment.BottomCenter else Alignment.BottomEnd,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 20.dp)
+                    .align( if (isVerticalPhone) Alignment.BottomCenter else Alignment.BottomEnd)
+                    .padding(all = if (isVerticalPhone) 30.dp else 80.dp)
             ) {
                 RoutineExecutionMenu(
                     routineData = routineData ?: RoutineDetail(id = -1, name = "", score = 0, difficulty = "", cycles = emptyMap<Cycle, List<CycleExercise>>().toMutableMap()),
@@ -604,7 +687,7 @@ fun RoutineExecutionMenu(
                 containerColor = MaterialTheme.colorScheme.surfaceTint,
                 contentColor = Color.Transparent,
             ),
-            modifier = Modifier.height(50.dp)
+            modifier = Modifier.height(50.dp).shadow(elevation = 10.dp, shape = ButtonDefaults.shape)
         ) {
             Text(
                 text = stringResource(id = R.string.start_routine),
@@ -630,7 +713,7 @@ fun RoutineExecutionMenu(
             modifier = Modifier
                 .height(50.dp)
                 .width(50.dp)
-
+                .shadow(elevation = 10.dp, shape = CircleShape)
         ) {
             Icon(
                 painter = modeIcon,

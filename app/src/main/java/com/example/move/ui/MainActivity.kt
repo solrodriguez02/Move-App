@@ -73,7 +73,6 @@ class MainActivity : ComponentActivity() {
                                         NavigationRailBar( navController = navController )
                                     }
 
-
                 ) {
                     MoveNavHost(navController = navController, windowSizeClass = windowSizeClass )
                 }

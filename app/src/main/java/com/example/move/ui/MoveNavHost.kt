@@ -59,18 +59,10 @@ fun MoveNavHost(
                 backStackEntry -> RoutineScreen(
                     onNavigateToExecute = { id -> navController.navigate("routine/$id/execute") },
                     navController = navController,
-                    widthSizeClass = windowSizeClass.widthSizeClass,
+                    windowSizeClass = windowSizeClass,
                     routineId = backStackEntry.arguments?.getInt("id") ?: 0
-
-        )
-            /*
-            else
-                RoutineScreenModal(
-                    onNavigateToExecute = { id -> navController.navigate("routine/$id/execute") },
-                    navController = navController
                 )
 
-             */
         }
 
         composable(

@@ -40,14 +40,14 @@ class RoutineRepository (
 
     private suspend fun getRoutineCyclesAndExercises(routineId: Int){
         var cycles = remoteDataSource.getRoutineCycles(routineId).content.toMutableList().map { it.asModel() }
-        for (i in 0 until cycles.lastIndex){
+        for (i in 0..cycles.lastIndex){
             this.currentRoutine?.cycles?.put(cycles[i], remoteDataSource.getRoutineCycleExercises(cycles[i].id).content.map { it.asModel() })
         }
     }
 
     suspend fun isRoutineInFavourites(routineId: Int): Boolean{
         val routines = remoteDataSource.getFavouriteRoutines().content.map { it.asModelPreview() }
-        for (i in 0 until routines.lastIndex){
+        for (i in 0 ..routines.lastIndex){
             if (routines[i].id == routineId)
                 return true
         }

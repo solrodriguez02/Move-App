@@ -56,7 +56,7 @@ fun MoveNavHost(
             deepLinks = listOf(navDeepLink { uriPattern = "$uri/routine?id={id}" }, navDeepLink { uriPattern = "$secureUri/routine?id={id}" }),
             ) {
 
-                backStackEntry ->RoutineScreen(
+                backStackEntry -> RoutineScreen(
                     onNavigateToExecute = { id -> navController.navigate("routine/$id/execute") },
                     navController = navController,
                     widthSizeClass = windowSizeClass.widthSizeClass,
@@ -77,9 +77,10 @@ fun MoveNavHost(
             Screen.RoutineExecutionScreen.route,
             arguments = listOf(navArgument("id") {type = NavType.IntType}),
         ) {
-            RoutineExecutionScreen(
+                backStackEntry -> RoutineExecutionScreen(
                 onNavigateToFinish = { id -> navController.navigate("routine/$id/finished") },
-                navController = navController
+                navController = navController,
+                routineId = backStackEntry.arguments?.getInt("id") ?: 0
             )
         }
 
@@ -87,7 +88,10 @@ fun MoveNavHost(
             Screen.RoutineFinishedScreen.route,
             arguments = listOf(navArgument("id") {type = NavType.IntType}),
         ) {
-            FinishedRoutineScreen(onNavigateToHome = { navController.navigate("home") { popUpTo("explore") {inclusive = true} } })
+                backStackEntry -> FinishedRoutineScreen(
+                onNavigateToHome = { navController.navigate("home") { popUpTo("explore") {inclusive = true} } },
+                routineId = backStackEntry.arguments?.getInt("id") ?: 0
+                )
         }
 
         composable(Screen.SignInScreen.route) {

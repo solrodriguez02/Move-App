@@ -65,4 +65,8 @@ class RoutineRepository (
             currentRoutine?.isFavourite = false
             return false
     }
+
+    suspend fun getFavouriteRoutines(): List<RoutinePreview>{
+        return remoteDataSource.getFavouriteRoutines().content.map { it.asModelPreview() }
+    }
 }

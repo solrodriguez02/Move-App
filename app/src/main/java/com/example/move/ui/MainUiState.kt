@@ -12,9 +12,13 @@ data class MainUiState(
     val routinePreviews: List<RoutinePreview>? = null,
     val currentRoutine: RoutineDetail? = null,
     val isCurrentRoutineFav: Boolean = false,
+    val favRoutinePreviews: List<RoutinePreview>? = null,
     val error: Error? = null,
     val listMode: Boolean = false,
-    val sound: Boolean = true
+    val sound: Boolean = true,
+    val exerciseIndex :Int = 0,
+    val cycleIndex :Int = 0,
+    val currentTime :Long = 0
 )
 
 val MainUiState.canGetCurrentUser: Boolean get() = isAuthenticated

@@ -1,6 +1,5 @@
 package com.example.move.ui
 
-import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -32,13 +31,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -52,7 +49,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -67,10 +63,6 @@ import com.example.move.R
 import com.example.move.util.getViewModelFactory
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.move.data.model.RoutinePreview
-
-///////////// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-///////////// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 @Composable
 fun ExploreScreen(
@@ -90,6 +82,7 @@ fun ExploreScreen(
     val routineData = viewModel.uiState.routinePreviews
 
     val widthSizeClass = windowSizeClass.widthSizeClass
+
     @Composable
     fun headerAndFilters() {
         Box(
@@ -205,8 +198,6 @@ fun ExploreScreen(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ExploreFilters(windowSizeClass: WindowSizeClass) {
-
-    val config = LocalConfiguration.current
 
     data class SelectedFilter (
         val category :String,
@@ -491,24 +482,57 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
 @Composable
 fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(routineId:Int)->Unit,
                windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())) {
+
+    var count by remember {
+        mutableStateOf(true)
+    }
+
+    if(count) {
+        viewModel.getFavouriteRoutines()
+        count = false
+    }
+
+    val favRoutines = viewModel.uiState.favRoutinePreviews
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.inversePrimary)
-            .padding( start = if (showNavRail(windowSizeClass, LocalConfiguration.current)) 65.dp else 0.dp)
+            .padding(
+                start = if (showNavRail(
+                        windowSizeClass,
+                        LocalConfiguration.current
+                    )
+                ) 65.dp else 0.dp
+            )
     ) {
         val state = rememberScrollState()
         LaunchedEffect(Unit) { state.animateScrollTo(100) }
 
-        Header(title = stringResource(R.string.home_name), isHome = true, onNavigateToProfile = onNavigateToProfile)
+        Header(
+            title = stringResource(R.string.home_name),
+            isHome = true,
+            onNavigateToProfile = onNavigateToProfile
+        )
         Column(
             modifier = Modifier.verticalScroll(state)
         ) {
-            RoutinesCarousel(title = stringResource(id = R.string.favourites_title), routineData = viewModel.uiState.routinePreviews ?: emptyList(), onNavigateToRoutine = onNavigateToRoutine)
-            RoutinesCarousel(title = stringResource(id = R.string.your_routines_title), routineData = viewModel.uiState.routinePreviews ?: emptyList(), onNavigateToRoutine = onNavigateToRoutine)
+            if(favRoutines?.isEmpty() == false) {
+                RoutinesCarousel(
+                    title = stringResource(id = R.string.favourites_title),
+                    routineData = favRoutines ?: emptyList(),
+                    onNavigateToRoutine = onNavigateToRoutine
+                )
+                RoutinesCarousel(
+                    title = stringResource(id = R.string.your_routines_title),
+                    routineData = viewModel.uiState.routinePreviews ?: emptyList(),
+                    onNavigateToRoutine = onNavigateToRoutine
+                )
+            }
             Spacer(modifier = Modifier.height(100.dp))
         }
     }
+
 }
 
 @Composable

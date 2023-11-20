@@ -40,6 +40,7 @@ data class NetworkRoutine (
             name = name,
             detail = detail,
             difficulty= difficulty,
+            metadata = metadata?.asModel() ?: MetadataRoutine(Filter("unknown", emptyList(), "no details", emptyList()))
         )
     }
 

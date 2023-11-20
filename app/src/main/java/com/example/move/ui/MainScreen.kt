@@ -490,10 +490,12 @@ fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(ro
 
     if(count) {
         viewModel.getFavouriteRoutines()
+        viewModel.getPersonalRoutinePreviews()
         count = false
     }
 
     val favRoutines = viewModel.uiState.favRoutinePreviews
+    val personalRoutines = viewModel.uiState.personalRoutinePreviews
 
     Column(
         modifier = Modifier
@@ -526,7 +528,7 @@ fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(ro
                 )
                 RoutinesCarousel(
                     title = stringResource(id = R.string.your_routines_title),
-                    routineData = viewModel.uiState.routinePreviews ?: emptyList(),
+                    routineData = personalRoutines ?: emptyList(),
                     onNavigateToRoutine = onNavigateToRoutine
                 )
             }

@@ -17,6 +17,12 @@ data class RoutineDataSource (
         }
     }
 
+    suspend fun getPersonalRoutines(): NetworkPagedContent<NetworkRoutine> {
+        return handleApiResponse {
+            apiRoutineService.getPersonalRoutines()
+        }
+    }
+
     suspend fun getRoutine(routineId: Int): NetworkRoutine {
         return handleApiResponse {
             apiRoutineService.getRoutineById(routineId)

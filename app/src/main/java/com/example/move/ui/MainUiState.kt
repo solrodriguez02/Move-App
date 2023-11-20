@@ -13,6 +13,7 @@ data class MainUiState(
     val currentRoutine: RoutineDetail? = null,
     val isCurrentRoutineFav: Boolean = false,
     val favRoutinePreviews: List<RoutinePreview>? = null,
+    val personalRoutinePreviews: List<RoutinePreview>? = null,
     val error: Error? = null,
     val listMode: Boolean = false,
     val sound: Boolean = true,

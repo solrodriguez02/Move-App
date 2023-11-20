@@ -25,6 +25,11 @@ class RoutineViewModel(
             { state, response -> state.copy(routinePreviews = response) }
         )
 
+        fun getPersonalRoutinePreviews() = runOnViewModelScope(
+            { routineRepository.getPersonalRoutines() },
+            { state, response -> state.copy(personalRoutinePreviews = response) }
+        )
+
         fun getRoutine(routineId: Int) = runOnViewModelScope(
             { routineRepository.getRoutine(routineId)},
             {state, response -> state.copy(currentRoutine = response )}

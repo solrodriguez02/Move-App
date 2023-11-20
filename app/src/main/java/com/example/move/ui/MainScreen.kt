@@ -3,6 +3,7 @@ package com.example.move.ui
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -116,11 +117,8 @@ fun ExploreScreen(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            if ( !isHorizontalTablet(windowSizeClass) )  //isCompact(windowSizeClass)
-                Spacer(modifier = Modifier.height(130.dp))
-            else {
                 headerAndFilters()
-            }
+
 
             /////////////////// Explore Routines ///////////////////////
 
@@ -130,13 +128,13 @@ fun ExploreScreen(
                 val columns = when (widthSizeClass) {
                     WindowWidthSizeClass.Compact -> 2
                     WindowWidthSizeClass.Medium -> 4
-                    WindowWidthSizeClass.Expanded -> 6
+                    WindowWidthSizeClass.Expanded -> 5
                     else -> 1
                 }
-                var distanceRoutines = if (isCompact(widthSizeClass)) 20.dp else 25.dp
+
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(columns),
                     horizontalArrangement = Arrangement.spacedBy(20.dp),
+                    columns = GridCells.Adaptive(minSize = 160.dp),
                     modifier = Modifier.padding(start = if (isVertical) 0.dp else 20.dp)
                 ) {
 
@@ -185,20 +183,7 @@ fun ExploreScreen(
 
         /////////////////// Header ///////////////////////
 
-        Box(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column {
-                Header(
-                    title = stringResource(R.string.explore_name),
-                    onNavigateToProfile = onNavigateToProfile
-                )
 
-                /////////////////// Filters ///////////////////////
-
-                ExploreFilters(windowSizeClass)
-            }
-        }
     }
 }
 
@@ -305,20 +290,19 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
         modifier = Modifier
             .background(MaterialTheme.colorScheme.inversePrimary)
             .fillMaxWidth()
-            .padding(bottom = if (isPhone) 0.dp else 10.dp)
+            .padding(bottom = if (isPhone) 7.dp else 10.dp)
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 20.dp)
         ) {
-            if ( !isHorizontalTablet )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = if(isPhone) 0.dp else 10.dp)
-            ) {
-                Text(
-                    text = stringResource(id = R.string.filters_title),
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(bottom = if (isPhone) 0.dp else 10.dp)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.filters_title),
+                        color = MaterialTheme.colorScheme.primary
+                    )
                     IconButton(onClick = { showFilters = !showFilters }) {
                         Icon(
                             if (showFilters) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
@@ -326,7 +310,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
-            }
+                }
 
             if (showFilters) {
 
@@ -433,19 +417,26 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                     }
                 }
 
+                var modifier = Modifier
+                    .background(MaterialTheme.colorScheme.inversePrimary)
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp)
+                val  state = rememberScrollState()
+                LaunchedEffect(Unit) { state.animateScrollTo(100) }
+                val isHorizontalPhone = isHorizontalPhone(windowSizeClass)
 
                 if (filtersSelected.isNotEmpty()) {
+                    if ( isHorizontalPhone )
+                        modifier = modifier.verticalScroll( state =  state ).padding(top = 10.dp, bottom = 10.dp)
                     Column(
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.inversePrimary)
-                            .fillMaxWidth()
-                            .padding(bottom = 10.dp)
+                        modifier = modifier
                     ) {
-                        Text(
-                            text = stringResource(id = R.string.filters_selected),
-                            modifier = Modifier.padding(vertical = 10.dp),
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        if ( !isHorizontalPhone )
+                            Text(
+                                text = stringResource(id = R.string.filters_selected),
+                                modifier = Modifier.padding(vertical = 10.dp),
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                         ) {

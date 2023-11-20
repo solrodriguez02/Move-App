@@ -25,3 +25,7 @@ public fun isHorizontalTablet( windowSizeClass: WindowSizeClass) : Boolean {
 fun showNavRail( windowSizeClass: WindowSizeClass, configuration: Configuration) : Boolean {
     return windowSizeClass.widthSizeClass== WindowWidthSizeClass.Expanded && configuration.orientation ==  ORIENTATION_LANDSCAPE
 }
+
+fun isHorizontalPhone( windowSizeClass: WindowSizeClass) : Boolean {
+    return windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact
+}

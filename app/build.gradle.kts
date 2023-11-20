@@ -28,12 +28,12 @@ android {
                 "proguard-rules.pro"
             )
             buildConfigField("String", "API_BASE_URL",
-                "\"http://192.168.1.108:8080/api/\"")
+                "\"http://10.0.2.2:8080/api/\"")
 
         }
         debug {
                 buildConfigField("String", "API_BASE_URL",
-                    "\"http://192.168.1.108:8080/api/\"")
+                    "\"http://10.0.2.2:8080/api/\"")
         }
     }
     compileOptions {

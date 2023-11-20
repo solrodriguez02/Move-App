@@ -35,6 +35,7 @@ import com.example.move.ui.theme.MoveTheme
 import kotlinx.coroutines.*
 import androidx.compose.material.*
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
@@ -65,11 +66,14 @@ class MainActivity : ComponentActivity() {
 
                 // caso del Deep Link
                 Scaffold(
-                    bottomBar = { if ( !showNavigationRail )
-                                    NavBar(navController = navController)
-                                else
-                                    NavigationRailBar( navController = navController )
-                                },
+
+                        bottomBar = { if ( !showNavigationRail )
+                                        NavBar(navController = navController)
+                                    else
+                                        NavigationRailBar( navController = navController )
+                                    }
+
+
                 ) {
                     MoveNavHost(navController = navController, windowSizeClass = windowSizeClass )
                 }

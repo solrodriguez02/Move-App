@@ -65,6 +65,11 @@ import com.example.move.util.getViewModelFactory
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.move.data.model.RoutinePreview
 
+data class SelectedFilter (
+    val category :String,
+    val filter :String
+)
+
 @Composable
 fun ExploreScreen(
     onNavigateToProfile :(userId:Int)->Unit,
@@ -104,8 +109,15 @@ fun ExploreScreen(
 
 
     Box(
-        modifier = Modifier.background(color = MaterialTheme.colorScheme.inversePrimary)
-            .padding( start = if (showNavRail(windowSizeClass, LocalConfiguration.current)) 65.dp else 0.dp)
+        modifier = Modifier
+            .background(color = MaterialTheme.colorScheme.inversePrimary)
+            .padding(
+                start = if (showNavRail(
+                        windowSizeClass,
+                        LocalConfiguration.current
+                    )
+                ) 65.dp else 0.dp
+            )
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -189,7 +201,7 @@ fun ExploreScreen(
 
                 /////////////////// Filters ///////////////////////
 
-                ExploreFilters(windowSizeClass)
+                ExploreFilters(windowSizeClass, viewModel)
             }
         }
     }
@@ -198,12 +210,7 @@ fun ExploreScreen(
 @SuppressLint("SuspiciousIndentation")
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ExploreFilters(windowSizeClass: WindowSizeClass) {
-
-    data class SelectedFilter (
-        val category :String,
-        val filter :String
-    )
+fun ExploreFilters(windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())) {
 
     val difficultyOptions = listOf(stringResource(id = R.string.d_easy), stringResource(id = R.string.d_medium), stringResource(id = R.string.d_difficult))
 
@@ -238,6 +245,9 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
     var scoreExpanded by remember { mutableStateOf(false) }
     var dateExpanded by remember { mutableStateOf(false) }
 
+    var isOrderedByDateDesc by remember { mutableStateOf(false) }
+    var isOrderedByDate by remember { mutableStateOf(false) }
+
     val filtersSelected = remember { mutableStateListOf<SelectedFilter>() }
 
     val widthSizeClass = windowSizeClass.widthSizeClass
@@ -246,9 +256,11 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
 
     var showFilters by remember { mutableStateOf(!isPhone) }
 
+    val dateCategory = stringResource(id = R.string.date_filter)
 
     @Composable
-    fun Filter(category :String, isExpanded :Boolean, onExpanded :()->Unit, options :List<String>) {
+    fun Filter(filterName: String, category :String, isExpanded :Boolean, onExpanded :()->Unit, options :List<String>) {
+
         Column {
             Button(
                 onClick = onExpanded,
@@ -259,7 +271,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                 modifier = Modifier.width(150.dp)
             ) {
                 Text(
-                    text = category,
+                    text = filterName,
                     fontSize = 16.sp
                 )
                 Icon(
@@ -267,6 +279,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                     contentDescription = null
                 )
             }
+
             DropdownMenu(
                 expanded = isExpanded,
                 onDismissRequest = onExpanded,
@@ -282,9 +295,13 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                         },
                         onClick = {
                             if(!filtersSelected.contains(SelectedFilter(category, option))) {
-                                filtersSelected.add(
-                                    SelectedFilter(category, option)
-                                )
+                                if(category == dateCategory) {
+                                    isOrderedByDateDesc = option == dateOptions[1]
+                                }
+                                if(category != dateCategory || !isOrderedByDate) {
+                                    filtersSelected.add(SelectedFilter(category, option))
+                                    if(category == dateCategory) isOrderedByDate = true
+                                }
                             }
                         },
                     )
@@ -331,7 +348,8 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                     LazyVerticalGrid(columns = GridCells.Fixed(cols), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         item {
                             Filter(
-                                category = stringResource(id = R.string.difficulty_filter),
+                                filterName = stringResource(id = R.string.difficulty_filter),
+                                category = stringResource(id = R.string.difficulty_category),
                                 isExpanded = difficultyExpanded,
                                 onExpanded = { difficultyExpanded = !difficultyExpanded },
                                 options = difficultyOptions
@@ -339,7 +357,8 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                         }
                         item {
                             Filter(
-                                category = stringResource(id = R.string.elements_filter),
+                                filterName = stringResource(id = R.string.elements_filter),
+                                category = stringResource(id = R.string.elements_category),
                                 isExpanded = elementsExpanded,
                                 onExpanded = { elementsExpanded = !elementsExpanded },
                                 options = elementsOptions
@@ -347,7 +366,8 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                         }
                         item {
                             Filter(
-                                category = stringResource(id = R.string.approach_filter),
+                                filterName = stringResource(id = R.string.approach_filter),
+                                category = stringResource(id = R.string.approach_category),
                                 isExpanded = approachExpanded,
                                 onExpanded = { approachExpanded = !approachExpanded },
                                 options = approachOptions
@@ -355,7 +375,8 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                         }
                         item {
                             Filter(
-                                category = stringResource(id = R.string.space_filter),
+                                filterName = stringResource(id = R.string.space_filter),
+                                category = stringResource(id = R.string.space_category),
                                 isExpanded = spaceExpanded,
                                 onExpanded = { spaceExpanded = !spaceExpanded },
                                 options = spaceOptions
@@ -372,6 +393,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                     LazyVerticalGrid(columns = GridCells.Fixed(cols), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         item {
                             Filter(
+                                filterName = stringResource(id = R.string.score_filter),
                                 category = stringResource(id = R.string.score_filter),
                                 isExpanded = scoreExpanded,
                                 onExpanded = { scoreExpanded = !scoreExpanded },
@@ -380,6 +402,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                         }
                         item {
                             Filter(
+                                stringResource(id = R.string.date_filter),
                                 category = stringResource(id = R.string.date_filter),
                                 isExpanded = dateExpanded,
                                 onExpanded = { dateExpanded = !dateExpanded },
@@ -433,11 +456,33 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                             .fillMaxWidth()
                             .padding(bottom = 10.dp)
                     ) {
-                        Text(
-                            text = stringResource(id = R.string.filters_selected),
-                            modifier = Modifier.padding(vertical = 10.dp),
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        Row {
+                            Text(
+                                text = stringResource(id = R.string.filters_selected),
+                                modifier = Modifier
+                                    .padding(vertical = 10.dp)
+                                    .weight(1f),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Button(
+                                onClick = {
+                                    viewModel.getFilteredRoutinePreviews(filtersSelected = filtersSelected, isOrderedByDate = isOrderedByDate, direction = if(isOrderedByDateDesc) "desc" else "asc")
+                                },
+                                contentPadding = PaddingValues(0.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Transparent,
+                                    contentColor = MaterialTheme.colorScheme.surfaceTint
+                                )
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.apply_filters),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(end = 25.dp)
+                                )
+                            }
+                        }
+
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                         ) {
@@ -460,6 +505,9 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                                         IconButton(
                                             onClick = {
                                                 filtersSelected.remove(option)
+                                                if(option.category == dateCategory) {
+                                                    isOrderedByDate = false
+                                                }
                                             }
                                         ) {
                                             Icon(

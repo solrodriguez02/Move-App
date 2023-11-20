@@ -84,7 +84,7 @@
     <string name="profile_image">Imagen de perfil</string>
     <string name="elements_required_filter">Elementos requeridos</string>
     <string name="space_required_filter">Espacio necesario</string>
-    <string name="difficulty_lower">dificultad</string>
+    <string name="difficulty_lower">"Dificultad: "</string>
     <string name="repetitions_upper">"X "</string>
     <string name="categories_name">Categorías:</string>
     <string name="order_by_name">Ordenar por:</string>
@@ -115,4 +115,9 @@
     <string name="remove_liked">Quitar de favoritos</string>
     <string name="copy_web_title">Presione el botón para copiar el enlace del sitio web</string>
     <string name="sound_title">Sonido en la ejecución de rutinas</string>
+    <string name="apply_filters">Aplicar filtros</string>
+    <string name="difficulty_category">difficulty</string>
+    <string name="approach_category">approach</string>
+    <string name="space_category">requiredSpace</string>
+    <string name="elements_category">elements</string>
 </resources>

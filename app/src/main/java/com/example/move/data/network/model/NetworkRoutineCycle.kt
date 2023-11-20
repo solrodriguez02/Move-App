@@ -25,8 +25,6 @@ data class NetworkRoutineCycle (
     @SerializedName("repetitions")
     var repetitions: Int,
 
-    @SerializedName("metadata")
-    var metadata: String ? = null
 ) {
     fun asModel(): Cycle {
         return Cycle(
@@ -36,7 +34,6 @@ data class NetworkRoutineCycle (
             type = type,
             order = order,
             repetitions = repetitions,
-            metadata = metadata
         )
     }
 }

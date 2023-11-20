@@ -95,17 +95,20 @@ fun RoutineExecutionScreen(
     val cycles = routineViewModel.uiState.currentRoutine?.cycles?.entries?.toMutableList() ?: emptyList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>().toMutableList()
 
     if(cycles.isNotEmpty()) {
+
+        var uiState = routineViewModel.uiState
+
         val isDetailedMode = !viewModel.uiState.listMode
 
         val isSoundOn = viewModel.uiState.sound
 
-        var cycleIndex by remember { mutableIntStateOf(0) }
+        var cycleIndex by remember { mutableIntStateOf(uiState.cycleIndex) }
 
-        var exerciseIndex by remember { mutableIntStateOf(0) }
+        var exerciseIndex by remember { mutableIntStateOf(uiState.exerciseIndex) }
 
         var currentExercise by remember { mutableStateOf<CycleExercise>(cycles[cycleIndex].value[exerciseIndex]) }
 
-        val exerciseCount = cycles.get(cycleIndex).value.size
+        val exerciseCount = cycles[cycleIndex].value.size
 
         var nextExercise by remember { mutableStateOf(false) }
 
@@ -173,6 +176,7 @@ fun RoutineExecutionScreen(
                 if (currentTime > 0 && isTimerRunning) {
                     delay(100L)
                     currentTime -= 100L
+                    uiState = uiState.copy(currentTime = currentTime)
                     value = 1 - (currentTime / totalTime.toFloat())
                 }
             }
@@ -183,22 +187,27 @@ fun RoutineExecutionScreen(
         } else {
             if (currentTime <= 0L && currentExercise.duration != 0 || nextExercise) {
                 exerciseIndex++
+                uiState = uiState.copy(exerciseIndex = exerciseIndex)
                 nextExercise = false
                 if (exerciseIndex < (exerciseCount)) {
                     LaunchedEffect(key1 = exerciseIndex) {
                         currentExercise = cycles[cycleIndex].value[exerciseIndex]
                         currentTime = currentExercise.duration * 1000L
+                        uiState = uiState.copy(currentTime = currentTime)
                         totalTime = currentExercise.duration * 1000L
                         delay(5000L)
                     }
                     isTimerRunning = true
                 } else {
                     cycleIndex++
+                    uiState = uiState.copy(cycleIndex = cycleIndex)
                     if (cycleIndex < (cycles.size)) {
                         LaunchedEffect(key1 = exerciseIndex) {
                             exerciseIndex = 0
+                            uiState = uiState.copy(exerciseIndex = exerciseIndex)
                             currentExercise = cycles[cycleIndex].value[exerciseIndex]
                             currentTime = currentExercise.duration * 1000L
+                            uiState = uiState.copy(currentTime = currentTime)
                             totalTime = currentExercise.duration * 1000L
                             delay(5000L)
                         }

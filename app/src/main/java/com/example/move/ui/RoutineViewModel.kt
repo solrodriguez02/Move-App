@@ -47,9 +47,13 @@ class RoutineViewModel(
                     routineInFavourites = routineRepository.isRoutineInFavourites(routineId)
                 }
             }
-            Log.i("", routineInFavourites.toString())
             return routineInFavourites
         }
+
+        fun getFavouriteRoutines() = runOnViewModelScope(
+            { routineRepository.getFavouriteRoutines() },
+            { state, response -> state.copy(favRoutinePreviews = response) }
+        )
 
         private fun <R> runOnViewModelScope(
             block: suspend () -> R,

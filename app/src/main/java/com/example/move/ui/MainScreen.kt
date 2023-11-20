@@ -65,11 +65,6 @@ import com.example.move.util.getViewModelFactory
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.move.data.model.RoutinePreview
 
-data class SelectedFilter (
-    val category :String,
-    val filter :String
-)
-
 @Composable
 fun ExploreScreen(
     onNavigateToProfile :(userId:Int)->Unit,
@@ -85,9 +80,16 @@ fun ExploreScreen(
         viewModel.getRoutinePreviews()
         count = false
     }
-    val routineData = viewModel.uiState.routinePreviews
+    var routineData = viewModel.uiState.routinePreviews
 
     val widthSizeClass = windowSizeClass.widthSizeClass
+
+    var applyFilters by remember { mutableStateOf(false) }
+
+    if(applyFilters) {
+        routineData = viewModel.uiState.routinePreviews
+        applyFilters = false
+    }
 
     @Composable
     fun headerAndFilters() {
@@ -102,7 +104,7 @@ fun ExploreScreen(
 
                 /////////////////// Filters ///////////////////////
 
-                ExploreFilters(windowSizeClass)
+                ExploreFilters(windowSizeClass = windowSizeClass, onApplyFilters = { applyFilters = true})
             }
         }
     }
@@ -201,42 +203,18 @@ fun ExploreScreen(
 
                 /////////////////// Filters ///////////////////////
 
-                ExploreFilters(windowSizeClass, viewModel)
+                ExploreFilters(
+                    windowSizeClass = windowSizeClass, onApplyFilters = { applyFilters = true }, viewModel)
             }
         }
     }
 }
 
+
 @SuppressLint("SuspiciousIndentation")
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ExploreFilters(windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())) {
-
-    val difficultyOptions = listOf(stringResource(id = R.string.d_easy), stringResource(id = R.string.d_medium), stringResource(id = R.string.d_difficult))
-
-    val approachOptions = listOf(
-        stringResource(id = R.string.a_aerobic), stringResource(id = R.string.a_cardio),
-        stringResource(id = R.string.a_flex), stringResource(id = R.string.a_crossfit), stringResource(id = R.string.a_functional),
-        stringResource(id = R.string.a_hiit), stringResource(id = R.string.a_pilates), stringResource(id = R.string.a_resistance),
-        stringResource(id = R.string.a_streching), stringResource(id = R.string.a_strength), stringResource(id = R.string.a_weight), stringResource(id = R.string.a_yoga)
-    )
-
-    val elementsOptions = listOf(
-        stringResource(id = R.string.e_none), stringResource(id = R.string.e_ankle), stringResource(id = R.string.e_band),
-        stringResource(id = R.string.e_dumbell), stringResource(id = R.string.e_kettlebell), stringResource(id = R.string.e_mat),
-        stringResource(id = R.string.e_roller), stringResource(id = R.string.e_rope), stringResource(id = R.string.e_step)
-    )
-
-    val spaceOptions = listOf(stringResource(id = R.string.s_reduced), stringResource(id = R.string.s_some), stringResource(id = R.string.s_much))
-
-    val scoreOptions = listOf(
-        stringResource(id = R.string.sc_bad), stringResource(id = R.string.sc_fair), stringResource(id = R.string.sc_good),
-        stringResource(id = R.string.sc_very_good), stringResource(id = R.string.sc_excelent)
-    )
-
-    val dateOptions = listOf(
-        stringResource(id = R.string.da_ascending), stringResource(id = R.string.da_descending)
-    )
+fun ExploreFilters(windowSizeClass: WindowSizeClass, onApplyFilters :() -> Unit, viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())) {
 
     var difficultyExpanded by remember { mutableStateOf(false) }
     var elementsExpanded by remember { mutableStateOf(false) }
@@ -245,9 +223,13 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel
     var scoreExpanded by remember { mutableStateOf(false) }
     var dateExpanded by remember { mutableStateOf(false) }
 
-    var isOrderedByDateDesc by remember { mutableStateOf(false) }
+    var isSpaceCategory by remember { mutableStateOf(false) }
+    var isDifficultyCategory by remember { mutableStateOf(false) }
     var isOrderedByDate by remember { mutableStateOf(false) }
+    var isOrderedByDateDesc by remember { mutableStateOf(false) }
+    var isOrderedByScore by remember { mutableStateOf(false) }
 
+    var getAllRoutines by remember { mutableStateOf(false) }
     val filtersSelected = remember { mutableStateListOf<SelectedFilter>() }
 
     val widthSizeClass = windowSizeClass.widthSizeClass
@@ -256,10 +238,21 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel
 
     var showFilters by remember { mutableStateOf(!isPhone) }
 
+    val difficultyCategory = stringResource(id = R.string.difficulty_category)
+    val spaceCategory = stringResource(id = R.string.space_category)
     val dateCategory = stringResource(id = R.string.date_filter)
+    val scoreCategory = stringResource(id = R.string.score_filter)
+
+    val dateOptions = getDateOptions()
+
+    if(getAllRoutines) {
+        viewModel.getRoutinePreviews()
+        onApplyFilters()
+        getAllRoutines = false
+    }
 
     @Composable
-    fun Filter(filterName: String, category :String, isExpanded :Boolean, onExpanded :()->Unit, options :List<String>) {
+    fun Filter(filterName: String, category :String, isExpanded :Boolean, onExpanded :()->Unit, options :List<CategoryOption>) {
 
         Column {
             Button(
@@ -289,18 +282,29 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel
                     DropdownMenuItem(
                         text = {
                             Text(
-                                text = option,
+                                text = option.label,
                                 color = MaterialTheme.colorScheme.primary
                             )
                         },
                         onClick = {
-                            if(!filtersSelected.contains(SelectedFilter(category, option))) {
+                            onExpanded()
+                            if(!filtersSelected.contains(SelectedFilter(category, option.category))) {
                                 if(category == dateCategory) {
-                                    isOrderedByDateDesc = option == dateOptions[1]
+                                    isOrderedByDateDesc = option.category == dateOptions[1].category
                                 }
-                                if(category != dateCategory || !isOrderedByDate) {
-                                    filtersSelected.add(SelectedFilter(category, option))
-                                    if(category == dateCategory) isOrderedByDate = true
+                                if((category != dateCategory && category != difficultyCategory && category != spaceCategory && category != scoreCategory) ||
+                                    (category == dateCategory && !isOrderedByDate) ||
+                                    (category == spaceCategory && !isSpaceCategory) ||
+                                    (category == difficultyCategory && !isDifficultyCategory) ||
+                                    (category == scoreCategory && !isOrderedByScore)
+                                ) {
+                                    filtersSelected.add(SelectedFilter(category, option.category))
+                                    when (category) {
+                                        dateCategory -> isOrderedByDate = true
+                                        difficultyCategory -> isDifficultyCategory = true
+                                        spaceCategory -> isSpaceCategory = true
+                                        scoreCategory -> isOrderedByScore = true
+                                    }
                                 }
                             }
                         },
@@ -352,7 +356,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel
                                 category = stringResource(id = R.string.difficulty_category),
                                 isExpanded = difficultyExpanded,
                                 onExpanded = { difficultyExpanded = !difficultyExpanded },
-                                options = difficultyOptions
+                                options = getDifficultyOptions()
                             )
                         }
                         item {
@@ -361,7 +365,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel
                                 category = stringResource(id = R.string.elements_category),
                                 isExpanded = elementsExpanded,
                                 onExpanded = { elementsExpanded = !elementsExpanded },
-                                options = elementsOptions
+                                options = getElementsOptions()
                             )
                         }
                         item {
@@ -370,7 +374,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel
                                 category = stringResource(id = R.string.approach_category),
                                 isExpanded = approachExpanded,
                                 onExpanded = { approachExpanded = !approachExpanded },
-                                options = approachOptions
+                                options = getApproachOptions()
                             )
                         }
                         item {
@@ -379,7 +383,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel
                                 category = stringResource(id = R.string.space_category),
                                 isExpanded = spaceExpanded,
                                 onExpanded = { spaceExpanded = !spaceExpanded },
-                                options = spaceOptions
+                                options = getSpaceOptions()
                             )
                         }
                     }
@@ -397,7 +401,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel
                                 category = stringResource(id = R.string.score_filter),
                                 isExpanded = scoreExpanded,
                                 onExpanded = { scoreExpanded = !scoreExpanded },
-                                options = scoreOptions
+                                options = getScoreOptions()
                             )
                         }
                         item {
@@ -406,7 +410,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel
                                 category = stringResource(id = R.string.date_filter),
                                 isExpanded = dateExpanded,
                                 onExpanded = { dateExpanded = !dateExpanded },
-                                options = dateOptions
+                                options = getDateOptions()
                             )
                         }
 
@@ -466,7 +470,9 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel
                             )
                             Button(
                                 onClick = {
+                                    showFilters = false
                                     viewModel.getFilteredRoutinePreviews(filtersSelected = filtersSelected, isOrderedByDate = isOrderedByDate, direction = if(isOrderedByDateDesc) "desc" else "asc")
+                                    onApplyFilters()
                                 },
                                 contentPadding = PaddingValues(0.dp),
                                 colors = ButtonDefaults.buttonColors(
@@ -505,8 +511,14 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel
                                         IconButton(
                                             onClick = {
                                                 filtersSelected.remove(option)
-                                                if(option.category == dateCategory) {
-                                                    isOrderedByDate = false
+                                                when(option.category) {
+                                                    dateCategory -> isOrderedByDate = false
+                                                    difficultyCategory -> isDifficultyCategory = false
+                                                    spaceCategory -> isSpaceCategory = false
+                                                    scoreCategory -> isOrderedByScore = false
+                                                }
+                                                if(filtersSelected.isEmpty()) {
+                                                    getAllRoutines = true
                                                 }
                                             }
                                         ) {

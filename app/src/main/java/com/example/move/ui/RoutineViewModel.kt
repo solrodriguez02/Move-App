@@ -42,29 +42,49 @@ class RoutineViewModel(
                 getRoutinePreviews(orderBy = "date", direction = direction)
             }
 
-            /*
-            var selectedRoutines = uiState.routinePreviews
-            var toAdd = true
+            var selectedRoutines :MutableList<RoutinePreview> = mutableListOf()
+            var toAdd :Boolean
 
             for(routine in uiState.routinePreviews!!) {
                 toAdd = true
                 for(filter in filtersSelected) {
                     if(filter.category == "difficulty") {
-                        if(filter.filter != routine.metadata.difficulty) toAdd = false
-                    } else if(filter.category == "elements") {
-
-                    } else if(filter.category == "spaceRequired") {
-                        if(filter.filter != routine.metadata.difficulty) toAdd = false
-                    } else if(filter.category == "approach") {
-
+                        if(filter.filter != routine.metadata.filters.difficulty) toAdd = false
                     }
+                    else if(filter.category == "elements") {
+                        var found = false
+                        for(elementFilter in routine.metadata.filters.elements) {
+                            if(filter.filter == elementFilter) {
+                                found = true
+                            }
+                        }
+                        if(!found) toAdd = false
+                    }
+                    else if(filter.category == "spaceRequired") {
+                        if(filter.filter != routine.metadata.filters.requiredSpace) toAdd = false
+                    }
+                    else if(filter.category == "approach") {
+                        var found = false
+                        for(approachFilter in routine.metadata.filters.approach) {
+                            if(filter.filter == approachFilter) {
+                                found = true
+                            }
+                        }
+                        if(!found) toAdd = false
+                    } else if(filter.category == "Score") {
+                        when(filter.filter) {
+                            "Bad" -> if(routine.score > 2) toAdd = false
+                            "Good" -> if(routine.score <= 2 || routine.score > 4 ) toAdd = false
+                            "Excelent" -> if(routine.score < 4) toAdd = false
+                        }
+                    }
+                }
+                if(toAdd) {
+                    selectedRoutines.add(routine)
                 }
             }
 
-
             uiState = uiState.copy(routinePreviews = selectedRoutines)
-
-             */
         }
 
         fun getRoutine(routineId: Int) = runOnViewModelScope(

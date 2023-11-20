@@ -555,7 +555,6 @@ fun RoutineScreen(
         ) {
             if(isFavourite != null) {
                 RoutineMenu(
-                    time = routine.time,
                     isFavourite = isFavourite ?: true,
                     navController = navController,
                     routineViewModel = routineViewModel
@@ -669,7 +668,7 @@ fun getOptions(): List<PopUpOption> {
 }
 
 @Composable
-fun RoutineMenu(time :Int, isFavourite :Boolean, navController: NavController, routineViewModel: RoutineViewModel) {
+fun RoutineMenu(isFavourite :Boolean, navController: NavController, routineViewModel: RoutineViewModel) {
 
     val popUpOptions = getOptions()
     var showPopUp by remember { mutableStateOf(false) }
@@ -693,25 +692,6 @@ fun RoutineMenu(time :Int, isFavourite :Boolean, navController: NavController, r
                 contentDescription = null,
                 tint = Color.Gray,
                 modifier = Modifier.size(30.dp)
-            )
-        }
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.time),
-                contentDescription = stringResource(R.string.time_icon),
-                tint = MaterialTheme.colorScheme.surfaceTint,
-                modifier = Modifier
-                    .size(30.dp)
-                    .padding(end = 5.dp)
-            )
-            Text(
-                text = "$time min",
-                color = MaterialTheme.colorScheme.surfaceTint,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
             )
         }
         IconButton (

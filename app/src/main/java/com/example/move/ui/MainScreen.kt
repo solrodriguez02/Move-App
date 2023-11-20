@@ -1,5 +1,6 @@
 package com.example.move.ui
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -138,7 +139,6 @@ fun ExploreScreen(
                             RoutinePreview(
                                 imageUrl = routine.detail ?: "",
                                 title = routine.name,
-                                time = 0,
                                 routineId = routine.id ?:0,
                                 leftSide = if (isVertical) index % 2 == 0 else false,
                                 onNavigateToRoutine = onNavigateToRoutine
@@ -195,6 +195,7 @@ fun ExploreScreen(
     }
 }
 
+@SuppressLint("SuspiciousIndentation")
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ExploreFilters(windowSizeClass: WindowSizeClass) {
@@ -550,7 +551,6 @@ fun RoutinesCarousel(title :String, routineData :List<RoutinePreview>, onNavigat
                 RoutinePreview(
                     imageUrl = routine.detail?:"",
                     title = routine.name,
-                    time = 0,
                     routineId = routine.id?:0,
                     onNavigateToRoutine = onNavigateToRoutine
                 )
@@ -602,7 +602,7 @@ fun Header(title: String, onNavigateToProfile :(userId:Int)->Unit, isHome :Boole
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun RoutinePreview(imageUrl: String, title: String, time: Int, routineId: Int, leftSide: Boolean = false, onNavigateToRoutine :(routineId:Int)->Unit,
+fun RoutinePreview(imageUrl: String, title: String, routineId: Int, leftSide: Boolean = false, onNavigateToRoutine :(routineId:Int)->Unit,
                    viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())) {    Column(
         horizontalAlignment = if(leftSide) Alignment.End else Alignment.Start,
         modifier = Modifier.padding(bottom = 20.dp)
@@ -655,21 +655,8 @@ fun RoutinePreview(imageUrl: String, title: String, time: Int, routineId: Int, l
                     Text(
                         text = title,
                         color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(vertical = 5.dp)
                     )
-
-                    Row {
-                        Icon(
-                            painter = painterResource(id = R.drawable.time),
-                            contentDescription = stringResource(R.string.time_icon),
-                            tint = MaterialTheme.colorScheme.surfaceTint
-                        )
-
-                        Text(
-                            text = "$time'",
-                            color = MaterialTheme.colorScheme.surfaceTint,
-                            modifier = Modifier.padding(start = 5.dp)
-                        )
-                    }
                 }
             }
         }

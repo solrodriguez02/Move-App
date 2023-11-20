@@ -78,6 +78,8 @@ import coil.compose.rememberImagePainter
 import com.example.move.R
 import com.example.move.data.model.Cycle
 import com.example.move.data.model.CycleExercise
+import com.example.move.data.model.Filter
+import com.example.move.data.model.MetadataRoutine
 import com.example.move.data.model.Review
 import com.example.move.data.model.RoutineDetail
 import com.example.move.util.getViewModelFactory
@@ -127,10 +129,10 @@ fun RoutineScreen(
         )
 
         val filters = arrayListOf(
-            FilterDetail(stringResource(id = R.string.difficulty_filter), routineData?.difficulty + stringResource(id = R.string.difficulty_lower), R.drawable.difficulty),
-            FilterDetail(stringResource(id = R.string.elements_required_filter), routine.elements.toString().substring(1, routine.elements.toString().length - 1), R.drawable.elements),
-            FilterDetail(stringResource(id = R.string.approach_filter), routine.approach.toString().substring(1, routine.approach.toString().length - 1), R.drawable.approach),
-            FilterDetail(stringResource(id = R.string.space_required_filter), routine.space, R.drawable.space)
+            FilterDetail(stringResource(id = R.string.difficulty_filter), routineData?.metadata?.filters?.difficulty + stringResource(id = R.string.difficulty_lower), R.drawable.difficulty),
+            FilterDetail(stringResource(id = R.string.elements_required_filter), routineData?.metadata?.filters?.elements.toString(), R.drawable.elements),
+            FilterDetail(stringResource(id = R.string.approach_filter), routineData?.metadata?.filters?.approach.toString(), R.drawable.approach),
+            FilterDetail(stringResource(id = R.string.space_required_filter), routineData?.metadata?.filters?.requiredSpace ?: "", R.drawable.space)
         )
 
         val cyclesOptions = listOf(R.drawable.warm_up, R.drawable.exercise, R.drawable.cooling)
@@ -519,7 +521,9 @@ fun RoutineScreen(
                             .padding(bottom = 20.dp)
                     ) {
                         RoutineExecutionMenu(
-                            routineData = routineData ?: RoutineDetail(id = -1, name = "", score = 0, difficulty = "", cycles = emptyMap<Cycle, List<CycleExercise>>().toMutableMap()),
+                            routineData = routineData ?: RoutineDetail(id = -1, name = "", score = 0, difficulty = "", cycles = emptyMap<Cycle, List<CycleExercise>>().toMutableMap(), metadata = MetadataRoutine(
+                                Filter("", emptyList(), "", emptyList())
+                            )),
                             showModeDialog = showModeDialog,
                             onShowMode = { showModeDialog = !showModeDialog },
                             onNavigateToExecute = onNavigateToExecute)
@@ -572,7 +576,9 @@ fun RoutineScreen(
                     .padding(bottom = 20.dp)
             ) {
                 RoutineExecutionMenu(
-                    routineData = routineData ?: RoutineDetail(id = -1, name = "", score = 0, difficulty = "", cycles = emptyMap<Cycle, List<CycleExercise>>().toMutableMap()),
+                    routineData = routineData ?: RoutineDetail(id = -1, name = "", score = 0, difficulty = "", cycles = emptyMap<Cycle, List<CycleExercise>>().toMutableMap(), metadata = MetadataRoutine(
+                        Filter("", emptyList(), "", emptyList())
+                    )),
                     showModeDialog = showModeDialog,
                     onShowMode = { showModeDialog = !showModeDialog },
                     onNavigateToExecute = onNavigateToExecute)

@@ -27,6 +27,9 @@ data class NetworkRoutine (
     @SerializedName("score")
     var score: Int,
 
+    @SerializedName("metadata")
+    var metadata: NetworkMetadataRoutine
+
 ){
 
     fun asModelPreview(): RoutinePreview {
@@ -46,7 +49,8 @@ data class NetworkRoutine (
             difficulty= difficulty,
             score = score,
             isFavourite = null,
-            cycles = emptyMap<Cycle, List<CycleExercise>>().toMutableMap()
+            cycles = emptyMap<Cycle, List<CycleExercise>>().toMutableMap(),
+            metadata = metadata.asModel()
         )
     }
 

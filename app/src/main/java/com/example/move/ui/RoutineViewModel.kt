@@ -28,6 +28,11 @@ class RoutineViewModel(
             { state, response -> state.copy(routinePreviews = response) }
         )
 
+        fun getPersonalRoutinePreviews() = runOnViewModelScope(
+            { routineRepository.getPersonalRoutines() },
+            { state, response -> state.copy(personalRoutinePreviews = response) }
+        )
+
         fun getFilteredRoutinePreviews(
             filtersSelected :List<SelectedFilter>,
             isOrderedByDate :Boolean,

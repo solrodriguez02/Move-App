@@ -23,6 +23,7 @@ class RoutineRepository (
 ){
     private var currentRoutine: RoutineDetail? = null
     private var routinePreviews: List<RoutinePreview> = emptyList<RoutinePreview>().toMutableList()
+    private var personalRoutinePreviews: List<RoutinePreview> = emptyList<RoutinePreview>().toMutableList()
 
     suspend fun getRoutinePreviews(refresh: Boolean, orderBy :String= "date", direction :String = "asc"): List<RoutinePreview>{
         if (refresh || routinePreviews.isEmpty() ) {
@@ -36,6 +37,12 @@ class RoutineRepository (
         this.getRoutineCyclesAndExercises(currentRoutine!!.id)
         this.currentRoutine?.isFavourite = isRoutineInFavourites(currentRoutine!!.id)
         return currentRoutine as RoutineDetail
+    }
+
+    suspend fun getPersonalRoutines(): List<RoutinePreview>{
+        val result = remoteDataSource.getPersonalRoutines()
+        this.personalRoutinePreviews = result.content.map { it.asModelPreview() }
+        return personalRoutinePreviews
     }
 
     private suspend fun getRoutineCyclesAndExercises(routineId: Int){

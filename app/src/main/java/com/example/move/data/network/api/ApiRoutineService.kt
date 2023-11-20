@@ -21,6 +21,8 @@ interface ApiRoutineService {
         @Query("direction") direction: String = "asc",
         ): Response<NetworkPagedContent<NetworkRoutine>>
 
+    @GET("users/current/routines")
+    suspend fun getPersonalRoutines(@Query("size") size: Int = 100): Response<NetworkPagedContent<NetworkRoutine>>
     @GET("routines/{routineId}")
     suspend fun getRoutineById(@Path("routineId") routineId: Int): Response<NetworkRoutine>
 

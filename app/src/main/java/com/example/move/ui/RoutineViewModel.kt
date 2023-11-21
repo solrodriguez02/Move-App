@@ -1,8 +1,11 @@
 package com.example.move.ui
 
 import android.util.Log
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
@@ -41,7 +44,10 @@ class RoutineViewModel(
             if(isOrderedByDate) {
                 getRoutinePreviews(orderBy = "date", direction = direction)
             }
+            applyFilters(filtersSelected)
+        }
 
+        private fun applyFilters(filtersSelected :List<SelectedFilter>) {
             var selectedRoutines :MutableList<RoutinePreview> = mutableListOf()
             var toAdd :Boolean
 
@@ -60,7 +66,7 @@ class RoutineViewModel(
                         }
                         if(!found) toAdd = false
                     }
-                    else if(filter.category == "spaceRequired") {
+                    else if(filter.category == "requiredSpace") {
                         if(filter.filter != routine.metadata.filters.requiredSpace) toAdd = false
                     }
                     else if(filter.category == "approach") {
@@ -71,11 +77,11 @@ class RoutineViewModel(
                             }
                         }
                         if(!found) toAdd = false
-                    } else if(filter.category == "Score") {
+                    } else if(filter.category == "score") {
                         when(filter.filter) {
                             "Bad" -> if(routine.score > 2) toAdd = false
                             "Good" -> if(routine.score <= 2 || routine.score > 4 ) toAdd = false
-                            "Excelent" -> if(routine.score < 4) toAdd = false
+                            "Excellent" -> if(routine.score < 4) toAdd = false
                         }
                     }
                 }
@@ -83,7 +89,6 @@ class RoutineViewModel(
                     selectedRoutines.add(routine)
                 }
             }
-
             uiState = uiState.copy(routinePreviews = selectedRoutines)
         }
 

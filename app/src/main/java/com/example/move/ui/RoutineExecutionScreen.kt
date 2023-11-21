@@ -287,7 +287,8 @@ fun RoutineExecutionScreen(
                                 cycleIndex = cycleIndex,
                                 isRestExercise = isRestExercise,
                                 cycleIcon = cycleIcon,
-                                cycles = cycles
+                                cycles = cycles,
+                                windowSizeClass = windowSizeClass
                             )
 
                         ExecutionMenu(
@@ -1012,11 +1013,16 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun VerticalListMode(currentExercise: CycleExercise, exerciseIndex: Int, cycleIndex: Int, isRestExercise: Boolean, cycleIcon: Painter, cycles :MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>) {
+fun VerticalListMode(currentExercise: CycleExercise, exerciseIndex: Int, cycleIndex: Int, isRestExercise: Boolean, cycleIcon: Painter,
+                     cycles :MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>, windowSizeClass: WindowSizeClass) {
+    val hasExpandedHeight = windowSizeClass.heightSizeClass == WindowHeightSizeClass.Expanded
+    val isExpandedScreen = hasExpandedHeight && windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
+    val imgHeight = if ( hasExpandedHeight ) 200.dp else 150.dp
+
     Column(
-        modifier = Modifier.padding(horizontal = 20.dp)
+        modifier = Modifier.padding(horizontal = 20.dp).widthIn(max = 450.dp)
     ){
-        VerticalExerciseListBox(exerciseIndex = exerciseIndex-1, cycleIndex = cycleIndex, cycleIcon = cycleIcon, cycles = cycles)
+        VerticalExerciseListBox(exerciseIndex = exerciseIndex-1, cycleIndex = cycleIndex, cycleIcon = cycleIcon, cycles = cycles, hasExpandedHeight)
         Surface(
             shape = RoundedCornerShape(10.dp),
             color = if(isRestExercise) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
@@ -1031,14 +1037,14 @@ fun VerticalListMode(currentExercise: CycleExercise, exerciseIndex: Int, cycleIn
                 Text(
                     text = currentExercise.exercise?.name ?: "",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
+                    fontSize = if(hasExpandedHeight) 24.sp else 20.sp,
                     color = if(isRestExercise) MaterialTheme.colorScheme.inversePrimary else MaterialTheme.colorScheme.primary
                 )
                 if(isRestExercise) {
                     Row(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.height(150.dp)
+                        modifier = Modifier.height(imgHeight)
                     ) {
                         Icon(
                             painterResource(id = R.drawable.rest),
@@ -1050,13 +1056,13 @@ fun VerticalListMode(currentExercise: CycleExercise, exerciseIndex: Int, cycleIn
                 } else {
                     Box(
                         modifier = Modifier
-                            .height(150.dp)
+                            .height(imgHeight)
                             .padding(top = 10.dp)
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(10.dp)),
                     ) {
                         Image(
-                            painter = rememberImagePainter(data = ""), // IMAGE !!!
+                            painter = rememberImagePainter(data = R.drawable.a_borrar_ejer), // IMAGE !!!
                             contentDescription = currentExercise.exercise?.name,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop,
@@ -1065,17 +1071,18 @@ fun VerticalListMode(currentExercise: CycleExercise, exerciseIndex: Int, cycleIn
                 }
             }
         }
-
-        for(i in 1..3) {
-            VerticalExerciseListBox(exerciseIndex = exerciseIndex+i, cycleIndex = cycleIndex, cycleIcon = cycleIcon, cycles = cycles)
+        val nextExercises = if ( isExpandedScreen ) 4 else 3
+        for(i in 1..nextExercises) {
+            VerticalExerciseListBox(exerciseIndex = exerciseIndex+i, cycleIndex = cycleIndex, cycleIcon = cycleIcon, cycles = cycles, hasExpandedHeight)
         }
     }
 }
 
 @Composable
-fun VerticalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : Painter, cycles :MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>) {
+fun VerticalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : Painter, cycles :MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>, isVerticalExpanded: Boolean) {
 
     var type = -1
+    val textSize = if ( isVerticalExpanded ) 18.sp else 14.sp
 
     if(exerciseIndex == -1) type = 0
     else if(exerciseIndex < cycles[cycleIndex].value.size) {
@@ -1105,7 +1112,8 @@ fun VerticalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : Pai
                 Text(
                     text = cycles[cycleIndex].key.name ?: "",
                     color = MaterialTheme.colorScheme.surfaceTint,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = textSize
                 )
             }
 
@@ -1127,11 +1135,13 @@ fun VerticalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : Pai
                 } else {
                     Text(
                         text = exercise.exercise?.name ?: "",
+                        fontSize = textSize,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
                 Text(
                     text = exercise.duration.toString() + stringResource(id = R.string.seconds),
+                    fontSize =  textSize,
                     color = if(type == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.inversePrimary
                 )
             }

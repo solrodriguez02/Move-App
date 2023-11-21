@@ -70,7 +70,8 @@ fun ExploreScreen(
     onNavigateToProfile :(userId:Int)->Unit,
     onNavigateToRoutine :(routineId:Int)->Unit,
     windowSizeClass: WindowSizeClass,
-    viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
+    viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory()),
+    mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory())
 ) {
 
     var count by remember {
@@ -78,6 +79,7 @@ fun ExploreScreen(
     }
     if(count) {
         viewModel.getRoutinePreviews()
+        mainViewModel.getCurrentUser()
         count = false
     }
     var routineData = viewModel.uiState.routinePreviews
@@ -542,7 +544,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, onApplyFilters :() -> Unit,
 
 @Composable
 fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(routineId:Int)->Unit,
-               windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())) {
+               windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory()), mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory())) {
 
     var count by remember {
         mutableStateOf(true)
@@ -551,6 +553,7 @@ fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(ro
     if(count) {
         viewModel.getFavouriteRoutines()
         viewModel.getPersonalRoutinePreviews()
+        mainViewModel.getCurrentUser()
         count = false
     }
 
@@ -626,7 +629,7 @@ fun RoutinesCarousel(title :String, routineData :List<RoutinePreview>, onNavigat
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun Header(title: String, onNavigateToProfile :(userId:Int)->Unit, isHome :Boolean = false) {
+fun Header(title: String, onNavigateToProfile :(userId:Int)->Unit, isHome :Boolean = false, viewModel: MainViewModel = viewModel(factory = getViewModelFactory())) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -650,7 +653,7 @@ fun Header(title: String, onNavigateToProfile :(userId:Int)->Unit, isHome :Boole
         ) {
             Image(
                 painter = rememberImagePainter(
-                    data = "https://profilemagazine.com/wp-content/uploads/2020/04/Ajmere-Dale-Square-thumbnail.jpg"
+                    data = viewModel.uiState.currentUser?.avatarUrl
                 ),
                 contentDescription = stringResource(id = R.string.profile_image),
                 modifier = Modifier
@@ -665,7 +668,8 @@ fun Header(title: String, onNavigateToProfile :(userId:Int)->Unit, isHome :Boole
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun RoutinePreview(imageUrl: String, title: String, routineId: Int, leftSide: Boolean = false, onNavigateToRoutine :(routineId:Int)->Unit,
-                   viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())) {    Column(
+                   viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())) {
+    Column(
         horizontalAlignment = if(leftSide) Alignment.End else Alignment.Start,
         modifier = Modifier.padding(bottom = 20.dp)
     ) {

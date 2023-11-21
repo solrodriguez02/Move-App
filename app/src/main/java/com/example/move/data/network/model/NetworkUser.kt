@@ -42,7 +42,8 @@ class NetworkUser(
             lastName = lastName,
             email = email,
             lastActivity = lastActivity,
-            gender = gender
+            gender = gender,
+            avatarUrl = avatarUrl?: ""
         )
     }
 }

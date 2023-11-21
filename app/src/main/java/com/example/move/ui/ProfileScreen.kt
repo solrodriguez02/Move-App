@@ -145,7 +145,7 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
             )
             Image(
                 painter = rememberImagePainter(
-                    data = "https://profilemagazine.com/wp-content/uploads/2020/04/Ajmere-Dale-Square-thumbnail.jpg"
+                    data = currentUser?.avatarUrl
                 ),
                 contentDescription = stringResource(id = R.string.profile_image),
                 modifier = Modifier

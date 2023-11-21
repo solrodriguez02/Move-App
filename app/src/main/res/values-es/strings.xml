@@ -121,4 +121,6 @@
     <string name="space_category">requiredSpace</string>
     <string name="elements_category">elements</string>
     <string name="score_category">score</string>
+    <string name="no_favourites">Sus rutinas favoritas aparecerán aquí</string>
+    <string name="no_createdByYou">Sus rutinas aparecerán aquí</string>
 </resources>

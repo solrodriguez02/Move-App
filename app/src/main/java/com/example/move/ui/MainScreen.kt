@@ -580,18 +580,17 @@ fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(ro
         Column(
             modifier = Modifier.verticalScroll(state)
         ) {
-            if(favRoutines?.isEmpty() == false) {
                 RoutinesCarousel(
                     title = stringResource(id = R.string.favourites_title),
                     routineData = favRoutines ?: emptyList(),
-                    onNavigateToRoutine = onNavigateToRoutine
+                    onNavigateToRoutine = onNavigateToRoutine,
+                    isFavs = true
                 )
                 RoutinesCarousel(
                     title = stringResource(id = R.string.your_routines_title),
                     routineData = personalRoutines ?: emptyList(),
                     onNavigateToRoutine = onNavigateToRoutine
                 )
-            }
             Spacer(modifier = Modifier.height(100.dp))
         }
     }
@@ -599,7 +598,7 @@ fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(ro
 }
 
 @Composable
-fun RoutinesCarousel(title :String, routineData :List<RoutinePreview>, onNavigateToRoutine :(routineId:Int)->Unit) {
+fun RoutinesCarousel(title :String, routineData :List<RoutinePreview>, onNavigateToRoutine :(routineId:Int)->Unit, isFavs :Boolean = false) {
     Text(
         text = title,
         fontSize = 20.sp,
@@ -607,19 +606,38 @@ fun RoutinesCarousel(title :String, routineData :List<RoutinePreview>, onNavigat
         color = MaterialTheme.colorScheme.primary
     )
 
-    LazyRow {
-        items(routineData) { routine ->
-            Box(modifier = Modifier.padding(start = 10.dp, top = 10.dp)) {
-                RoutinePreview(
-                    imageUrl = routine.detail?:"",
-                    title = routine.name,
-                    routineId = routine.id?:0,
-                    onNavigateToRoutine = onNavigateToRoutine
+    if(routineData.isEmpty()) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(vertical = 60.dp).fillMaxWidth()
+        ) {
+            Row {
+                Icon(
+                    painter = painterResource(id = R.drawable.not_found),
+                    contentDescription = null,
+                    tint = Color.Gray
+                )
+                Text(
+                    text = if(isFavs) stringResource(id = R.string.no_favourites) else stringResource(id = R.string.no_createdByYou),
+                    color = Color.Gray
                 )
             }
         }
-        item{
-            Spacer(modifier = Modifier.width(20.dp))
+    } else {
+        LazyRow {
+            items(routineData) { routine ->
+                Box(modifier = Modifier.padding(start = 10.dp, top = 10.dp)) {
+                    RoutinePreview(
+                        imageUrl = routine.detail ?: "",
+                        title = routine.name,
+                        routineId = routine.id ?: 0,
+                        onNavigateToRoutine = onNavigateToRoutine
+                    )
+                }
+            }
+            item {
+                Spacer(modifier = Modifier.width(20.dp))
+            }
         }
     }
 }

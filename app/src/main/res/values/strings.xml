@@ -120,4 +120,6 @@
     <string name="space_category">requiredSpace</string>
     <string name="elements_category">elements</string>
     <string name="score_category">score</string>
+    <string name="no_favourites">Your favourite routines will appear here</string>
+    <string name="no_createdByYou">Your routines will appear here</string>
 </resources>

@@ -72,7 +72,8 @@ fun MoveNavHost(
                 backStackEntry -> RoutineExecutionScreen(
                 onNavigateToFinish = { id -> navController.navigate("routine/$id/finished") },
                 navController = navController,
-                routineId = backStackEntry.arguments?.getInt("id") ?: 0
+                routineId = backStackEntry.arguments?.getInt("id") ?: 0,
+                windowSizeClass = windowSizeClass,
             )
         }
 

@@ -3,6 +3,7 @@ package com.example.move.ui
 import android.content.res.Configuration
 import android.media.AudioManager
 import android.media.ToneGenerator
+import android.widget.Space
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,9 +17,11 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -33,6 +36,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -79,6 +85,7 @@ fun RoutineExecutionScreen(
     onNavigateToFinish :(routineId:Int)->Unit,
     navController: NavController,
     routineId: Int,
+    windowSizeClass: WindowSizeClass,
     viewModel: MainViewModel = viewModel(factory = getViewModelFactory()),
     routineViewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
 ) {
@@ -144,9 +151,7 @@ fun RoutineExecutionScreen(
 
         var showExitPopUp by remember { mutableStateOf(false) }
 
-        val config = LocalConfiguration.current
-
-        val orientation = config.orientation
+        val isVertical = isVertical(LocalConfiguration.current )
 
         if (isSoundOn && (currentTime == 1 * 1000L || currentTime == 2 * 1000L || currentTime == 3 * 1000L)) {
             ToneGenerator(AudioManager.STREAM_MUSIC, 100).startTone(
@@ -216,7 +221,7 @@ fun RoutineExecutionScreen(
         ) {
             val state = rememberScrollState()
             LaunchedEffect(Unit) { state.animateScrollTo(100) }
-
+            val isExpandedScreen = windowSizeClass.heightSizeClass == WindowHeightSizeClass.Expanded
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -225,7 +230,7 @@ fun RoutineExecutionScreen(
                     .padding(20.dp)
             ) {
 
-                if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                if (isVertical) {
 
                     ExecutionHeader(
                         showExitPopUp = { showExitPopUp = true },
@@ -233,22 +238,28 @@ fun RoutineExecutionScreen(
                         newCycle = newCycle,
                         cycleIcon = cycleIcon,
                         isDetailedMode = isDetailedMode,
-                        currentExercise = currentExercise
+                        currentExercise = currentExercise,
+                        isExpandedScreen = isExpandedScreen
                     )
 
                     if (newCycle) {
-                        NewCycleVerticalScreen(onStart = {
-                            newCycle = false
-                            isTimerRunning = true
-                        }, cycleIcon = cycleIcon, cycleIndex = cycleIndex, cycles = cycles)
+
+                            NewCycleVerticalScreen(onStart = {
+                                newCycle = false
+                                isTimerRunning = true
+                            }, cycleIcon = cycleIcon, cycleIndex = cycleIndex, cycles = cycles, isExpandedScreen = isExpandedScreen )
+
                     } else {
+                        if ( isExpandedScreen)
+                            Spacer(Modifier.height(40.dp))
+
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
-                                .height(150.dp)
-                                .width(400.dp)
+                                .height(if (isExpandedScreen) 180.dp else 150.dp)
+                                .width(if (isExpandedScreen) 600.dp else 400.dp)
                                 .onSizeChanged { size = it }
-                                .padding(top = if (isDetailedMode) 30.dp else 0.dp)
+                                .padding(top = if (isDetailedMode && !isExpandedScreen) 30.dp else 0.dp)
                         ) {
                             VerticalTimer(
                                 totalTime = totalTime,
@@ -266,7 +277,8 @@ fun RoutineExecutionScreen(
                                 exerciseIndex = exerciseIndex,
                                 exerciseCount = exerciseCount,
                                 isRestExercise = isRestExercise,
-                                textColor = textColor
+                                textColor = textColor,
+                                isExpandedScreen = isExpandedScreen
                             )
                         else
                             VerticalListMode(
@@ -287,17 +299,24 @@ fun RoutineExecutionScreen(
                             onPlay = { isTimerRunning = !isTimerRunning },
                             onNext = { nextExercise = true },
                             isPaused = isTimerRunning && currentTime > 0L,
-                            isSoundOn = isSoundOn
+                            isSoundOn = isSoundOn,
+                            windowSizeClass = windowSizeClass
                         )
 
-                        if (isDetailedMode) NextExerciseBox(
-                            exerciseIndex = exerciseIndex,
-                            exerciseCount = exerciseCount,
-                            cycleIndex = cycleIndex,
-                            cycleIcon = cycleIcon,
-                            isRestExercise = isRestExercise,
-                            cycles = cycles
-                        )
+                        if (isDetailedMode) {
+
+                            Row( Modifier.padding(bottom = 2.dp)) {
+                                NextExerciseBox(
+                                    exerciseIndex = exerciseIndex,
+                                    exerciseCount = exerciseCount,
+                                    cycleIndex = cycleIndex,
+                                    cycleIcon = cycleIcon,
+                                    isRestExercise = isRestExercise,
+                                    cycles = cycles,
+                                    windowSizeClass = windowSizeClass
+                                )
+                            }
+                        }
                     }
                 } else {
                     if (newCycle) {
@@ -337,7 +356,8 @@ fun RoutineExecutionScreen(
                                 exerciseIndex = exerciseIndex,
                                 cycleIndex = cycleIndex,
                                 isSoundOn = isSoundOn,
-                                cycles = cycles
+                                cycles = cycles,
+                                windowSizeClass = windowSizeClass
                             )
                         else
                             HorizontalListMode(
@@ -363,7 +383,8 @@ fun RoutineExecutionScreen(
                                 exerciseIndex = exerciseIndex,
                                 cycleIndex = cycleIndex,
                                 isSoundOn = isSoundOn,
-                                cycles = cycles
+                                cycles = cycles,
+                                windowSizeClass = windowSizeClass
                             )
                     }
                 }
@@ -373,15 +394,19 @@ fun RoutineExecutionScreen(
 }
 
 @Composable
-fun ExecutionMenu(hasOnlyReps :Boolean, onRefresh :() -> Unit, onPlay :() -> Unit, onNext :() -> Unit, isPaused :Boolean, isSoundOn: Boolean) {
+fun ExecutionMenu(hasOnlyReps :Boolean, onRefresh :() -> Unit, onPlay :() -> Unit, onNext :() -> Unit, isPaused :Boolean, isSoundOn: Boolean, windowSizeClass: WindowSizeClass) {
+    val hasExtendedWidth = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
+    val iconSize = if (hasExtendedWidth) 40.dp else 30.dp
     Surface(
         shape = RoundedCornerShape(50.dp),
         color = MaterialTheme.colorScheme.surfaceTint,
         modifier = Modifier
-            .padding(vertical = 20.dp)
+            .padding(vertical = if ( hasExtendedWidth) 100.dp
+                else if ( windowSizeClass.heightSizeClass == WindowHeightSizeClass.Expanded) 40.dp
+                else 20.dp)
     ) {
         Row(
-            horizontalArrangement = Arrangement.spacedBy(20.dp),
+            horizontalArrangement = Arrangement.spacedBy( if (hasExtendedWidth) 30.dp else 20.dp),
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp)
         ) {
             if (!hasOnlyReps) {
@@ -391,7 +416,7 @@ fun ExecutionMenu(hasOnlyReps :Boolean, onRefresh :() -> Unit, onPlay :() -> Uni
                     Icon(
                         Icons.Filled.Refresh,
                         contentDescription = null,
-                        modifier = Modifier.size(30.dp)
+                        modifier = Modifier.size(iconSize)
                     )
                 }
                 IconButton(onClick = onPlay) {
@@ -400,7 +425,7 @@ fun ExecutionMenu(hasOnlyReps :Boolean, onRefresh :() -> Unit, onPlay :() -> Uni
                             id = R.drawable.play
                         ),
                         contentDescription = null,
-                        modifier = Modifier.size(30.dp)
+                        modifier = Modifier.size(iconSize)
                     )
                 }
             }
@@ -415,7 +440,7 @@ fun ExecutionMenu(hasOnlyReps :Boolean, onRefresh :() -> Unit, onPlay :() -> Uni
                 Icon(
                     painterResource(id = R.drawable.skip_next),
                     contentDescription = null,
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier.size(iconSize)
                 )
             }
         }
@@ -423,7 +448,7 @@ fun ExecutionMenu(hasOnlyReps :Boolean, onRefresh :() -> Unit, onPlay :() -> Uni
 }
 
 @Composable
-fun ExecutionHeader(showExitPopUp :() -> Unit, textColor : Color, newCycle :Boolean, cycleIcon: Painter, isDetailedMode: Boolean, currentExercise: CycleExercise) {
+fun ExecutionHeader(showExitPopUp :() -> Unit, textColor : Color, newCycle :Boolean, cycleIcon: Painter, isDetailedMode: Boolean, currentExercise: CycleExercise, isExpandedScreen: Boolean) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -441,7 +466,7 @@ fun ExecutionHeader(showExitPopUp :() -> Unit, textColor : Color, newCycle :Bool
         if (isDetailedMode && !newCycle) {
             Text(
                 text = currentExercise.exercise?.name ?: "",
-                fontSize = 24.sp,
+                fontSize = if (isExpandedScreen) 30.sp else 24.sp,
                 color = textColor
             )
         }
@@ -517,7 +542,6 @@ fun VerticalTimer(totalTime :Long, size : IntSize, currentExercise :CycleExercis
 fun Time(currentTime :Long, totalTime :Long, textColor: Color, currentExercise: CycleExercise, isHorizontalList :Boolean = false) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(bottom = 20.dp)
     ) {
         val currentSecs = currentTime / 1000L
         val stringSecs = String.format("%02d:%02d", currentSecs / 60, currentSecs % 60)
@@ -548,7 +572,7 @@ fun Time(currentTime :Long, totalTime :Long, textColor: Color, currentExercise: 
 fun HorizontalListMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :() -> Unit, onNext: () -> Unit,
                        isPaused: Boolean, textColor: Color, isRestExercise: Boolean, currentExercise: CycleExercise, hasOnlyReps: Boolean,
                        totalTime: Long, currentTime: Long, value: Float, cycleIcon: Painter, exerciseIndex: Int, cycleIndex: Int, isSoundOn: Boolean,
-                       cycles: MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>)
+                       cycles: MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>, windowSizeClass: WindowSizeClass)
 {
     Row {
         IconButton(
@@ -668,7 +692,7 @@ fun HorizontalListMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :() ->
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            ExecutionMenu(hasOnlyReps = hasOnlyReps, onRefresh = onRefresh, onPlay = onPlay, onNext = onNext, isPaused = isPaused, isSoundOn = isSoundOn)
+            ExecutionMenu(hasOnlyReps = hasOnlyReps, onRefresh = onRefresh, onPlay = onPlay, onNext = onNext, isPaused = isPaused, isSoundOn = isSoundOn, windowSizeClass = windowSizeClass)
         }
     }
 }
@@ -761,7 +785,7 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
                            isPaused: Boolean, textColor: Color, isRestExercise: Boolean, currentExercise: CycleExercise,
                            hasOnlyReps: Boolean, totalTime: Long, currentTime: Long, value: Float, cycleIcon: Painter,
                            exerciseCount: Int, exerciseIndex: Int, cycleIndex: Int, isSoundOn: Boolean,
-                           cycles :MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>) {
+                           cycles :MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>, windowSizeClass: WindowSizeClass) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.fillMaxSize()
@@ -816,7 +840,8 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
                 onPlay = onPlay,
                 onNext = onNext,
                 isPaused = isPaused,
-                isSoundOn = isSoundOn
+                isSoundOn = isSoundOn,
+                windowSizeClass = windowSizeClass
             )
         }
 
@@ -867,7 +892,8 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
                 cycleIcon = cycleIcon,
                 isRestExercise = isRestExercise,
                 isHorizontal = true,
-                cycles = cycles
+                cycles = cycles,
+                windowSizeClass = windowSizeClass
             )
         }
     }
@@ -1004,8 +1030,9 @@ fun VerticalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : Pai
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun VerticalDetailedMode(currentExercise: CycleExercise, exerciseIndex :Int, exerciseCount :Int, isRestExercise :Boolean, textColor: Color) {
-
+fun VerticalDetailedMode(currentExercise: CycleExercise, exerciseIndex :Int, exerciseCount :Int, isRestExercise :Boolean, textColor: Color, isExpandedScreen: Boolean) {
+    var modifier = Modifier
+        .clip(RoundedCornerShape(50.dp))
     if(isRestExercise) {
         Row(
             horizontalArrangement = Arrangement.Center,
@@ -1020,14 +1047,19 @@ fun VerticalDetailedMode(currentExercise: CycleExercise, exerciseIndex :Int, exe
             )
         }
     } else {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
+        modifier = if ( isExpandedScreen)
+            modifier
+                .height(230.dp)
+                .fillMaxWidth(0.7f)
+        else
+            modifier
                 .height(180.dp)
-                .clip(RoundedCornerShape(50.dp)),
+                .fillMaxWidth()
+        Box(
+            modifier = modifier
         ) {
             Image(
-                painter = rememberImagePainter(data = ""), // IMAGE !!!
+                painter = rememberImagePainter(data = R.drawable.logo_with_color), // IMAGE !!!
                 contentDescription = currentExercise.exercise?.name,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
@@ -1036,24 +1068,27 @@ fun VerticalDetailedMode(currentExercise: CycleExercise, exerciseIndex :Int, exe
     }
     Text(
         text = (exerciseIndex + 1).toString() + stringResource(id = R.string.dash) + exerciseCount,
-        fontSize = 18.sp,
+        fontSize = if (isExpandedScreen) 24.sp else 18.sp,
         color = textColor,
-        modifier = Modifier.padding(10.dp)
+        modifier = Modifier.padding(if (isExpandedScreen) 15.dp else 10.dp)
     )
 
     if(!isRestExercise) {
+
         Surface(
             shape = RoundedCornerShape(20.dp),
             color = MaterialTheme.colorScheme.secondary,
             modifier = Modifier
-                .fillMaxWidth()
-                .height(90.dp)
-                .padding(top = 10.dp)
+                .widthIn(min = 400.dp, max = 550.dp)
+                .height(if (isExpandedScreen) 130.dp else 110.dp)
+                .padding(vertical = if (isExpandedScreen) 15.dp else 10.dp)
         ) {
             Text(
                 text = currentExercise.exercise?.detail ?: "",
                 modifier = Modifier.padding(10.dp),
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = if (isExpandedScreen) 20.sp else 16.sp,
+                textAlign = TextAlign.Justify
             )
         }
     } else {
@@ -1065,10 +1100,13 @@ fun VerticalDetailedMode(currentExercise: CycleExercise, exerciseIndex :Int, exe
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cycleIcon : Painter, isRestExercise: Boolean, isHorizontal :Boolean = false, cycles: MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>) {
+fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cycleIcon : Painter, isRestExercise: Boolean, isHorizontal :Boolean = false,
+                    cycles: MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>, windowSizeClass: WindowSizeClass) {
 
     val textColor = if(isRestExercise) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.inversePrimary
-
+    val isVerticalNotCompact = !isHorizontal && windowSizeClass.heightSizeClass == WindowHeightSizeClass.Medium
+    val isVerticalExpanded = !isHorizontal &&  windowSizeClass.heightSizeClass == WindowHeightSizeClass.Expanded
+    val textSize = if ( isVerticalExpanded ) 18.sp else 14.sp
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = if(isRestExercise) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.tertiary,
@@ -1078,7 +1116,7 @@ fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cyc
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(80.dp)
+                .height( if (isVerticalExpanded) 90.dp else 80.dp)
                 .padding(horizontal = 15.dp),
 
             ) {
@@ -1093,7 +1131,8 @@ fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cyc
                     )
                     Text(
                         text = if (lastCycle) stringResource(id = R.string.last_exercise) else cycles[cycleIndex+1].key.name ?: "",
-                        color = textColor
+                        color = textColor,
+                        fontSize = textSize
                     )
                 }
             } else {
@@ -1127,12 +1166,15 @@ fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cyc
                         if(followingExercise.exercise?.name != stringResource(id = R.string.rest_compare)) {
                             Text(
                                 text = if(isHorizontal) stringResource(id = R.string.next_name) else stringResource(id = R.string.next_exercise),
-                                color = textColor
+                                color = textColor,
+                                fontSize = textSize
                             )
                         }
                         Text(
                             text = followingExercise.exercise?.name ?: "",
-                            color = textColor
+                            color = textColor,
+                            fontSize = textSize
+
                         )
                     }
                 }
@@ -1205,22 +1247,22 @@ fun NewCycleHorizontalScreen(onStart :() -> Unit, cycleIcon: Painter, cycleIndex
 
 
 @Composable
-fun NewCycleVerticalScreen(onStart :() -> Unit, cycleIcon: Painter, cycleIndex :Int, cycles: MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>) {
+fun NewCycleVerticalScreen(onStart :() -> Unit, cycleIcon: Painter, cycleIndex :Int, cycles: MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>, isExpandedScreen: Boolean) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxSize()
     ) {
-
         Text(
             text = stringResource(id = R.string.next_cycle),
-            modifier = Modifier.padding(top = 50.dp, bottom = 15.dp),
+            fontSize = if ( isExpandedScreen ) 40.sp else 20.sp,
+            modifier = Modifier.padding(top = if (isExpandedScreen) 60.dp else 50.dp, bottom = 15.dp),
             color = MaterialTheme.colorScheme.primary
         )
 
         Text(
             text = cycles[cycleIndex].key.name ?: "",
-            fontSize = 40.sp,
+            fontSize = if ( isExpandedScreen ) 60.sp else 40.sp,
             color = MaterialTheme.colorScheme.primary
         )
 
@@ -1229,7 +1271,7 @@ fun NewCycleVerticalScreen(onStart :() -> Unit, cycleIcon: Painter, cycleIndex :
             contentDescription = null,
             modifier = Modifier
                 .padding(vertical = 100.dp)
-                .size(50.dp),
+                .size(if (isExpandedScreen) 60.dp else 50.dp),
             tint = MaterialTheme.colorScheme.surfaceTint
         )
 

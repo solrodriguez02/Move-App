@@ -2,6 +2,7 @@ package com.example.move.ui
 
 import android.content.res.Configuration
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
+import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -28,4 +29,8 @@ fun showNavRail( windowSizeClass: WindowSizeClass, configuration: Configuration)
 
 fun isHorizontalPhone( windowSizeClass: WindowSizeClass) : Boolean {
     return windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact
+}
+
+fun isVertical( configuration: Configuration ) : Boolean {
+    return configuration.orientation ==  ORIENTATION_PORTRAIT
 }

@@ -1125,7 +1125,7 @@ fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cyc
                                 .clip(RoundedCornerShape(10.dp)),
                         ) {
                             Image(
-                                painter = rememberImagePainter(data = ""), // IMAGE !!!
+                                painter = rememberImagePainter(data =  followingExercise.exercise?.metadata?.image), // IMAGE !!!
                                 contentDescription = followingExercise.exercise?.name,
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop,

@@ -109,7 +109,6 @@ fun RoutineScreen(
     val isVertical = widthSizeClass == WindowWidthSizeClass.Compact
 
     var showRate by remember { mutableStateOf(false) }
-    var showDescription by remember { mutableStateOf(false) }
     var showModeDialog by remember { mutableStateOf(false) }
     var score by remember { mutableIntStateOf (0) }
     var cycleIndex by remember { mutableIntStateOf(0) }
@@ -119,7 +118,6 @@ fun RoutineScreen(
 
     @Composable
     fun RoutineDetail() {
-        val descriptionIcon = if(showDescription) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
         val rateIcon = if(showRate) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
 
         data class FilterDetail (
@@ -300,46 +298,6 @@ fun RoutineScreen(
                 }
             }
 
-            /////////////////// Routine description ///////////////////////
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.description_name),
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Button(
-                    onClick = { showDescription = !showDescription },
-                    contentPadding = PaddingValues(0.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.surface,
-                    ),
-                    modifier = Modifier.width(40.dp)
-                ) {
-                    Icon(
-                        descriptionIcon,
-                        contentDescription = stringResource(R.string.description_name),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-            if (showDescription) {
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = MaterialTheme.colorScheme.inversePrimary,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = routineData?.detail ?: "no details",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(10.dp)
-                    )
-                }
-            }
 
             /////////////////// Cycles ///////////////////////
             Text(
@@ -419,7 +377,7 @@ fun RoutineScreen(
                             if (exercise.exercise?.name == stringResource(id = R.string.rest_compare)) {
                                 RestExercise(
                                     title = exercise.exercise?.name!!,
-                                    secs = exercise.repetitions
+                                    secs = exercise.duration
                                 )
                             } else {
                                 ExerciseBox(

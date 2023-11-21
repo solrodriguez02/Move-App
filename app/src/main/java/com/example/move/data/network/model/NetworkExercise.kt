@@ -1,6 +1,7 @@
 package com.example.move.data.network.model
 
 import com.example.move.data.model.ExerciseDetail
+import com.example.move.data.model.MetadataExercise
 import com.google.gson.annotations.SerializedName
 
 data class NetworkExercise (
@@ -19,6 +20,9 @@ data class NetworkExercise (
 
     @SerializedName("order")
     var order: Int,
+
+    @SerializedName("metadata")
+    var metadata: NetworkMetadataExercise? = NetworkMetadataExercise("no image", "unknown", emptyList(), emptyList(), "unknown", "unknown")
 ){
     fun asModel(): ExerciseDetail{
         return ExerciseDetail(
@@ -26,7 +30,7 @@ data class NetworkExercise (
             name = name,
             detail = detail,
             type = type,
-            order = order
+            metadata = metadata?.asModel() ?: MetadataExercise("no image", "unknown", emptyList(), emptyList(), "unknown", "unknown")
         )
     }
 }

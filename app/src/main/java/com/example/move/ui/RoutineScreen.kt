@@ -426,7 +426,7 @@ fun RoutineScreen(
                                     title = exercise.exercise?.name ?: "",
                                     secs = exercise.duration,
                                     reps = exercise.repetitions,
-                                    imgUrl = exercise.exercise?.detail ?: ""
+                                    imgUrl = exercise.exercise?.metadata?.image ?: ""
                                 )
                             }
                         }

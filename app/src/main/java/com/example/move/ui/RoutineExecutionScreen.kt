@@ -627,7 +627,7 @@ fun HorizontalListMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :() ->
                                     .clip(RoundedCornerShape(10.dp)),
                             ) {
                                 Image(
-                                    painter = rememberImagePainter(data = ""), // IMAGEN !!!!
+                                    painter = rememberImagePainter(data = currentExercise.exercise?.metadata?.image), // IMAGEN !!!!
                                     contentDescription = currentExercise.exercise?.name,
                                     modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Crop,
@@ -743,7 +743,7 @@ fun HorizontalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : P
                             .clip(RoundedCornerShape(10.dp)),
                     ) {
                         Image(
-                            painter = rememberImagePainter(data = ""), // IMAGE !!!
+                            painter = rememberImagePainter(data = exercise.exercise?.metadata?.image), // IMAGE !!!
                             contentDescription = exercise.exercise?.name,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop,
@@ -812,7 +812,7 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
                         .clip(RoundedCornerShape(10.dp)),
                 ) {
                     Image(
-                        painter = rememberImagePainter(data = ""), // IMAGE !!!
+                        painter = rememberImagePainter(data = currentExercise.exercise?.metadata?.image), // IMAGE !!!
                         contentDescription = currentExercise.exercise?.name ?: "",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
@@ -928,7 +928,7 @@ fun VerticalListMode(currentExercise: CycleExercise, exerciseIndex: Int, cycleIn
                             .clip(RoundedCornerShape(10.dp)),
                     ) {
                         Image(
-                            painter = rememberImagePainter(data = ""), // IMAGE !!!
+                            painter = rememberImagePainter(data = currentExercise.exercise?.metadata?.image), // IMAGE !!!
                             contentDescription = currentExercise.exercise?.name,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop,
@@ -1036,7 +1036,7 @@ fun VerticalDetailedMode(currentExercise: CycleExercise, exerciseIndex :Int, exe
                 .clip(RoundedCornerShape(50.dp)),
         ) {
             Image(
-                painter = rememberImagePainter(data = ""), // IMAGE !!!
+                painter = rememberImagePainter(data = currentExercise.exercise?.metadata?.image), // IMAGE !!!
                 contentDescription = currentExercise.exercise?.name,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,

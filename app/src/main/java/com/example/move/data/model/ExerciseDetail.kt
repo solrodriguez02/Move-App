@@ -5,5 +5,5 @@ class ExerciseDetail (
     var name: String ? = null,
     var detail: String ? = null,
     var type: String ? = null,
-    var order: Int,
+    var metadata: MetadataExercise,
 )

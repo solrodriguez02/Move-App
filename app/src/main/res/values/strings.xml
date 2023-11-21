@@ -61,7 +61,7 @@
     <string name="sc_fair">Fair</string>
     <string name="sc_good">Good</string>
     <string name="sc_very_good">Very good</string>
-    <string name="sc_excelent">Excelent</string>
+    <string name="sc_excelent">Excellent</string>
     <string name="rate_name">Rate</string>
     <string name="finish_title">You have made it!</string>
     <string name="score_label">How would you rate this routine?</string>
@@ -119,4 +119,5 @@
     <string name="approach_category">approach</string>
     <string name="space_category">requiredSpace</string>
     <string name="elements_category">elements</string>
+    <string name="score_category">score</string>
 </resources>

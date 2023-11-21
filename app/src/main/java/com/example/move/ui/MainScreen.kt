@@ -288,7 +288,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, onApplyFilters :() -> Unit,
                         },
                         onClick = {
                             onExpanded()
-                            if(!filtersSelected.contains(SelectedFilter(category, option.category))) {
+                            if(!filtersSelected.contains(SelectedFilter(category, option.category, option.label))) {
                                 if(category == dateCategory) {
                                     isOrderedByDateDesc = option.category == dateOptions[1].category
                                 }
@@ -298,7 +298,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, onApplyFilters :() -> Unit,
                                     (category == difficultyCategory && !isDifficultyCategory) ||
                                     (category == scoreCategory && !isOrderedByScore)
                                 ) {
-                                    filtersSelected.add(SelectedFilter(category, option.category))
+                                    filtersSelected.add(SelectedFilter(category, option.category, option.label))
                                     when (category) {
                                         dateCategory -> isOrderedByDate = true
                                         difficultyCategory -> isDifficultyCategory = true
@@ -398,7 +398,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, onApplyFilters :() -> Unit,
                         item {
                             Filter(
                                 filterName = stringResource(id = R.string.score_filter),
-                                category = stringResource(id = R.string.score_filter),
+                                category = stringResource(id = R.string.score_category),
                                 isExpanded = scoreExpanded,
                                 onExpanded = { scoreExpanded = !scoreExpanded },
                                 options = getScoreOptions()
@@ -504,7 +504,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, onApplyFilters :() -> Unit,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = option.filter,
+                                            text = option.label,
                                             modifier = Modifier.padding(start = 10.dp),
                                             color = MaterialTheme.colorScheme.primary
                                         )

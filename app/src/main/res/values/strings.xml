@@ -114,4 +114,5 @@
     <string name="remove_liked">Remove from favourites</string>
     <string name="copy_web_title">Press the button to copy the web site link</string>
     <string name="sound_title">Routine execution sound</string>
+    <string name="remaining_exercises">Remaining exercises</string>
 </resources>

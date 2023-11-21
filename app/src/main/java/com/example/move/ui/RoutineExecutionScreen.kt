@@ -222,7 +222,7 @@ fun RoutineExecutionScreen(
             val state = rememberScrollState()
             LaunchedEffect(Unit) { state.animateScrollTo(100) }
             val isExpandedScreen = windowSizeClass.heightSizeClass == WindowHeightSizeClass.Expanded
-
+            val isTablet = windowSizeClass.heightSizeClass > WindowHeightSizeClass.Compact
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
@@ -320,45 +320,70 @@ fun RoutineExecutionScreen(
                     }
                 } else {
                     if (newCycle) {
-                        NewCycleHorizontalScreen(onStart = {
-                            newCycle = false
-                            isTimerRunning = true
-                        },
-                            cycleIcon = cycleIcon,
-                            cycleIndex = cycleIndex,
-                            textColor = textColor,
-                            onClose = { showExitPopUp = true },
-                            cycles = cycles
-                        )
-                    } else {
-                        if (isDetailedMode)
-                            HorizontalDetailedMode(
-                                onClose = {
-                                    showExitPopUp = true
-                                    isTimerRunning = false
-                                },
-                                onRefresh = {
-                                    currentTime = totalTime
+                        if ( isTablet )
+                            Row(
+                            ) {
+                                IconButton(
+                                    onClick = { showExitPopUp = true },
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Close,
+                                        contentDescription = null,
+                                        tint = textColor
+                                    )
+                                }
+
+                                NewCycleVerticalScreen(
+                                onStart = {
+                                    newCycle = false
                                     isTimerRunning = true
                                 },
-                                onPlay = { isTimerRunning = !isTimerRunning },
-                                onNext = { nextExercise = true },
-                                isPaused = isTimerRunning && currentTime > 0L,
-                                textColor = textColor,
-                                isRestExercise = isRestExercise,
-                                currentExercise = currentExercise,
-                                hasOnlyReps = hasOnlyReps,
-                                totalTime = totalTime,
-                                currentTime = currentTime,
-                                value = value,
                                 cycleIcon = cycleIcon,
-                                exerciseCount = exerciseCount,
-                                exerciseIndex = exerciseIndex,
                                 cycleIndex = cycleIndex,
-                                isSoundOn = isSoundOn,
                                 cycles = cycles,
-                                windowSizeClass = windowSizeClass
+                                isExpandedScreen = true
                             )
+                        } else
+                            NewCycleHorizontalScreen(onStart = {
+                                newCycle = false
+                                isTimerRunning = true
+                            },
+                                cycleIcon = cycleIcon,
+                                cycleIndex = cycleIndex,
+                                textColor = textColor,
+                                onClose = { showExitPopUp = true },
+                                cycles = cycles
+                            )
+                    } else {
+                        if (isDetailedMode) {
+                                HorizontalDetailedMode(
+                                    onClose = {
+                                        showExitPopUp = true
+                                        isTimerRunning = false
+                                    },
+                                    onRefresh = {
+                                        currentTime = totalTime
+                                        isTimerRunning = true
+                                    },
+                                    onPlay = { isTimerRunning = !isTimerRunning },
+                                    onNext = { nextExercise = true },
+                                    isPaused = isTimerRunning && currentTime > 0L,
+                                    textColor = textColor,
+                                    isRestExercise = isRestExercise,
+                                    currentExercise = currentExercise,
+                                    hasOnlyReps = hasOnlyReps,
+                                    totalTime = totalTime,
+                                    currentTime = currentTime,
+                                    value = value,
+                                    cycleIcon = cycleIcon,
+                                    exerciseCount = exerciseCount,
+                                    exerciseIndex = exerciseIndex,
+                                    cycleIndex = cycleIndex,
+                                    isSoundOn = isSoundOn,
+                                    cycles = cycles,
+                                    windowSizeClass = windowSizeClass
+                                )
+                        }
                         else
                             HorizontalListMode(
                                 onClose = {
@@ -401,7 +426,7 @@ fun ExecutionMenu(hasOnlyReps :Boolean, onRefresh :() -> Unit, onPlay :() -> Uni
         shape = RoundedCornerShape(50.dp),
         color = MaterialTheme.colorScheme.surfaceTint,
         modifier = Modifier
-            .padding(vertical = if ( hasExtendedWidth) 100.dp
+            .padding(vertical = if ( hasExtendedWidth) 90.dp
                 else if ( windowSizeClass.heightSizeClass == WindowHeightSizeClass.Expanded) 40.dp
                 else 20.dp)
     ) {
@@ -574,6 +599,8 @@ fun HorizontalListMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :() ->
                        totalTime: Long, currentTime: Long, value: Float, cycleIcon: Painter, exerciseIndex: Int, cycleIndex: Int, isSoundOn: Boolean,
                        cycles: MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>, windowSizeClass: WindowSizeClass)
 {
+    val isTablet = windowSizeClass.heightSizeClass >= WindowHeightSizeClass.Medium
+
     Row {
         IconButton(
             onClick = onClose
@@ -584,117 +611,146 @@ fun HorizontalListMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :() ->
                 tint = textColor
             )
         }
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            for (i in 2 downTo 1) {
-                Column(
+        Column ( horizontalAlignment = Alignment.CenterHorizontally){
+            if ( isTablet) {
+                Spacer(Modifier.height(40.dp))
+                var size by remember {
+                    mutableStateOf(IntSize.Zero)
+                }
+                Box(
+                    contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .fillMaxHeight()
-                        .weight(0.2f)
+                        .height(200.dp)
+                        .width(450.dp)
+                        .onSizeChanged { size = it }
                 ) {
-                    HorizontalExerciseListBox(
-                        exerciseIndex = exerciseIndex - i,
-                        cycleIndex = cycleIndex,
-                        cycleIcon = cycleIcon,
-                        cycles = cycles
+                    VerticalTimer(
+                        totalTime = totalTime,
+                        size = size,
+                        currentExercise = currentExercise,
+                        currentTime = currentTime,
+                        value = value,
+                        textColor = textColor
                     )
                 }
             }
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .weight(0.35f)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = if (isRestExercise) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(230.dp)
-                        .padding(end = 20.dp)
-                ) {
+                for (i in 2 downTo 1) {
                     Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.padding(20.dp)
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .weight(0.2f)
                     ) {
-                        if (isRestExercise) {
-                            Row(
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.height(150.dp)
-                            ) {
-                                Icon(
-                                    painterResource(id = R.drawable.rest),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.inversePrimary,
-                                    modifier = Modifier.size(50.dp)
-                                )
+                        HorizontalExerciseListBox(
+                            exerciseIndex = exerciseIndex - i,
+                            cycleIndex = cycleIndex,
+                            cycleIcon = cycleIcon,
+                            cycles = cycles
+                        )
+                    }
+                }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(0.35f)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = if (isRestExercise) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) 250.dp else 230.dp)
+                            .padding(end = 15.dp)
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.padding(20.dp)
+                        ) {
+                            if (isRestExercise) {
+                                Row(
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.height(if (windowSizeClass.widthSizeClass==WindowWidthSizeClass.Expanded) 180.dp else 150.dp)
+                                ) {
+                                    Icon(
+                                        painterResource(id = R.drawable.rest),
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.inversePrimary,
+                                        modifier = Modifier.size(50.dp)
+                                    )
+                                }
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .height(if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) 180.dp else 150.dp)
+                                        .padding(bottom = 10.dp)
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp)),
+                                ) {
+                                    Image(
+                                        painter = rememberImagePainter(data =  R.drawable.a_borrar_ejer), // IMAGEN !!!!
+                                        contentDescription = currentExercise.exercise?.name,
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop,
+                                    )
+                                }
                             }
-                        } else {
-                            Box(
-                                modifier = Modifier
-                                    .height(150.dp)
-                                    .padding(bottom = 10.dp)
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp)),
-                            ) {
-                                Image(
-                                    painter = rememberImagePainter(data = ""), // IMAGEN !!!!
-                                    contentDescription = currentExercise.exercise?.name,
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop,
-                                )
-                            }
+                            Text(
+                                text = currentExercise.exercise?.name ?: "",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp,
+                                color = if (isRestExercise) MaterialTheme.colorScheme.inversePrimary else MaterialTheme.colorScheme.primary
+                            )
                         }
-                        Text(
-                            text = currentExercise.exercise?.name ?: "",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            color = if (isRestExercise) MaterialTheme.colorScheme.inversePrimary else MaterialTheme.colorScheme.primary
+                    }
+                }
+                for (i in 1..2) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .weight(0.2f)
+                    ) {
+                        HorizontalExerciseListBox(
+                            exerciseIndex = exerciseIndex + i,
+                            cycleIndex = cycleIndex,
+                            cycleIcon = cycleIcon,
+                            cycles = cycles
                         )
                     }
                 }
             }
-            for (i in 1..2) {
+            if ( isTablet) {
+                ExecutionMenu(hasOnlyReps = hasOnlyReps, onRefresh = onRefresh, onPlay = onPlay, onNext = onNext, isPaused = isPaused, isSoundOn = isSoundOn, windowSizeClass = windowSizeClass)
+            }
+
+        }
+
+    }
+    if ( !isTablet)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ){
                 Column(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .weight(0.2f)
+                    modifier = Modifier.weight(0.6f),
+                    verticalArrangement = Arrangement.Top
                 ) {
-                    HorizontalExerciseListBox(
-                        exerciseIndex = exerciseIndex + i,
-                        cycleIndex = cycleIndex,
-                        cycleIcon = cycleIcon,
-                        cycles = cycles
-                    )
+                    Time(currentTime = currentTime, totalTime = totalTime, textColor = textColor, currentExercise = currentExercise, isHorizontalList = true)
+                    Spacer(modifier = Modifier.padding( top =10.dp))
+                    HorizontalTimer(currentExercise = currentExercise, value = value, isList = true)
                 }
+            Column(
+                modifier = Modifier.weight(0.3f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
+                ExecutionMenu(hasOnlyReps = hasOnlyReps, onRefresh = onRefresh, onPlay = onPlay, onNext = onNext, isPaused = isPaused, isSoundOn = isSoundOn, windowSizeClass = windowSizeClass)
             }
         }
-    }
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ){
-        Column(
-            modifier = Modifier.weight(0.6f),
-            verticalArrangement = Arrangement.Top
-        ) {
-            Column {
-                Time(currentTime = currentTime, totalTime = totalTime, textColor = textColor, currentExercise = currentExercise, isHorizontalList = true)
-                HorizontalTimer(currentExercise = currentExercise, value = value, isList = true)
-            }
-        }
-        Column(
-            modifier = Modifier.weight(0.3f),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
-        ) {
-            ExecutionMenu(hasOnlyReps = hasOnlyReps, onRefresh = onRefresh, onPlay = onPlay, onNext = onNext, isPaused = isPaused, isSoundOn = isSoundOn, windowSizeClass = windowSizeClass)
-        }
-    }
 }
 
 @OptIn(ExperimentalCoilApi::class)
@@ -712,7 +768,7 @@ fun HorizontalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : P
         shape = RoundedCornerShape(10.dp),
         color = if(type == 2) MaterialTheme.colorScheme.tertiary else if(type == -1) Color.Transparent else MaterialTheme.colorScheme.surface,
         modifier = Modifier
-            .height(180.dp)
+            .height(185.dp)
             .padding(end = 15.dp)
             .fillMaxWidth()
     ) {
@@ -738,7 +794,7 @@ fun HorizontalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : P
             val exercise = cycles[cycleIndex].value[exerciseIndex]
 
             Column(
-                verticalArrangement = Arrangement.Center,
+                //verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(10.dp)
             ) {
@@ -752,23 +808,26 @@ fun HorizontalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : P
                 } else {
                     Box(
                         modifier = Modifier
-                            .height(100.dp)
-                            .padding(top = 10.dp)
+                            .height(95.dp)
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(10.dp)),
                     ) {
                         Image(
-                            painter = rememberImagePainter(data = ""), // IMAGE !!!
+                            painter = rememberImagePainter(data = R.drawable.a_borrar_ejer), // IMAGE !!!
                             contentDescription = exercise.exercise?.name,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop,
                         )
                     }
                     Text(
+                        modifier = Modifier.padding(top = 5.dp),
                         text = exercise.exercise?.name ?: "",
                         textAlign = TextAlign.Center,
+                        maxLines = 2,
                         color = MaterialTheme.colorScheme.primary
                     )
+
+
                 }
                 Text(
                     text = exercise.duration.toString() + stringResource(id = R.string.seconds),
@@ -786,9 +845,11 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
                            hasOnlyReps: Boolean, totalTime: Long, currentTime: Long, value: Float, cycleIcon: Painter,
                            exerciseCount: Int, exerciseIndex: Int, cycleIndex: Int, isSoundOn: Boolean,
                            cycles :MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>, windowSizeClass: WindowSizeClass) {
+    val isTablet = windowSizeClass.heightSizeClass >= WindowHeightSizeClass.Medium
+    val isExpandedScreen = windowSizeClass.heightSizeClass > WindowHeightSizeClass.Medium
     Row(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) {
         IconButton(
             onClick = onClose
@@ -806,6 +867,28 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
                 .fillMaxHeight()
                 .weight(0.3f)
         ) {
+            if ( isTablet) {
+                Spacer(Modifier.height(40.dp))
+                var size by remember {
+                    mutableStateOf(IntSize.Zero)
+                }
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .height(200.dp)
+                    .width(450.dp)
+                    .onSizeChanged { size = it }
+            ) {
+                VerticalTimer(
+                    totalTime = totalTime,
+                    size = size,
+                    currentExercise = currentExercise,
+                    currentTime = currentTime,
+                    value = value,
+                    textColor = textColor
+                )
+            }
+            }
             if (isRestExercise) {
                 Row(
                     horizontalArrangement = Arrangement.Center,
@@ -822,12 +905,12 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
             } else {
                 Box(
                     modifier = Modifier
-                        .height(230.dp)
+                        .height(if (isTablet) 250.dp else 230.dp)
                         .padding(top = 20.dp)
                         .clip(RoundedCornerShape(10.dp)),
                 ) {
                     Image(
-                        painter = rememberImagePainter(data = ""), // IMAGE !!!
+                        painter = rememberImagePainter(data = R.drawable.logo_with_color), // IMAGE !!!
                         contentDescription = currentExercise.exercise?.name ?: "",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
@@ -844,22 +927,28 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
                 windowSizeClass = windowSizeClass
             )
         }
-
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxHeight()
-                .weight(0.2f)
-        ) {
-            Time(currentTime = currentTime, totalTime = totalTime, textColor = textColor, currentExercise = currentExercise)
-            HorizontalTimer(currentExercise = currentExercise, value = value)
-        }
+        if ( !isTablet)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(0.2f)
+            ) {
+                Time(currentTime = currentTime, totalTime = totalTime, textColor = textColor, currentExercise = currentExercise)
+                Spacer(modifier = Modifier.padding(10.dp))
+                HorizontalTimer(currentExercise = currentExercise, value = value)
+            }
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxHeight()
                 .weight(0.25f)
+                .padding(
+                    start = if (isTablet) 100.dp else 0.dp,
+                    top = if (isTablet) 20.dp else 0.dp,
+                    end = if (isTablet) 40.dp else 0.dp
+                ),
         ) {
             Surface(
                 color = MaterialTheme.colorScheme.secondary,
@@ -875,14 +964,35 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
                     Text(
                         text = currentExercise.exercise?.name ?: "",
                         modifier = Modifier.padding(bottom = 10.dp),
-                        fontSize = 20.sp,
+                        fontSize = if (isExpandedScreen) 24.sp else 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
+                        fontSize = if (isExpandedScreen) 20.sp else 16.sp,
+                        textAlign = TextAlign.Justify,
                         text = currentExercise.exercise?.detail ?: "",
                         color = MaterialTheme.colorScheme.primary
                     )
+                }
+            }
+            if (isTablet) {
+                Surface(
+                    color = MaterialTheme.colorScheme.tertiary,
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 10.dp, top = 20.dp)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.remaining_exercises)  + ": " + (exerciseIndex + 1).toString() + stringResource(
+                            id = R.string.dash
+                        ) + exerciseCount,
+                        fontSize = if (isExpandedScreen) 20.sp else 16.sp,
+                        color = if (isRestExercise) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.inversePrimary,
+                        modifier = Modifier.padding(if (isExpandedScreen) 15.dp else 10.dp)
+                    )
+
                 }
             }
             NextExerciseBox(
@@ -898,6 +1008,7 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
         }
     }
 }
+
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
@@ -1104,7 +1215,7 @@ fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cyc
                     cycles: MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>, windowSizeClass: WindowSizeClass) {
 
     val textColor = if(isRestExercise) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.inversePrimary
-    val isVerticalNotCompact = !isHorizontal && windowSizeClass.heightSizeClass == WindowHeightSizeClass.Medium
+
     val isVerticalExpanded = !isHorizontal &&  windowSizeClass.heightSizeClass == WindowHeightSizeClass.Expanded
     val textSize = if ( isVerticalExpanded ) 18.sp else 14.sp
     Surface(
@@ -1116,7 +1227,7 @@ fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cyc
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .height( if (isVerticalExpanded) 90.dp else 80.dp)
+                .height(if (isVerticalExpanded) 90.dp else 80.dp)
                 .padding(horizontal = 15.dp),
 
             ) {
@@ -1255,7 +1366,7 @@ fun NewCycleVerticalScreen(onStart :() -> Unit, cycleIcon: Painter, cycleIndex :
     ) {
         Text(
             text = stringResource(id = R.string.next_cycle),
-            fontSize = if ( isExpandedScreen ) 40.sp else 20.sp,
+            fontSize = if ( isExpandedScreen ) 35.sp else 20.sp,
             modifier = Modifier.padding(top = if (isExpandedScreen) 60.dp else 50.dp, bottom = 15.dp),
             color = MaterialTheme.colorScheme.primary
         )

@@ -166,7 +166,7 @@ fun NavigationRailBar(navController: NavController) {
              .fillMaxHeight(),
         containerColor = MaterialTheme.colorScheme.tertiary,
         header = {
-            Image(painter = painterResource(R.drawable.logo_with_color)
+            Image(painter = painterResource(R.drawable.logo_without_color)
                 , contentDescription = "icon", modifier = Modifier.padding(top = 20.dp).size(25.dp))
         }
     ) {

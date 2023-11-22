@@ -813,7 +813,7 @@ fun HorizontalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : P
                     Icon(
                         painterResource(id = R.drawable.rest),
                         contentDescription = null,
-                        modifier = Modifier.padding(bottom = 25.dp),
+                        modifier = Modifier.padding(top = 35.dp, bottom = 40.dp),
                         tint = MaterialTheme.colorScheme.inversePrimary
                     )
                 } else {

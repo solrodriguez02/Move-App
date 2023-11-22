@@ -72,15 +72,14 @@ import com.example.move.data.model.CycleExercise
 import com.example.move.util.getViewModelFactory
 
 
-//var cycles :MutableList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>> = emptyList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>().toMutableList()
 
 @Composable
 fun RoutineExecutionScreen(
     onNavigateToFinish :(routineId:Int)->Unit,
     navController: NavController,
     routineId: Int,
-    viewModel: MainViewModel = viewModel(factory = getViewModelFactory()),
-    routineViewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
+    viewModel: MainViewModel,
+    routineViewModel: RoutineViewModel
 ) {
 
     var setSettings by remember { mutableStateOf(true) }

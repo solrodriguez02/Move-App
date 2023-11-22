@@ -278,7 +278,7 @@ fun RoutineExecutionScreen(
                                 exerciseCount = exerciseCount,
                                 isRestExercise = isRestExercise,
                                 textColor = textColor,
-                                isExpandedScreen = isExpandedScreen
+                                windowSizeClass = windowSizeClass
                             )
                         else
                             VerticalListMode(
@@ -603,15 +603,25 @@ fun HorizontalListMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :() ->
     val isTablet = windowSizeClass.heightSizeClass >= WindowHeightSizeClass.Medium
 
     Row {
-        IconButton(
-            onClick = onClose
-        ) {
+        Column( horizontalAlignment = Alignment.CenterHorizontally) {
+            IconButton(
+                onClick = onClose
+            ) {
+                Icon(
+                    Icons.Filled.Close,
+                    contentDescription = null,
+                    tint = textColor
+                )
+            }
+
             Icon(
-                Icons.Filled.Close,
+                painter = cycleIcon,
                 contentDescription = null,
-                tint = textColor
+                tint = MaterialTheme.colorScheme.surfaceTint,
+                modifier = Modifier.padding(vertical = if(isTablet) 15.dp else 10.dp)
             )
         }
+
         Column ( horizontalAlignment = Alignment.CenterHorizontally){
             if ( isTablet) {
                 Spacer(Modifier.height(40.dp))
@@ -693,7 +703,7 @@ fun HorizontalListMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :() ->
                                         .clip(RoundedCornerShape(10.dp)),
                                 ) {
                                     Image(
-                                        painter = rememberImagePainter(data =  R.drawable.a_borrar_ejer), // IMAGEN !!!!
+                                        painter = rememberImagePainter(data =  R.drawable.a_borrar_estiramiento), // IMAGEN !!!!
                                         contentDescription = currentExercise.exercise?.name,
                                         modifier = Modifier.fillMaxSize(),
                                         contentScale = ContentScale.Crop,
@@ -737,7 +747,7 @@ fun HorizontalListMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :() ->
             horizontalArrangement = Arrangement.Center
         ){
                 Column(
-                    modifier = Modifier.weight(0.6f),
+                    modifier = Modifier.weight(0.6f).padding(20.dp),
                     verticalArrangement = Arrangement.Top
                 ) {
                     Time(currentTime = currentTime, totalTime = totalTime, textColor = textColor, currentExercise = currentExercise, isHorizontalList = true)
@@ -814,7 +824,7 @@ fun HorizontalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : P
                             .clip(RoundedCornerShape(10.dp)),
                     ) {
                         Image(
-                            painter = rememberImagePainter(data = R.drawable.a_borrar_ejer), // IMAGE !!!
+                            painter = rememberImagePainter(data = R.drawable.a_borrar_estiramiento), // IMAGE !!!
                             contentDescription = exercise.exercise?.name,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop,
@@ -852,13 +862,22 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.fillMaxSize(),
     ) {
-        IconButton(
-            onClick = onClose
-        ) {
+        Column( horizontalAlignment = Alignment.CenterHorizontally) {
+            IconButton(
+                onClick = onClose
+            ) {
+                Icon(
+                    Icons.Filled.Close,
+                    contentDescription = null,
+                    tint = textColor
+                )
+            }
+
             Icon(
-                Icons.Filled.Close,
+                painter = cycleIcon,
                 contentDescription = null,
-                tint = textColor
+                tint = MaterialTheme.colorScheme.surfaceTint,
+                modifier = Modifier.padding(vertical = if(isTablet) 15.dp else 10.dp)
             )
         }
 
@@ -866,7 +885,7 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxHeight()
-                .weight(0.3f)
+                .weight(0.3f),
         ) {
             if ( isTablet) {
                 Spacer(Modifier.height(40.dp))
@@ -876,7 +895,7 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .height(200.dp)
+                    .height(180.dp)
                     .width(450.dp)
                     .onSizeChanged { size = it }
             ) {
@@ -906,12 +925,12 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
             } else {
                 Box(
                     modifier = Modifier
-                        .height(if (isTablet) 250.dp else 230.dp)
-                        .padding(top = 20.dp)
-                        .clip(RoundedCornerShape(10.dp)),
+                        .height(if ( isExpandedScreen ) 350.dp else if (isTablet) 270.dp else 230.dp)
+                        .widthIn(max = if ( isExpandedScreen ) 450.dp else 400.dp)
+                        .clip(RoundedCornerShape(24.dp)),
                 ) {
                     Image(
-                        painter = rememberImagePainter(data = R.drawable.logo_with_color), // IMAGE !!!
+                        painter = rememberImagePainter(data = R.drawable.a_borrar_estiramiento), // IMAGE !!!
                         contentDescription = currentExercise.exercise?.name ?: "",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
@@ -947,7 +966,7 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
                 .weight(0.25f)
                 .padding(
                     start = if (isTablet) 100.dp else 0.dp,
-                    top = if (isTablet) 20.dp else 0.dp,
+                    top = if (isTablet) 40.dp else 0.dp,
                     end = if (isTablet) 40.dp else 0.dp
                 ),
         ) {
@@ -957,7 +976,7 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(230.dp)
-                    .padding(bottom = 15.dp, top = 20.dp)
+                    .padding(bottom = 15.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(10.dp)
@@ -1020,7 +1039,9 @@ fun VerticalListMode(currentExercise: CycleExercise, exerciseIndex: Int, cycleIn
     val imgHeight = if ( hasExpandedHeight ) 200.dp else 150.dp
 
     Column(
-        modifier = Modifier.padding(horizontal = 20.dp).widthIn(max = 450.dp)
+        modifier = Modifier
+            .padding(horizontal = 20.dp)
+            .widthIn(max = 450.dp)
     ){
         VerticalExerciseListBox(exerciseIndex = exerciseIndex-1, cycleIndex = cycleIndex, cycleIcon = cycleIcon, cycles = cycles, hasExpandedHeight)
         Surface(
@@ -1062,7 +1083,7 @@ fun VerticalListMode(currentExercise: CycleExercise, exerciseIndex: Int, cycleIn
                             .clip(RoundedCornerShape(10.dp)),
                     ) {
                         Image(
-                            painter = rememberImagePainter(data = R.drawable.a_borrar_ejer), // IMAGE !!!
+                            painter = rememberImagePainter(data = R.drawable.a_borrar_estiramiento), // IMAGE !!!
                             contentDescription = currentExercise.exercise?.name,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop,
@@ -1151,9 +1172,12 @@ fun VerticalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : Pai
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun VerticalDetailedMode(currentExercise: CycleExercise, exerciseIndex :Int, exerciseCount :Int, isRestExercise :Boolean, textColor: Color, isExpandedScreen: Boolean) {
+fun VerticalDetailedMode(currentExercise: CycleExercise, exerciseIndex :Int, exerciseCount :Int, isRestExercise :Boolean, textColor: Color, windowSizeClass: WindowSizeClass) {
+    val isExpandedScreen = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
+    val isTablet = windowSizeClass.widthSizeClass > WindowWidthSizeClass.Compact
+
     var modifier = Modifier
-        .clip(RoundedCornerShape(50.dp))
+        .clip(RoundedCornerShape(24.dp))
     if(isRestExercise) {
         Row(
             horizontalArrangement = Arrangement.Center,
@@ -1168,19 +1192,20 @@ fun VerticalDetailedMode(currentExercise: CycleExercise, exerciseIndex :Int, exe
             )
         }
     } else {
+        /*
         modifier = if ( isExpandedScreen)
             modifier
-                .height(230.dp)
-                .fillMaxWidth(0.7f)
-        else
+                .height(400.dp).widthIn(max = 400.dp)
+        else if (isTablet)
             modifier
-                .height(180.dp)
-                .fillMaxWidth()
+                .height(230.dp).widthIn(max = 310.dp)
+        else
+            modifier.height(190.dp).fillMaxWidth() */
         Box(
-            modifier = modifier
+            modifier = modifier.height(if (isExpandedScreen) 370.dp else if (isTablet) 260.dp else 190.dp).widthIn(max = if (isExpandedScreen) 410.dp else 320.dp)
         ) {
             Image(
-                painter = rememberImagePainter(data = R.drawable.logo_with_color), // IMAGE !!!
+                painter = rememberImagePainter(data = R.drawable.a_borrar_estiramiento), // IMAGE !!!
                 contentDescription = currentExercise.exercise?.name,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
@@ -1189,7 +1214,7 @@ fun VerticalDetailedMode(currentExercise: CycleExercise, exerciseIndex :Int, exe
     }
     Text(
         text = (exerciseIndex + 1).toString() + stringResource(id = R.string.dash) + exerciseCount,
-        fontSize = if (isExpandedScreen) 24.sp else 18.sp,
+        fontSize = if (isTablet) 24.sp else 18.sp,
         color = textColor,
         modifier = Modifier.padding(if (isExpandedScreen) 15.dp else 10.dp)
     )

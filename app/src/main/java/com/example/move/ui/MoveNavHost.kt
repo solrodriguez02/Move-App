@@ -24,7 +24,7 @@ fun MoveNavHost(
     val viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
     val uiState = viewModel.uiState
     val isAuthenticated = uiState.isAuthenticated
-
+    val routineViewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
     NavHost(
         navController = navController, 
         startDestination = if(isAuthenticated) Screen.ExploreScreen.route else Screen.SignInScreen.route
@@ -33,7 +33,8 @@ fun MoveNavHost(
             ExploreScreen(
                 onNavigateToProfile = { id -> navController.navigate("profile/$id") },
                 onNavigateToRoutine = { id -> navController.navigate("routine/$id") },
-                windowSizeClass = windowSizeClass
+                windowSizeClass = windowSizeClass,
+                viewModel = routineViewModel
             )
         }
         composable(Screen.HomeScreen.route) {

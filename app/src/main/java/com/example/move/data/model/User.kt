@@ -7,6 +7,7 @@ data class User(
     var username: String,
     var firstName: String,
     var lastName: String,
+    var avatarUrl: String,
     var email: String,
     var lastActivity: Date? = null,
     var gender: String

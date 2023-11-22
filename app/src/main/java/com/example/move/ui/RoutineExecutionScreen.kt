@@ -102,17 +102,20 @@ fun RoutineExecutionScreen(
     val cycles = routineViewModel.uiState.currentRoutine?.cycles?.entries?.toMutableList() ?: emptyList<MutableMap.MutableEntry<Cycle, List<CycleExercise>>>().toMutableList()
 
     if(cycles.isNotEmpty()) {
+
+        var uiState = routineViewModel.uiState
+
         val isDetailedMode = !viewModel.uiState.listMode
 
         val isSoundOn = viewModel.uiState.sound
 
-        var cycleIndex by remember { mutableIntStateOf(0) }
+        var cycleIndex by remember { mutableIntStateOf(uiState.cycleIndex) }
 
-        var exerciseIndex by remember { mutableIntStateOf(0) }
+        var exerciseIndex by remember { mutableIntStateOf(uiState.exerciseIndex) }
 
         var currentExercise by remember { mutableStateOf<CycleExercise>(cycles[cycleIndex].value[exerciseIndex]) }
 
-        val exerciseCount = cycles.get(cycleIndex).value.size
+        val exerciseCount = cycles[cycleIndex].value.size
 
         var nextExercise by remember { mutableStateOf(false) }
 
@@ -178,6 +181,7 @@ fun RoutineExecutionScreen(
                 if (currentTime > 0 && isTimerRunning) {
                     delay(100L)
                     currentTime -= 100L
+                    uiState = uiState.copy(currentTime = currentTime)
                     value = 1 - (currentTime / totalTime.toFloat())
                 }
             }
@@ -188,22 +192,27 @@ fun RoutineExecutionScreen(
         } else {
             if (currentTime <= 0L && currentExercise.duration != 0 || nextExercise) {
                 exerciseIndex++
+                uiState = uiState.copy(exerciseIndex = exerciseIndex)
                 nextExercise = false
                 if (exerciseIndex < (exerciseCount)) {
                     LaunchedEffect(key1 = exerciseIndex) {
                         currentExercise = cycles[cycleIndex].value[exerciseIndex]
                         currentTime = currentExercise.duration * 1000L
+                        uiState = uiState.copy(currentTime = currentTime)
                         totalTime = currentExercise.duration * 1000L
                         delay(5000L)
                     }
                     isTimerRunning = true
                 } else {
                     cycleIndex++
+                    uiState = uiState.copy(cycleIndex = cycleIndex)
                     if (cycleIndex < (cycles.size)) {
                         LaunchedEffect(key1 = exerciseIndex) {
                             exerciseIndex = 0
+                            uiState = uiState.copy(exerciseIndex = exerciseIndex)
                             currentExercise = cycles[cycleIndex].value[exerciseIndex]
                             currentTime = currentExercise.duration * 1000L
+                            uiState = uiState.copy(currentTime = currentTime)
                             totalTime = currentExercise.duration * 1000L
                             delay(5000L)
                         }
@@ -703,7 +712,7 @@ fun HorizontalListMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :() ->
                                         .clip(RoundedCornerShape(10.dp)),
                                 ) {
                                     Image(
-                                        painter = rememberImagePainter(data =  R.drawable.a_borrar_estiramiento), // IMAGEN !!!!
+                                        painter = rememberImagePainter(data = currentExercise.exercise?.metadata?.image), // IMAGEN !!!!
                                         contentDescription = currentExercise.exercise?.name,
                                         modifier = Modifier.fillMaxSize(),
                                         contentScale = ContentScale.Crop,
@@ -824,7 +833,7 @@ fun HorizontalExerciseListBox(exerciseIndex: Int, cycleIndex: Int, cycleIcon : P
                             .clip(RoundedCornerShape(10.dp)),
                     ) {
                         Image(
-                            painter = rememberImagePainter(data = R.drawable.a_borrar_estiramiento), // IMAGE !!!
+                            painter = rememberImagePainter(data = exercise.exercise?.metadata?.image),
                             contentDescription = exercise.exercise?.name,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop,
@@ -930,7 +939,7 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
                         .clip(RoundedCornerShape(24.dp)),
                 ) {
                     Image(
-                        painter = rememberImagePainter(data = R.drawable.a_borrar_estiramiento), // IMAGE !!!
+                        painter = rememberImagePainter(data = currentExercise.exercise?.metadata?.image),
                         contentDescription = currentExercise.exercise?.name ?: "",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
@@ -1083,7 +1092,7 @@ fun VerticalListMode(currentExercise: CycleExercise, exerciseIndex: Int, cycleIn
                             .clip(RoundedCornerShape(10.dp)),
                     ) {
                         Image(
-                            painter = rememberImagePainter(data = R.drawable.a_borrar_estiramiento), // IMAGE !!!
+                            painter = rememberImagePainter(data = currentExercise.exercise?.metadata?.image),
                             contentDescription = currentExercise.exercise?.name,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop,
@@ -1197,7 +1206,8 @@ fun VerticalDetailedMode(currentExercise: CycleExercise, exerciseIndex :Int, exe
             modifier = modifier.height(if (isExpandedScreen) 370.dp else if (isTablet) 260.dp else 190.dp).widthIn(max = if (isExpandedScreen) 410.dp else 320.dp)
         ) {
             Image(
-                painter = rememberImagePainter(data = R.drawable.a_borrar_estiramiento), // IMAGE !!!
+
+                painter = rememberImagePainter(data = currentExercise.exercise?.metadata?.image),
                 contentDescription = currentExercise.exercise?.name,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
@@ -1293,7 +1303,7 @@ fun NextExerciseBox(exerciseIndex :Int, exerciseCount :Int, cycleIndex :Int, cyc
                                 .clip(RoundedCornerShape(10.dp)),
                         ) {
                             Image(
-                                painter = rememberImagePainter(data = ""), // IMAGE !!!
+                                painter = rememberImagePainter(data =  followingExercise.exercise?.metadata?.image), // IMAGE !!!
                                 contentDescription = followingExercise.exercise?.name,
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop,

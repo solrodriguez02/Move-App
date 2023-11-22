@@ -23,10 +23,11 @@ class RoutineRepository (
 ){
     private var currentRoutine: RoutineDetail? = null
     private var routinePreviews: List<RoutinePreview> = emptyList<RoutinePreview>().toMutableList()
+    private var personalRoutinePreviews: List<RoutinePreview> = emptyList<RoutinePreview>().toMutableList()
 
-    suspend fun getRoutinePreviews(refresh: Boolean): List<RoutinePreview>{
+    suspend fun getRoutinePreviews(refresh: Boolean, orderBy :String= "date", direction :String = "asc"): List<RoutinePreview>{
         if (refresh || routinePreviews.isEmpty() ) {
-            val result = remoteDataSource.getRoutines()
+            val result = remoteDataSource.getRoutines(orderBy = orderBy, direction = direction)
             this.routinePreviews = result.content.map { it.asModelPreview() }
         }
         return routinePreviews
@@ -36,6 +37,12 @@ class RoutineRepository (
         this.getRoutineCyclesAndExercises(currentRoutine!!.id)
         this.currentRoutine?.isFavourite = isRoutineInFavourites(currentRoutine!!.id)
         return currentRoutine as RoutineDetail
+    }
+
+    suspend fun getPersonalRoutines(): List<RoutinePreview>{
+        val result = remoteDataSource.getPersonalRoutines()
+        this.personalRoutinePreviews = result.content.map { it.asModelPreview() }
+        return personalRoutinePreviews
     }
 
     private suspend fun getRoutineCyclesAndExercises(routineId: Int){
@@ -56,11 +63,17 @@ class RoutineRepository (
 
     suspend fun addRoutineToFavourites(routineId: Int): Boolean{
             remoteDataSource.addRoutineToFavourites(routineId)
+            currentRoutine?.isFavourite = true
             return true
     }
 
     suspend fun removeRoutineFromFavourites(routineId: Int):Boolean{
             remoteDataSource.removeRoutineFromFavourites(routineId)
+            currentRoutine?.isFavourite = false
             return false
+    }
+
+    suspend fun getFavouriteRoutines(): List<RoutinePreview>{
+        return remoteDataSource.getFavouriteRoutines().content.map { it.asModelPreview() }
     }
 }

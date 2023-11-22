@@ -1,8 +1,6 @@
 package com.example.move.ui
 
-import android.content.res.Configuration
-import android.util.Log
-import androidx.compose.foundation.BorderStroke
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,8 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,7 +31,6 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
@@ -67,12 +62,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.ClipboardManager
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
@@ -80,16 +71,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavOptions
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.move.R
 import com.example.move.data.model.Cycle
 import com.example.move.data.model.CycleExercise
+import com.example.move.data.model.Filter
+import com.example.move.data.model.MetadataRoutine
 import com.example.move.data.model.Review
 import com.example.move.data.model.RoutineDetail
 import com.example.move.util.getViewModelFactory
@@ -142,6 +134,7 @@ fun RoutineScreen(
     var cycleIndex by remember { mutableIntStateOf(0) }
     var isRated by remember { mutableStateOf(false) }
     val routineData = routineViewModel.uiState.currentRoutine
+    val isFavourite = routineViewModel.uiState.currentRoutine?.isFavourite
 
     val cyclesOptions = listOf(R.drawable.warm_up, R.drawable.exercise, R.drawable.cooling)
 
@@ -233,14 +226,14 @@ fun RoutineScreen(
                             if (exercise.exercise?.name == stringResource(id = R.string.rest_compare)) {
                                 RestExercise(
                                     title = exercise.exercise?.name!!,
-                                    secs = exercise.repetitions
+                                    secs = exercise.duration
                                 )
                             } else {
                                 ExerciseBox(
                                     title = exercise.exercise?.name ?: "",
                                     secs = exercise.duration,
                                     reps = exercise.repetitions,
-                                    imgUrl = exercise.exercise?.detail ?: ""
+                                    imgUrl =  exercise.exercise?.metadata?.image ?: ""
                                 )
                             }
                         }
@@ -262,7 +255,6 @@ fun RoutineScreen(
 
     @Composable
     fun RoutineDetail() {
-        val descriptionIcon = if(showDescription) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
         val rateIcon = if(showRate) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
 
         data class FilterDetail (
@@ -270,12 +262,21 @@ fun RoutineScreen(
             val detail :String,
             val icon :Int,
         )
+        var elementsRequired = "no details"
+        var approach = "no details"
+        if (routineData != null && routineData.metadata.filters.elements.toString() != "[]") {
+            elementsRequired = routineData.metadata.filters.elements.toString()
+                .substring(1, routineData.metadata.filters.elements.toString().length - 1)
+        }
 
+        if (routineData != null && routineData.metadata.filters.approach.toString() != "[]"){
+            approach = routineData.metadata.filters.approach.toString().substring(1, routineData.metadata.filters.approach.toString().length-1)
+        }
         val filters = arrayListOf(
-            FilterDetail(stringResource(id = R.string.difficulty_filter), routineData?.difficulty + " " + stringResource(id = R.string.difficulty_lower), R.drawable.difficulty),
-            FilterDetail(stringResource(id = R.string.elements_required_filter), routine.elements.toString().substring(1, routine.elements.toString().length - 1), R.drawable.elements),
-            FilterDetail(stringResource(id = R.string.approach_filter), routine.approach.toString().substring(1, routine.approach.toString().length - 1), R.drawable.approach),
-            FilterDetail(stringResource(id = R.string.space_required_filter), routine.space, R.drawable.space)
+            FilterDetail(stringResource(id = R.string.difficulty_filter), stringResource(id = R.string.difficulty_lower) + routineData?.metadata?.filters?.difficulty, R.drawable.difficulty),
+            FilterDetail(stringResource(id = R.string.elements_required_filter), elementsRequired, R.drawable.elements),
+            FilterDetail(stringResource(id = R.string.approach_filter), approach, R.drawable.approach),
+            FilterDetail(stringResource(id = R.string.space_required_filter), routineData?.metadata?.filters?.requiredSpace ?: "", R.drawable.space)
         )
 
         Column(
@@ -293,7 +294,8 @@ fun RoutineScreen(
                         .weight(1f)
                 )
                 Text(
-                    text = routineData?.score.toString() + stringResource(id = R.string.max_score),
+                    text = if (routineData != null ){ if (routineData.score > 0){ routineData.score.toString() + stringResource(id = R.string.max_score)} else {
+                        stringResource(id = R.string.no_score)}} else "",
                     color = MaterialTheme.colorScheme.primary
                 )
                 Icon(
@@ -447,7 +449,8 @@ fun RoutineScreen(
                         modifier = Modifier.width(40.dp)
                     ) {
                         Icon(
-                            descriptionIcon,
+                            rateIcon,
+                            //descriptionIcon,
                             contentDescription = stringResource(R.string.description_name),
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -474,7 +477,6 @@ fun RoutineScreen(
                 Spacer(modifier = Modifier.height(80.dp))
         }
     }
-
 
     Box(
         modifier = Modifier.background(MaterialTheme.colorScheme.inversePrimary)
@@ -604,7 +606,9 @@ fun RoutineScreen(
                             .padding(bottom = 20.dp)
                     ) {
                         RoutineExecutionMenu(
-                            routineData = routineData ?: RoutineDetail(id = -1, name = "", score = 0, difficulty = "", cycles = emptyMap<Cycle, List<CycleExercise>>().toMutableMap()),
+                            routineData = routineData ?: RoutineDetail(id = -1, name = "", score = 0, difficulty = "", cycles = emptyMap<Cycle, List<CycleExercise>>().toMutableMap(), metadata = MetadataRoutine(
+                                Filter("", emptyList(), "", emptyList())
+                            )),
                             showModeDialog = showModeDialog,
                             onShowMode = { showModeDialog = !showModeDialog },
                             onNavigateToExecute = onNavigateToExecute)
@@ -638,7 +642,13 @@ fun RoutineScreen(
                 )
                 .height(80.dp)
         ) {
-            RoutineMenu(time = routine.time, navController = navController, routineViewModel = routineViewModel)
+            if(isFavourite != null) {
+                RoutineMenu(
+                    isFavourite = isFavourite ?: true,
+                    navController = navController,
+                    routineViewModel = routineViewModel
+                )
+            }
         }
 
         if( !isHorizontalPhone(windowSizeClass)) {
@@ -650,7 +660,9 @@ fun RoutineScreen(
                     .padding(all = if (isVerticalPhone) 30.dp else 80.dp)
             ) {
                 RoutineExecutionMenu(
-                    routineData = routineData ?: RoutineDetail(id = -1, name = "", score = 0, difficulty = "", cycles = emptyMap<Cycle, List<CycleExercise>>().toMutableMap()),
+                    routineData = routineData ?: RoutineDetail(id = -1, name = "", score = 0, difficulty = "", cycles = emptyMap<Cycle, List<CycleExercise>>().toMutableMap(), metadata = MetadataRoutine(
+                        Filter("", emptyList(), "", emptyList())
+                    )),
                     showModeDialog = showModeDialog,
                     onShowMode = { showModeDialog = !showModeDialog },
                     onNavigateToExecute = onNavigateToExecute)
@@ -747,13 +759,13 @@ fun getOptions(): List<PopUpOption> {
 }
 
 @Composable
-fun RoutineMenu(time :Int, navController: NavController, routineViewModel: RoutineViewModel) {
+fun RoutineMenu(isFavourite :Boolean, navController: NavController, routineViewModel: RoutineViewModel) {
 
     val popUpOptions = getOptions()
     var showPopUp by remember { mutableStateOf(false) }
     var showShareDialog by remember { mutableStateOf(false) }
-    var liked by remember { mutableStateOf(false) }
-    liked = routineViewModel.isRoutineInFavourites(routineViewModel.uiState.currentRoutine?.id ?: 0)
+
+    var liked by remember { mutableStateOf(isFavourite) }
 
     if(showShareDialog) {
         ShareDialog(onCancel = { showShareDialog = false }, id = routineViewModel.uiState.currentRoutine?.id ?: 0)
@@ -771,25 +783,6 @@ fun RoutineMenu(time :Int, navController: NavController, routineViewModel: Routi
                 contentDescription = null,
                 tint = Color.Gray,
                 modifier = Modifier.size(30.dp)
-            )
-        }
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.time),
-                contentDescription = stringResource(R.string.time_icon),
-                tint = MaterialTheme.colorScheme.surfaceTint,
-                modifier = Modifier
-                    .size(30.dp)
-                    .padding(end = 5.dp)
-            )
-            Text(
-                text = "$time min",
-                color = MaterialTheme.colorScheme.surfaceTint,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
             )
         }
         IconButton (
@@ -818,20 +811,20 @@ fun RoutineMenu(time :Int, navController: NavController, routineViewModel: Routi
             DropdownMenuItem(
                 text = { 
                     Text(
-                        text = if(liked) stringResource(id = R.string.remove_liked) else popUpOptions[0].label,
+                        text = if(liked != false) stringResource(id = R.string.remove_liked) else popUpOptions[0].label,
                         color = MaterialTheme.colorScheme.primary
                     ) },
                 onClick = {
-                    if(liked) {
+                    if(liked != false) {
                         routineViewModel.removeRoutineToFavourites(routineViewModel.uiState.currentRoutine?.id ?: 0)
                     } else {
                         routineViewModel.addRoutineToFavourites(routineViewModel.uiState.currentRoutine?.id ?: 0)
                     }
-                    liked = !liked
+                    liked = if(liked != false) false else true
                 },
                 leadingIcon = {
                     Icon(
-                        if(liked) Icons.Filled.Favorite else popUpOptions[0].icon,
+                        if(liked != false) Icons.Filled.Favorite else popUpOptions[0].icon,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )

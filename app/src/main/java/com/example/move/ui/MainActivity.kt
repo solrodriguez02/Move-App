@@ -61,8 +61,6 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 var windowSizeClass = calculateWindowSizeClass(this)
                 val showNavigationRail = showNavRail(windowSizeClass, LocalConfiguration.current)
-                val viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
-                val uiState = viewModel.uiState
 
                 // caso del Deep Link
                 Scaffold(

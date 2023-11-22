@@ -74,7 +74,7 @@ fun ShareDialog(onCancel: () -> Unit, id :Int = 0, isWeb: Boolean = false) {
                     Button(
                         onClick = {
                             clipboardManager.setText(AnnotatedString(
-                                if(isWeb) "http://localhost:3000/" else "https://www.move.com/routine/$id"
+                                if(isWeb) "http://localhost:3000/" else "https://www.move.com/routine?id=$id"
                             ))
                         },
                         colors = ButtonDefaults.buttonColors(

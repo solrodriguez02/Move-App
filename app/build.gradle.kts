@@ -28,12 +28,14 @@ android {
                 "proguard-rules.pro"
             )
             buildConfigField("String", "API_BASE_URL",
-                "\"http://10.0.2.2:8080/api/\"")
+                //"\"http://10.0.2.2:8080/api/\"")
+                "\"http://192.168.1.27:8080/api/\"")
 
         }
         debug {
                 buildConfigField("String", "API_BASE_URL",
-                    "\"http://10.0.2.2:8080/api/\"")
+         //           "\"http://10.0.2.2:8080/api/\"")
+                    "\"http://192.168.1.27:8080/api/\"")
         }
     }
     compileOptions {
@@ -66,7 +68,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    implementation("io.coil-kt:coil-compose:1.3.2")
+    implementation("io.coil-kt:coil-compose:2.5.0")
     implementation("com.google.code.gson:gson:2.10")
     implementation("com.google.accompanist:accompanist-swiperefresh:0.27.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")

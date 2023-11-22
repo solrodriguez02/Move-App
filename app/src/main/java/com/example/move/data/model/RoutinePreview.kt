@@ -5,4 +5,6 @@ class RoutinePreview (
     var name: String,
     var detail: String? = "No description",
     var difficulty: String,
+    var score: Int,
+    var metadata: MetadataRoutine
 )

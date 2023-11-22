@@ -1,6 +1,5 @@
 package com.example.move.ui
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,8 +36,9 @@ import com.example.move.R
 import com.example.move.util.getViewModelFactory
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-
-
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Snackbar
+import androidx.compose.ui.text.style.TextAlign
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignInScreen(navController: NavController, viewModel: MainViewModel = viewModel(factory = getViewModelFactory())) {
@@ -131,6 +131,23 @@ fun SignInScreen(navController: NavController, viewModel: MainViewModel = viewMo
                 fontSize = 18.sp,
                 modifier = Modifier.padding(5.dp)
             )
+        }
+
+        if (viewModel.uiState.error != null) {
+            Snackbar(
+                modifier = Modifier
+                    .padding(15.dp),
+                containerColor = MaterialTheme.colorScheme.surface
+            ) {
+                Text(
+                    text = "Error: " + (viewModel.uiState.error?.message ?: ""),
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+
         }
     }
 }

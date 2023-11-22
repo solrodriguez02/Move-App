@@ -2,6 +2,8 @@ package com.example.move.data.network.model
 
 import com.example.move.data.model.Cycle
 import com.example.move.data.model.CycleExercise
+import com.example.move.data.model.Filter
+import com.example.move.data.model.MetadataRoutine
 import com.example.move.data.model.RoutineDetail
 import com.example.move.data.model.RoutinePreview
 import com.example.move.data.model.User
@@ -27,6 +29,9 @@ data class NetworkRoutine (
     @SerializedName("score")
     var score: Int,
 
+    @SerializedName("metadata")
+    var metadata: NetworkMetadataRoutine? = NetworkMetadataRoutine(NetworkFilters("no details", emptyList(), "no details", emptyList()))
+
 ){
 
     fun asModelPreview(): RoutinePreview {
@@ -35,6 +40,8 @@ data class NetworkRoutine (
             name = name,
             detail = detail,
             difficulty= difficulty,
+            score = score,
+            metadata = metadata?.asModel() ?: MetadataRoutine(Filter("unknown", emptyList(), "no details", emptyList()))
         )
     }
 
@@ -46,8 +53,9 @@ data class NetworkRoutine (
             difficulty= difficulty,
             score = score,
             isFavourite = null,
-            cycles = emptyMap<Cycle, List<CycleExercise>>().toMutableMap()
-        )
+            cycles = emptyMap<Cycle, List<CycleExercise>>().toMutableMap(),
+            metadata = metadata?.asModel() ?: MetadataRoutine(Filter("unknown", emptyList(), "no details", emptyList()))
+            )
     }
 
 }

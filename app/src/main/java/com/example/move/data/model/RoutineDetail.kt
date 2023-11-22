@@ -7,5 +7,6 @@ class RoutineDetail (
     var score: Int,
     var difficulty: String,
     var cycles: MutableMap<Cycle, List<CycleExercise>>,
-    var isFavourite: Boolean ? = false
+    var isFavourite: Boolean ? = false,
+    var metadata: MetadataRoutine
 )

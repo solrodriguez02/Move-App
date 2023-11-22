@@ -124,7 +124,7 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
     val isHorizontalPhone = isHorizontalPhone(windowSizeClass)
     val isCompact = isHorizontalPhone || windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
     val fontSize = if (isCompact) 14.sp else if ( windowSizeClass.heightSizeClass < WindowHeightSizeClass.Expanded ) 16.sp else 18.sp
-    val horizontalBorder = 25.dp
+    val horizontalBorder = 15.dp
     IconButton(
         onClick = { navController.popBackStack() },
         modifier = Modifier.padding( if (isCompact) 10.dp else 15.dp)
@@ -166,7 +166,7 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
             )
             Image(
                 painter = rememberImagePainter(
-                    data = "https://profilemagazine.com/wp-content/uploads/2020/04/Ajmere-Dale-Square-thumbnail.jpg"
+                    data = currentUser?.avatarUrl
                 ),
                 contentDescription = stringResource(id = R.string.profile_image),
                 modifier = Modifier

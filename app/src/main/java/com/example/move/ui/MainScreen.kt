@@ -1,6 +1,6 @@
 package com.example.move.ui
 
-import android.content.res.Configuration
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -33,13 +33,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -53,7 +51,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -70,16 +67,13 @@ import com.example.move.util.getViewModelFactory
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.move.data.model.RoutinePreview
 
-///////////// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-///////////// API //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 @Composable
 fun ExploreScreen(
     onNavigateToProfile :(userId:Int)->Unit,
     onNavigateToRoutine :(routineId:Int)->Unit,
     windowSizeClass: WindowSizeClass,
-    viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
+    viewModel: RoutineViewModel ,
+    mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory())
 ) {
 
     var count by remember {
@@ -87,11 +81,20 @@ fun ExploreScreen(
     }
     if(count) {
         viewModel.getRoutinePreviews()
+        mainViewModel.getCurrentUser()
         count = false
     }
-    val routineData = viewModel.uiState.routinePreviews
+    var routineData = viewModel.uiState.routinePreviews
 
     val widthSizeClass = windowSizeClass.widthSizeClass
+
+    var applyFilters by remember { mutableStateOf(false) }
+
+    if(applyFilters) {
+        routineData = viewModel.uiState.routinePreviews
+        applyFilters = false
+    }
+
     @Composable
     fun headerAndFilters() {
         Box(
@@ -105,15 +108,23 @@ fun ExploreScreen(
 
                 /////////////////// Filters ///////////////////////
 
-                ExploreFilters(windowSizeClass)
+                ExploreFilters(windowSizeClass = windowSizeClass, onApplyFilters = { applyFilters = true })
             }
         }
     }
 
 
     Box(
-        modifier = Modifier.background(color = MaterialTheme.colorScheme.inversePrimary)
-            .padding( start = if (showNavRail(windowSizeClass, LocalConfiguration.current)) 65.dp else 0.dp).fillMaxSize()
+        modifier = Modifier
+            .background(color = MaterialTheme.colorScheme.inversePrimary)
+            .padding(
+                start = if (showNavRail(
+                        windowSizeClass,
+                        LocalConfiguration.current
+                    )
+                ) 65.dp else 0.dp
+            )
+            .fillMaxSize()
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -138,7 +149,6 @@ fun ExploreScreen(
                             RoutinePreview(
                                 imageUrl = routine.detail ?: "",
                                 title = routine.name,
-                                time = 0,
                                 routineId = routine.id ?:0,
                                 //leftSide = if (isVertical) index % 2 == 0 else false,
                                 onNavigateToRoutine = onNavigateToRoutine
@@ -158,7 +168,7 @@ fun ExploreScreen(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                        .padding(top = 150.dp)
+                        .padding(top = if (isHorizontalPhone(windowSizeClass)) 70.dp else 150.dp)
                         .fillMaxWidth()
                 ) {
                     Row {
@@ -172,52 +182,21 @@ fun ExploreScreen(
                             color = Color.Gray
                         )
                     }
+                    Spacer(modifier = Modifier.padding(50.dp))
                 }
             }
         }
 
         /////////////////// Header ///////////////////////
 
-
     }
 }
 
+
+@SuppressLint("SuspiciousIndentation")
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ExploreFilters(windowSizeClass: WindowSizeClass) {
-
-    val config = LocalConfiguration.current
-
-    data class SelectedFilter (
-        val category :String,
-        val filter :String
-    )
-
-    val difficultyOptions = listOf(stringResource(id = R.string.d_easy), stringResource(id = R.string.d_medium), stringResource(id = R.string.d_difficult))
-
-    val approachOptions = listOf(
-        stringResource(id = R.string.a_aerobic), stringResource(id = R.string.a_cardio),
-        stringResource(id = R.string.a_flex), stringResource(id = R.string.a_crossfit), stringResource(id = R.string.a_functional),
-        stringResource(id = R.string.a_hiit), stringResource(id = R.string.a_pilates), stringResource(id = R.string.a_resistance),
-        stringResource(id = R.string.a_streching), stringResource(id = R.string.a_strength), stringResource(id = R.string.a_weight), stringResource(id = R.string.a_yoga)
-    )
-
-    val elementsOptions = listOf(
-        stringResource(id = R.string.e_none), stringResource(id = R.string.e_ankle), stringResource(id = R.string.e_band),
-        stringResource(id = R.string.e_dumbell), stringResource(id = R.string.e_kettlebell), stringResource(id = R.string.e_mat),
-        stringResource(id = R.string.e_roller), stringResource(id = R.string.e_rope), stringResource(id = R.string.e_step)
-    )
-
-    val spaceOptions = listOf(stringResource(id = R.string.s_reduced), stringResource(id = R.string.s_some), stringResource(id = R.string.s_much))
-
-    val scoreOptions = listOf(
-        stringResource(id = R.string.sc_bad), stringResource(id = R.string.sc_fair), stringResource(id = R.string.sc_good),
-        stringResource(id = R.string.sc_very_good), stringResource(id = R.string.sc_excelent)
-    )
-
-    val dateOptions = listOf(
-        stringResource(id = R.string.da_ascending), stringResource(id = R.string.da_descending)
-    )
+fun ExploreFilters(windowSizeClass: WindowSizeClass, onApplyFilters :() -> Unit, viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())) {
 
     var difficultyExpanded by remember { mutableStateOf(false) }
     var elementsExpanded by remember { mutableStateOf(false) }
@@ -226,6 +205,13 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
     var scoreExpanded by remember { mutableStateOf(false) }
     var dateExpanded by remember { mutableStateOf(false) }
 
+    var isSpaceCategory by remember { mutableStateOf(false) }
+    var isDifficultyCategory by remember { mutableStateOf(false) }
+    var isOrderedByDate by remember { mutableStateOf(false) }
+    var isOrderedByDateDesc by remember { mutableStateOf(false) }
+    var isOrderedByScore by remember { mutableStateOf(false) }
+
+    var getAllRoutines by remember { mutableStateOf(false) }
     val filtersSelected = remember { mutableStateListOf<SelectedFilter>() }
 
     val widthSizeClass = windowSizeClass.widthSizeClass
@@ -234,9 +220,22 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
 
     var showFilters by remember { mutableStateOf(!isPhone) }
 
+    val difficultyCategory = stringResource(id = R.string.difficulty_category)
+    val spaceCategory = stringResource(id = R.string.space_category)
+    val dateCategory = stringResource(id = R.string.date_filter)
+    val scoreCategory = stringResource(id = R.string.score_filter)
+
+    val dateOptions = getDateOptions()
+
+    if(getAllRoutines) {
+        viewModel.getRoutinePreviews()
+        onApplyFilters()
+        getAllRoutines = false
+    }
 
     @Composable
-    fun Filter(category :String, isExpanded :Boolean, onExpanded :()->Unit, options :List<String>) {
+    fun Filter(filterName: String, category :String, isExpanded :Boolean, onExpanded :()->Unit, options :List<CategoryOption>) {
+
         Column {
             Button(
                 onClick = onExpanded,
@@ -244,10 +243,12 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                     contentColor = Color.Black
                 ),
-                modifier = Modifier.width(150.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 5.dp)
             ) {
                 Text(
-                    text = category,
+                    text = filterName,
                     fontSize = 16.sp
                 )
                 Icon(
@@ -255,6 +256,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                     contentDescription = null
                 )
             }
+
             DropdownMenu(
                 expanded = isExpanded,
                 onDismissRequest = onExpanded,
@@ -264,15 +266,30 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                     DropdownMenuItem(
                         text = {
                             Text(
-                                text = option,
+                                text = option.label,
                                 color = MaterialTheme.colorScheme.primary
                             )
                         },
                         onClick = {
-                            if(!filtersSelected.contains(SelectedFilter(category, option))) {
-                                filtersSelected.add(
-                                    SelectedFilter(category, option)
-                                )
+                            onExpanded()
+                            if(!filtersSelected.contains(SelectedFilter(category, option.category, option.label))) {
+                                if(category == dateCategory) {
+                                    isOrderedByDateDesc = option.category == dateOptions[1].category
+                                }
+                                if((category != dateCategory && category != difficultyCategory && category != spaceCategory && category != scoreCategory) ||
+                                    (category == dateCategory && !isOrderedByDate) ||
+                                    (category == spaceCategory && !isSpaceCategory) ||
+                                    (category == difficultyCategory && !isDifficultyCategory) ||
+                                    (category == scoreCategory && !isOrderedByScore)
+                                ) {
+                                    filtersSelected.add(SelectedFilter(category, option.category, option.label))
+                                    when (category) {
+                                        dateCategory -> isOrderedByDate = true
+                                        difficultyCategory -> isDifficultyCategory = true
+                                        spaceCategory -> isSpaceCategory = true
+                                        scoreCategory -> isOrderedByScore = true
+                                    }
+                                }
                             }
                         },
                     )
@@ -315,43 +332,49 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                         text = stringResource(id = R.string.categories_name),
                         color = MaterialTheme.colorScheme.primary
                     )
-                    LazyVerticalGrid(columns = GridCells.Fixed(cols), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    LazyVerticalGrid(columns = GridCells.Fixed(cols), horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
                         item {
                             Filter(
-                                category = stringResource(id = R.string.difficulty_filter),
+                                filterName = stringResource(id = R.string.difficulty_filter),
+                                category = stringResource(id = R.string.difficulty_category),
                                 isExpanded = difficultyExpanded,
                                 onExpanded = { difficultyExpanded = !difficultyExpanded },
-                                options = difficultyOptions
+                                options = getDifficultyOptions()
                             )
                         }
                         item {
                             Filter(
-                                category = stringResource(id = R.string.elements_filter),
+                                filterName = stringResource(id = R.string.elements_filter),
+                                category = stringResource(id = R.string.elements_category),
                                 isExpanded = elementsExpanded,
                                 onExpanded = { elementsExpanded = !elementsExpanded },
-                                options = elementsOptions
+                                options = getElementsOptions()
                             )
                         }
                         item {
                             Filter(
-                                category = stringResource(id = R.string.approach_filter),
+                                filterName = stringResource(id = R.string.approach_filter),
+                                category = stringResource(id = R.string.approach_category),
                                 isExpanded = approachExpanded,
                                 onExpanded = { approachExpanded = !approachExpanded },
-                                options = approachOptions
+                                options = getApproachOptions()
                             )
                         }
                         item {
                             Filter(
-                                category = stringResource(id = R.string.space_filter),
+                                filterName = stringResource(id = R.string.space_filter),
+                                category = stringResource(id = R.string.space_category),
                                 isExpanded = spaceExpanded,
                                 onExpanded = { spaceExpanded = !spaceExpanded },
-                                options = spaceOptions
+                                options = getSpaceOptions()
                             )
                         }
                     }
                 }
                 @Composable
                 fun loadOrder(cols: Int){
+                    Spacer(modifier = Modifier.padding(top = if(isPhone) 5.dp else 0.dp))
                     Text(
                         text = stringResource(id = R.string.order_by_name),
                         color = MaterialTheme.colorScheme.primary
@@ -359,18 +382,20 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                     LazyVerticalGrid(columns = GridCells.Fixed(cols), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         item {
                             Filter(
-                                category = stringResource(id = R.string.score_filter),
+                                filterName = stringResource(id = R.string.score_filter),
+                                category = stringResource(id = R.string.score_category),
                                 isExpanded = scoreExpanded,
                                 onExpanded = { scoreExpanded = !scoreExpanded },
-                                options = scoreOptions
+                                options = getScoreOptions()
                             )
                         }
                         item {
                             Filter(
+                                stringResource(id = R.string.date_filter),
                                 category = stringResource(id = R.string.date_filter),
                                 isExpanded = dateExpanded,
                                 onExpanded = { dateExpanded = !dateExpanded },
-                                options = dateOptions
+                                options = getDateOptions()
                             )
                         }
 
@@ -422,16 +447,41 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
 
                 if (filtersSelected.isNotEmpty()) {
                     if ( isHorizontalPhone )
-                        modifier = modifier.verticalScroll( state =  state ).padding(top = 10.dp, bottom = 10.dp)
+                        modifier = modifier
+                            .verticalScroll(state = state)
+                            .padding(top = 10.dp, bottom = 10.dp)
                     Column(
                         modifier = modifier
                     ) {
-                        if ( !isHorizontalPhone )
+                        Row {
                             Text(
                                 text = stringResource(id = R.string.filters_selected),
-                                modifier = Modifier.padding(vertical = 10.dp),
+                                modifier = Modifier
+                                    .padding(vertical = 10.dp)
+                                    .weight(1f),
                                 color = MaterialTheme.colorScheme.primary
                             )
+                            Button(
+                                onClick = {
+                                    showFilters = false
+                                    viewModel.getFilteredRoutinePreviews(filtersSelected = filtersSelected, isOrderedByDate = isOrderedByDate, direction = if(isOrderedByDateDesc) "desc" else "asc")
+                                    onApplyFilters()
+                                },
+                                contentPadding = PaddingValues(0.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Transparent,
+                                    contentColor = MaterialTheme.colorScheme.surfaceTint
+                                )
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.apply_filters),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(end = 25.dp)
+                                )
+                            }
+                        }
+
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                         ) {
@@ -447,13 +497,22 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = option.filter,
+                                            text = option.label,
                                             modifier = Modifier.padding(start = 10.dp),
                                             color = MaterialTheme.colorScheme.primary
                                         )
                                         IconButton(
                                             onClick = {
                                                 filtersSelected.remove(option)
+                                                when(option.category) {
+                                                    dateCategory -> isOrderedByDate = false
+                                                    difficultyCategory -> isDifficultyCategory = false
+                                                    spaceCategory -> isSpaceCategory = false
+                                                    scoreCategory -> isOrderedByScore = false
+                                                }
+                                                if(filtersSelected.isEmpty()) {
+                                                    getAllRoutines = true
+                                                }
                                             }
                                         ) {
                                             Icon(
@@ -476,29 +535,64 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass) {
 
 @Composable
 fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(routineId:Int)->Unit,
-               windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())) {
+               windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory()), mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory())) {
+
+    var count by remember {
+        mutableStateOf(true)
+    }
+
+    if(count) {
+        viewModel.getFavouriteRoutines()
+        viewModel.getPersonalRoutinePreviews()
+        mainViewModel.getCurrentUser()
+        count = false
+    }
+
+    val favRoutines = viewModel.uiState.favRoutinePreviews
+    val personalRoutines = viewModel.uiState.personalRoutinePreviews
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.inversePrimary)
-            .padding( start = if (showNavRail(windowSizeClass, LocalConfiguration.current)) 65.dp else 0.dp)
+            .padding(
+                start = if (showNavRail(
+                        windowSizeClass,
+                        LocalConfiguration.current
+                    )
+                ) 65.dp else 0.dp
+            )
     ) {
         val state = rememberScrollState()
         LaunchedEffect(Unit) { state.animateScrollTo(100) }
 
-        Header(title = stringResource(R.string.home_name), isHome = true, onNavigateToProfile = onNavigateToProfile)
+        Header(
+            title = stringResource(R.string.home_name),
+            isHome = true,
+            onNavigateToProfile = onNavigateToProfile
+        )
         Column(
             modifier = Modifier.verticalScroll(state)
         ) {
-            RoutinesCarousel(title = stringResource(id = R.string.favourites_title), routineData = viewModel.uiState.routinePreviews ?: emptyList(), onNavigateToRoutine = onNavigateToRoutine)
-            RoutinesCarousel(title = stringResource(id = R.string.your_routines_title), routineData = viewModel.uiState.routinePreviews ?: emptyList(), onNavigateToRoutine = onNavigateToRoutine)
+                RoutinesCarousel(
+                    title = stringResource(id = R.string.favourites_title),
+                    routineData = favRoutines ?: emptyList(),
+                    onNavigateToRoutine = onNavigateToRoutine,
+                    isFavs = true
+                )
+                RoutinesCarousel(
+                    title = stringResource(id = R.string.your_routines_title),
+                    routineData = personalRoutines ?: emptyList(),
+                    onNavigateToRoutine = onNavigateToRoutine
+                )
             Spacer(modifier = Modifier.height(100.dp))
         }
     }
+
 }
 
 @Composable
-fun RoutinesCarousel(title :String, routineData :List<RoutinePreview>, onNavigateToRoutine :(routineId:Int)->Unit) {
+fun RoutinesCarousel(title :String, routineData :List<RoutinePreview>, onNavigateToRoutine :(routineId:Int)->Unit, isFavs :Boolean = false) {
     Text(
         text = title,
         fontSize = 20.sp,
@@ -506,27 +600,47 @@ fun RoutinesCarousel(title :String, routineData :List<RoutinePreview>, onNavigat
         color = MaterialTheme.colorScheme.primary
     )
 
-    LazyRow {
-        items(routineData) { routine ->
-            Box(modifier = Modifier.padding(start = 10.dp, top = 10.dp)) {
-                RoutinePreview(
-                    imageUrl = routine.detail?:"",
-                    title = routine.name,
-                    time = 0,
-                    routineId = routine.id?:0,
-                    onNavigateToRoutine = onNavigateToRoutine
+    if(routineData.isEmpty()) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .padding(vertical = 60.dp)
+                .fillMaxWidth()
+        ) {
+            Row {
+                Icon(
+                    painter = painterResource(id = R.drawable.not_found),
+                    contentDescription = null,
+                    tint = Color.Gray
+                )
+                Text(
+                    text = if(isFavs) stringResource(id = R.string.no_favourites) else stringResource(id = R.string.no_createdByYou),
+                    color = Color.Gray
                 )
             }
         }
-        item{
-            Spacer(modifier = Modifier.width(20.dp))
+    } else {
+        LazyRow {
+            items(routineData) { routine ->
+                Box(modifier = Modifier.padding(start = 10.dp, top = 10.dp)) {
+                    RoutinePreview(
+                        imageUrl = routine.detail ?: "",
+                        title = routine.name,
+                        routineId = routine.id ?: 0,
+                        onNavigateToRoutine = onNavigateToRoutine
+                    )
+                }
+            }
+            item {
+                Spacer(modifier = Modifier.width(20.dp))
+            }
         }
     }
 }
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun Header(title: String, onNavigateToProfile :(userId:Int)->Unit, isHome :Boolean = false) {
+fun Header(title: String, onNavigateToProfile :(userId:Int)->Unit, isHome :Boolean = false, viewModel: MainViewModel = viewModel(factory = getViewModelFactory())) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -550,7 +664,7 @@ fun Header(title: String, onNavigateToProfile :(userId:Int)->Unit, isHome :Boole
         ) {
             Image(
                 painter = rememberImagePainter(
-                    data = "https://profilemagazine.com/wp-content/uploads/2020/04/Ajmere-Dale-Square-thumbnail.jpg"
+                    data = viewModel.uiState.currentUser?.avatarUrl
                 ),
                 contentDescription = stringResource(id = R.string.profile_image),
                 modifier = Modifier
@@ -564,8 +678,9 @@ fun Header(title: String, onNavigateToProfile :(userId:Int)->Unit, isHome :Boole
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun RoutinePreview(imageUrl: String, title: String, time: Int, routineId: Int, leftSide: Boolean = false, onNavigateToRoutine :(routineId:Int)->Unit,
-                   viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())) {    Column(
+fun RoutinePreview(imageUrl: String, title: String, routineId: Int, leftSide: Boolean = false, onNavigateToRoutine :(routineId:Int)->Unit,
+                   viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())) {
+    Column(
         horizontalAlignment = Alignment.CenterHorizontally, //if(leftSide) Alignment.End else Alignment.Start,
         modifier = Modifier.padding(bottom = 20.dp)
     ) {
@@ -619,21 +734,8 @@ fun RoutinePreview(imageUrl: String, title: String, time: Int, routineId: Int, l
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(vertical = 5.dp)
                     )
-
-                    Row {
-                        Icon(
-                            painter = painterResource(id = R.drawable.time),
-                            contentDescription = stringResource(R.string.time_icon),
-                            tint = MaterialTheme.colorScheme.surfaceTint
-                        )
-
-                        Text(
-                            text = "$time'",
-                            color = MaterialTheme.colorScheme.surfaceTint,
-                            modifier = Modifier.padding(start = 5.dp)
-                        )
-                    }
                 }
             }
         }

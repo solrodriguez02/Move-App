@@ -79,7 +79,7 @@ class RoutineViewModel(
                         if(!found) toAdd = false
                     } else if(filter.category == "score") {
                         when(filter.filter) {
-                            "Bad" -> if(routine.score > 2) toAdd = false
+                            "Bad" -> if(routine.score > 2 || routine.score == 0) toAdd = false
                             "Good" -> if(routine.score <= 2 || routine.score > 4 ) toAdd = false
                             "Excellent" -> if(routine.score < 4) toAdd = false
                         }

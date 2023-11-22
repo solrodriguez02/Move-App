@@ -73,8 +73,8 @@ fun ExploreScreen(
     onNavigateToRoutine :(routineId:Int)->Unit,
     windowSizeClass: WindowSizeClass,
     viewModel: RoutineViewModel ,
-    mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory())
-) {
+    mainViewModel: MainViewModel )
+ {
 
     var count by remember {
         mutableStateOf(true)
@@ -103,12 +103,15 @@ fun ExploreScreen(
             Column {
                 Header(
                     title = stringResource(R.string.explore_name),
-                    onNavigateToProfile = onNavigateToProfile
+                    onNavigateToProfile = onNavigateToProfile,
+                    viewModel = mainViewModel
                 )
 
                 /////////////////// Filters ///////////////////////
 
-                ExploreFilters(windowSizeClass = windowSizeClass, onApplyFilters = { applyFilters = true })
+
+                ExploreFilters(windowSizeClass = windowSizeClass, onApplyFilters = { applyFilters = true}, viewModel)
+
             }
         }
     }
@@ -151,7 +154,8 @@ fun ExploreScreen(
                                 title = routine.name,
                                 routineId = routine.id ?:0,
                                 //leftSide = if (isVertical) index % 2 == 0 else false,
-                                onNavigateToRoutine = onNavigateToRoutine
+                                onNavigateToRoutine = onNavigateToRoutine,
+                                viewModel = viewModel
                             )
                         }
                     }
@@ -196,7 +200,7 @@ fun ExploreScreen(
 @SuppressLint("SuspiciousIndentation")
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ExploreFilters(windowSizeClass: WindowSizeClass, onApplyFilters :() -> Unit, viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())) {
+fun ExploreFilters(windowSizeClass: WindowSizeClass, onApplyFilters :() -> Unit, viewModel: RoutineViewModel ) {
 
     var difficultyExpanded by remember { mutableStateOf(false) }
     var elementsExpanded by remember { mutableStateOf(false) }
@@ -535,7 +539,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, onApplyFilters :() -> Unit,
 
 @Composable
 fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(routineId:Int)->Unit,
-               windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory()), mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory())) {
+               windowSizeClass: WindowSizeClass, viewModel: RoutineViewModel , mainViewModel: MainViewModel ) {
 
     var count by remember {
         mutableStateOf(true)
@@ -569,7 +573,8 @@ fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(ro
         Header(
             title = stringResource(R.string.home_name),
             isHome = true,
-            onNavigateToProfile = onNavigateToProfile
+            onNavigateToProfile = onNavigateToProfile,
+            viewModel = mainViewModel
         )
         Column(
             modifier = Modifier.verticalScroll(state)
@@ -578,12 +583,14 @@ fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(ro
                     title = stringResource(id = R.string.favourites_title),
                     routineData = favRoutines ?: emptyList(),
                     onNavigateToRoutine = onNavigateToRoutine,
-                    isFavs = true
+                    isFavs = true,
+                    routineViewModel = viewModel
                 )
                 RoutinesCarousel(
                     title = stringResource(id = R.string.your_routines_title),
                     routineData = personalRoutines ?: emptyList(),
-                    onNavigateToRoutine = onNavigateToRoutine
+                    onNavigateToRoutine = onNavigateToRoutine,
+                    routineViewModel = viewModel
                 )
             Spacer(modifier = Modifier.height(100.dp))
         }
@@ -592,7 +599,7 @@ fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(ro
 }
 
 @Composable
-fun RoutinesCarousel(title :String, routineData :List<RoutinePreview>, onNavigateToRoutine :(routineId:Int)->Unit, isFavs :Boolean = false) {
+fun RoutinesCarousel(title :String, routineData :List<RoutinePreview>, onNavigateToRoutine :(routineId:Int)->Unit, isFavs :Boolean = false, routineViewModel: RoutineViewModel) {
     Text(
         text = title,
         fontSize = 20.sp,
@@ -627,7 +634,8 @@ fun RoutinesCarousel(title :String, routineData :List<RoutinePreview>, onNavigat
                         imageUrl = routine.detail ?: "",
                         title = routine.name,
                         routineId = routine.id ?: 0,
-                        onNavigateToRoutine = onNavigateToRoutine
+                        onNavigateToRoutine = onNavigateToRoutine,
+                        viewModel = routineViewModel
                     )
                 }
             }
@@ -640,7 +648,7 @@ fun RoutinesCarousel(title :String, routineData :List<RoutinePreview>, onNavigat
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun Header(title: String, onNavigateToProfile :(userId:Int)->Unit, isHome :Boolean = false, viewModel: MainViewModel = viewModel(factory = getViewModelFactory())) {
+fun Header(title: String, onNavigateToProfile :(userId:Int)->Unit, isHome :Boolean = false, viewModel: MainViewModel) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -679,7 +687,7 @@ fun Header(title: String, onNavigateToProfile :(userId:Int)->Unit, isHome :Boole
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun RoutinePreview(imageUrl: String, title: String, routineId: Int, leftSide: Boolean = false, onNavigateToRoutine :(routineId:Int)->Unit,
-                   viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())) {
+                   viewModel: RoutineViewModel ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally, //if(leftSide) Alignment.End else Alignment.Start,
         modifier = Modifier.padding(bottom = 20.dp)

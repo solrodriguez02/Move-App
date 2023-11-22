@@ -63,7 +63,7 @@ fun FinishedRoutineScreen(
     var score by remember { mutableIntStateOf (0) }
     var showShareDialog by remember { mutableStateOf (false) }
     var rated by remember { mutableStateOf(false) }
-    var liked by remember { mutableStateOf(routineViewModel.isRoutineInFavourites(routineId)) }
+    var liked by remember { mutableStateOf(routineViewModel.uiState.currentRoutine?.isFavourite) }
 
     val hasCompactWidth = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
     val hasExpandedHeight = windowSizeClass.heightSizeClass == WindowHeightSizeClass.Expanded
@@ -97,12 +97,12 @@ fun FinishedRoutineScreen(
 
             Button(
                 onClick = {
-                    if(liked) {
+                    if(liked?: false) {
                         routineViewModel.removeRoutineToFavourites(routineId)
                     } else {
                         routineViewModel.addRoutineToFavourites(routineId)
                     }
-                    liked = !liked
+                    liked = !(liked?: false)
                 },
                 shape = RoundedCornerShape(20.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -120,12 +120,12 @@ fun FinishedRoutineScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        if(liked) Icons.Filled.Favorite else options[0].icon,
+                        if(liked?: false) Icons.Filled.Favorite else options[0].icon,
                         contentDescription = null,
                         modifier = Modifier.padding(end = 15.dp)
                     )
                     Text(
-                        text = if(liked) stringResource(id = R.string.already_liked) else options[0].label,
+                        text = if(liked?: false) stringResource(id = R.string.already_liked) else options[0].label,
                         fontSize = fontSize
                     )
                 }

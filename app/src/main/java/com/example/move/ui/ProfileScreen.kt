@@ -64,8 +64,9 @@ import com.example.move.util.getViewModelFactory
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewModel(factory = getViewModelFactory()),
+fun ProfileScreen(navController: NavController, viewModel: MainViewModel,
     windowSizeClass: WindowSizeClass ) {
+
 
     var setValues by remember { mutableStateOf(true) }
 
@@ -89,7 +90,7 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
     }
 
     if(showModeDialog) {
-        ModeDialog(onShowMode = { showModeDialog = !showModeDialog })
+        ModeDialog(onShowMode = { showModeDialog = !showModeDialog }, viewModel = viewModel)
     }
 
     if(showWarningDialog) {

@@ -39,7 +39,7 @@ import com.example.move.R
 import com.example.move.util.getViewModelFactory
 
 @Composable
-fun ModeDialog(onShowMode: () -> Unit, viewModel: MainViewModel = viewModel(factory = getViewModelFactory())) {
+fun ModeDialog(onShowMode: () -> Unit, viewModel: MainViewModel ) {
 
     var setListMode by remember { mutableStateOf(true) }
 

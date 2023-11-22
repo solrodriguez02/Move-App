@@ -1,6 +1,5 @@
 package com.example.move.ui
 
-import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -71,10 +70,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.NavOptions
+import androidx.navigation.NavController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.move.R
@@ -84,24 +81,6 @@ import com.example.move.data.model.Filter
 import com.example.move.data.model.MetadataRoutine
 import com.example.move.data.model.Review
 import com.example.move.data.model.RoutineDetail
-import com.example.move.util.getViewModelFactory
-
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
-@Preview(device = Devices.TABLET)
-@Composable
-fun myPreview() {
-    var navController = rememberNavController()
-    val windowSizeClass = WindowSizeClass.calculateFromSize( DpSize(2500.dp, 1000.dp) )
-    RoutineScreen(
-        onNavigateToExecute = { id -> navController.navigate("routine/$id/execute") },
-        navController = navController,
-        windowSizeClass = windowSizeClass,
-        routineId = 5
-    )
-
-}
-
-
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
@@ -111,8 +90,8 @@ fun RoutineScreen(
     navController: NavController,
     windowSizeClass: WindowSizeClass,
     routineId: Int,
-    mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory()),
-    routineViewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
+    mainViewModel: MainViewModel ,
+    routineViewModel: RoutineViewModel
     ) {
 
     var count by remember {
@@ -134,7 +113,7 @@ fun RoutineScreen(
     var cycleIndex by remember { mutableIntStateOf(0) }
     var isRated by remember { mutableStateOf(false) }
     val routineData = routineViewModel.uiState.currentRoutine
-    val isFavourite = routineViewModel.uiState.currentRoutine?.isFavourite
+    val isFavourite by remember{ mutableStateOf(routineViewModel.uiState.currentRoutine?.isFavourite)}
 
     val cyclesOptions = listOf(R.drawable.warm_up, R.drawable.exercise, R.drawable.cooling)
 
@@ -254,7 +233,7 @@ fun RoutineScreen(
         .fillMaxWidth()
 
     @Composable
-    fun RoutineDetail() {
+    fun RoutineDetail(mainViewModel: MainViewModel) {
         val rateIcon = if(showRate) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
 
         data class FilterDetail (
@@ -531,7 +510,7 @@ fun RoutineScreen(
                             .height(50.dp)
                     )
                 }
-                RoutineDetail()
+                RoutineDetail(mainViewModel)
             }
         }
 
@@ -611,7 +590,9 @@ fun RoutineScreen(
                             )),
                             showModeDialog = showModeDialog,
                             onShowMode = { showModeDialog = !showModeDialog },
-                            onNavigateToExecute = onNavigateToExecute)
+                            onNavigateToExecute = onNavigateToExecute,
+                            viewModel = mainViewModel
+                        )
                     }
                 }
                 Column(
@@ -621,7 +602,7 @@ fun RoutineScreen(
                         .verticalScroll(state)
                 ) {
                     Spacer(modifier = Modifier.height(90.dp))
-                    RoutineDetail()
+                    RoutineDetail(mainViewModel)
                 }
             }
         }
@@ -665,7 +646,8 @@ fun RoutineScreen(
                     )),
                     showModeDialog = showModeDialog,
                     onShowMode = { showModeDialog = !showModeDialog },
-                    onNavigateToExecute = onNavigateToExecute)
+                    onNavigateToExecute = onNavigateToExecute,
+                    viewModel = mainViewModel)
             }
         }
     }
@@ -679,7 +661,7 @@ fun RoutineExecutionMenu(
     showModeDialog :Boolean,
     onShowMode :() -> Unit,
     onNavigateToExecute :(routineId:Int)->Unit,
-    viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
+    viewModel: MainViewModel
 ) {
 
     var setListMode by remember { mutableStateOf(true) }
@@ -739,7 +721,7 @@ fun RoutineExecutionMenu(
     }
 
     if (showModeDialog) {
-        ModeDialog(onShowMode)
+        ModeDialog(onShowMode, viewModel = viewModel)
     }
 }
 

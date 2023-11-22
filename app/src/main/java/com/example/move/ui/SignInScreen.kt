@@ -41,7 +41,7 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.ui.text.style.TextAlign
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignInScreen(navController: NavController, viewModel: MainViewModel = viewModel(factory = getViewModelFactory())) {
+fun SignInScreen(navController: NavController, viewModel: MainViewModel) {
 
     var username by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }

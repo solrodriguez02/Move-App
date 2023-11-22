@@ -62,7 +62,6 @@ class MainActivity : ComponentActivity() {
                 var windowSizeClass = calculateWindowSizeClass(this)
                 val showNavigationRail = showNavRail(windowSizeClass, LocalConfiguration.current)
 
-                // caso del Deep Link
                 Scaffold(
 
                         bottomBar = { if ( !showNavigationRail )

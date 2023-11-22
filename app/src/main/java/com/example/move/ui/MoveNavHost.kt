@@ -22,9 +22,10 @@ fun MoveNavHost(
     val uri = "http://www.move.com"
     val secureUri = "https://www.move.com"
     val viewModel: MainViewModel = viewModel(factory = getViewModelFactory())
+    val routineViewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
     val uiState = viewModel.uiState
     val isAuthenticated = uiState.isAuthenticated
-    val routineViewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
+
     NavHost(
         navController = navController, 
         startDestination = if(isAuthenticated) Screen.ExploreScreen.route else Screen.SignInScreen.route
@@ -33,22 +34,26 @@ fun MoveNavHost(
             ExploreScreen(
                 onNavigateToProfile = { id -> navController.navigate("profile/$id") },
                 onNavigateToRoutine = { id -> navController.navigate("routine/$id") },
-                windowSizeClass = windowSizeClass,
-                viewModel = routineViewModel
+                viewModel = routineViewModel,
+                mainViewModel = viewModel,
+                windowSizeClass = windowSizeClass
             )
         }
         composable(Screen.HomeScreen.route) {
             HomeScreen(
                 onNavigateToProfile = { id -> navController.navigate("profile/$id") },
                 onNavigateToRoutine = { id -> navController.navigate("routine/$id") },
-                windowSizeClass = windowSizeClass
+                windowSizeClass = windowSizeClass,
+                viewModel = routineViewModel,
+                mainViewModel = viewModel
             )
         }
         composable(
             Screen.ProfileScreen.route,
             arguments = listOf(navArgument("id") {type = NavType.IntType}),
             ) {
-            ProfileScreen(navController = navController, windowSizeClass = windowSizeClass)
+
+            ProfileScreen(navController = navController, windowSizeClass = windowSizeClass, viewModel = viewModel)
         }
 
         composable(
@@ -61,6 +66,9 @@ fun MoveNavHost(
                     onNavigateToExecute = { id -> navController.navigate("routine/$id/execute") },
                     navController = navController,
                     windowSizeClass = windowSizeClass,
+                    mainViewModel = viewModel,
+                    routineViewModel = routineViewModel,
+
                     routineId = backStackEntry.arguments?.getInt("id") ?: 0
                 )
 
@@ -75,6 +83,8 @@ fun MoveNavHost(
                 navController = navController,
                 routineId = backStackEntry.arguments?.getInt("id") ?: 0,
                 windowSizeClass = windowSizeClass,
+                viewModel = viewModel,
+                routineViewModel = routineViewModel,
             )
         }
 
@@ -85,12 +95,15 @@ fun MoveNavHost(
                 backStackEntry -> FinishedRoutineScreen(
                 onNavigateToHome = { navController.navigate("home") { popUpTo("explore") {inclusive = true} } },
                 routineId = backStackEntry.arguments?.getInt("id") ?: 0,
-                windowSizeClass = windowSizeClass
+                windowSizeClass = windowSizeClass,
+                mainViewModel = viewModel,
+                routineViewModel = routineViewModel,
+
                 )
         }
 
         composable(Screen.SignInScreen.route) {
-            SignInScreen(navController = navController)
+            SignInScreen(navController = navController, viewModel = viewModel)
         }
     }
 }

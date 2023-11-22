@@ -19,7 +19,8 @@ data class MainUiState(
     val sound: Boolean = true,
     val exerciseIndex :Int = 0,
     val cycleIndex :Int = 0,
-    val currentTime :Long = 0
+    val currentTime :Long = 0,
+    val route :Int = -1,
 )
 
 val MainUiState.canGetCurrentUser: Boolean get() = isAuthenticated

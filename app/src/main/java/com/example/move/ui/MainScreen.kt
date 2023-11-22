@@ -3,7 +3,6 @@ package com.example.move.ui
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -446,7 +445,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, onApplyFilters :() -> Unit,
                     .fillMaxWidth()
                     .padding(bottom = 10.dp)
                 val  state = rememberScrollState()
-                LaunchedEffect(Unit) { state.animateScrollTo(100) }
+                LaunchedEffect(Unit) { state.animateScrollTo(10) }
                 val isHorizontalPhone = isHorizontalPhone(windowSizeClass)
 
                 if (filtersSelected.isNotEmpty()) {
@@ -565,7 +564,7 @@ fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(ro
                         LocalConfiguration.current
                     )
                 ) 65.dp else 0.dp
-            )
+            ).padding(horizontal = 10.dp)
     ) {
         val state = rememberScrollState()
         LaunchedEffect(Unit) { state.animateScrollTo(100) }
@@ -577,7 +576,7 @@ fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(ro
             viewModel = mainViewModel
         )
         Column(
-            modifier = Modifier.verticalScroll(state)
+            modifier = Modifier.verticalScroll(state),
         ) {
                 RoutinesCarousel(
                     title = stringResource(id = R.string.favourites_title),
@@ -586,6 +585,7 @@ fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(ro
                     isFavs = true,
                     routineViewModel = viewModel
                 )
+                Spacer(modifier = Modifier.height(20.dp))
                 RoutinesCarousel(
                     title = stringResource(id = R.string.your_routines_title),
                     routineData = personalRoutines ?: emptyList(),
@@ -629,7 +629,7 @@ fun RoutinesCarousel(title :String, routineData :List<RoutinePreview>, onNavigat
     } else {
         LazyRow {
             items(routineData) { routine ->
-                Box(modifier = Modifier.padding(start = 10.dp, top = 10.dp)) {
+                Box(modifier = Modifier.padding(start = 15.dp, top = 10.dp)) {
                     RoutinePreview(
                         imageUrl = routine.detail ?: "",
                         title = routine.name,

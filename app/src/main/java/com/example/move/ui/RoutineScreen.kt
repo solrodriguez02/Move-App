@@ -267,6 +267,8 @@ fun RoutineScreen(
                 Text(
                     text = routineData?.name ?: "",
                     fontSize = 25.sp,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .padding(horizontal = 10.dp)
@@ -406,49 +408,7 @@ fun RoutineScreen(
                     }
                 }
             }
-
-            /////////////////// Routine description ///////////////////////
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.description_name),
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(top = 15.dp, bottom = 10.dp)
-                )
-                if ( isPhone )
-                    Button(
-                        onClick = { showDescription = !showDescription },
-                        contentPadding = PaddingValues(0.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = MaterialTheme.colorScheme.surface,
-                        ),
-                        modifier = Modifier.width(40.dp)
-                    ) {
-                        Icon(
-                            rateIcon,
-                            //descriptionIcon,
-                            contentDescription = stringResource(R.string.description_name),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-            }
-            if (showDescription) {
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = MaterialTheme.colorScheme.inversePrimary,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = routineData?.detail ?: "no details",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(10.dp)
-                    )
-                }
-            }
+            Spacer(modifier = Modifier.padding(bottom = 10.dp))
 
             if (isPhone)
                 cycles()
@@ -527,7 +487,7 @@ fun RoutineScreen(
                 ) {
                     Column(
                         modifier = Modifier
-                            .width(if ( windowSizeClass.widthSizeClass == WindowWidthSizeClass.Medium ) 320.dp else 420.dp)
+                            .width(if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Medium) 320.dp else 420.dp)
                             .padding(horizontal = 10.dp)
                     ) {
                         dataAndImage()
@@ -557,7 +517,7 @@ fun RoutineScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(250.dp)
-                            .padding(bottom = 20.dp,top = 20.dp)
+                            .padding(bottom = 20.dp, top = 20.dp)
                     ) {
                         Image(
                             painter = rememberImagePainter(
@@ -637,7 +597,7 @@ fun RoutineScreen(
                 contentAlignment = if (isVerticalPhone) Alignment.BottomCenter else Alignment.BottomEnd,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .align( if (isVerticalPhone) Alignment.BottomCenter else Alignment.BottomEnd)
+                    .align(if (isVerticalPhone) Alignment.BottomCenter else Alignment.BottomEnd)
                     .padding(all = if (isVerticalPhone) 30.dp else 80.dp)
             ) {
                 RoutineExecutionMenu(
@@ -684,7 +644,9 @@ fun RoutineExecutionMenu(
                 containerColor = MaterialTheme.colorScheme.surfaceTint,
                 contentColor = Color.Transparent,
             ),
-            modifier = Modifier.height(50.dp).shadow(elevation = 10.dp, shape = ButtonDefaults.shape)
+            modifier = Modifier
+                .height(50.dp)
+                .shadow(elevation = 10.dp, shape = ButtonDefaults.shape)
         ) {
             Text(
                 text = stringResource(id = R.string.start_routine),

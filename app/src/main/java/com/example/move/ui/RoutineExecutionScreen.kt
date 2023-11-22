@@ -429,7 +429,7 @@ fun RoutineExecutionScreen(
 
 @Composable
 fun ExecutionMenu(hasOnlyReps :Boolean, onRefresh :() -> Unit, onPlay :() -> Unit, onNext :() -> Unit, isPaused :Boolean, isSoundOn: Boolean, windowSizeClass: WindowSizeClass) {
-    val hasExtendedWidth = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
+    val hasExtendedWidth = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded && !isHorizontalPhone(windowSizeClass)
     val iconSize = if (hasExtendedWidth) 40.dp else 30.dp
     Surface(
         shape = RoundedCornerShape(50.dp),

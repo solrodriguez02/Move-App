@@ -267,8 +267,6 @@ fun RoutineScreen(
                 Text(
                     text = routineData?.name ?: "",
                     fontSize = 25.sp,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .padding(horizontal = 10.dp)

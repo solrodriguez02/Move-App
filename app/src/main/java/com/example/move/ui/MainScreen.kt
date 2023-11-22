@@ -452,7 +452,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, onApplyFilters :() -> Unit,
                     if ( isHorizontalPhone )
                         modifier = modifier
                             .verticalScroll(state = state)
-                            .padding(top = 10.dp, bottom = 10.dp)
+                            .padding(top = 0.dp, bottom = 10.dp)
                     Column(
                         modifier = modifier
                     ) {
@@ -460,7 +460,7 @@ fun ExploreFilters(windowSizeClass: WindowSizeClass, onApplyFilters :() -> Unit,
                             Text(
                                 text = stringResource(id = R.string.filters_selected),
                                 modifier = Modifier
-                                    .padding(vertical = 10.dp)
+                                    .padding(vertical = if(isHorizontalPhone) 7.dp else 10.dp)
                                     .weight(1f),
                                 color = MaterialTheme.colorScheme.primary
                             )

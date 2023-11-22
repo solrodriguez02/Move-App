@@ -7,10 +7,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -28,7 +32,11 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchColors
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,7 +64,8 @@ import com.example.move.util.getViewModelFactory
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewModel(factory = getViewModelFactory())) {
+fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewModel(factory = getViewModelFactory()),
+    windowSizeClass: WindowSizeClass ) {
 
     var setValues by remember { mutableStateOf(true) }
 
@@ -112,33 +121,45 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
     } else {
         null
     }
+    val isHorizontalPhone = isHorizontalPhone(windowSizeClass)
+    val isCompact = isHorizontalPhone || windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
+    val fontSize = if (isCompact) 14.sp else if ( windowSizeClass.heightSizeClass < WindowHeightSizeClass.Expanded ) 16.sp else 18.sp
+    val horizontalBorder = 25.dp
+    IconButton(
+        onClick = { navController.popBackStack() },
+        modifier = Modifier.padding( if (isCompact) 10.dp else 15.dp)
+    ) {
+        Icon(
+            Icons.Filled.Close,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp)
+        )
+    }
 
-    Column {
-        Spacer(modifier = Modifier.padding(top = 15.dp))
-        IconButton(
-            onClick = { navController.popBackStack() },
-            modifier = Modifier.padding(start = 10.dp)
+    val state = rememberScrollState()
+    LaunchedEffect(Unit) { state.animateScrollTo( 0 ) }
+
+    Box( contentAlignment = Alignment.Center,
+    modifier = Modifier.fillMaxSize().padding(20.dp)) {
+    Column(
+        modifier = Modifier.widthIn(max = 600.dp).verticalScroll(state),
         ) {
-            Icon(
-                Icons.Filled.Close,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
-            )
-        }
+        /*
+        if (isHorizontalPhone)
+            Spacer(modifier = Modifier.padding(20.dp))
+*/
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = horizontalBorder).padding(bottom = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = (currentUser?.firstName ?: "" ) + " " + (currentUser?.lastName ?: ""),
+                text = (currentUser?.firstName ?: "") + " " + (currentUser?.lastName ?: ""),
                 modifier = Modifier
                     .weight(1f)
-                    .padding(top = 16.dp)
-                    .padding(start = 10.dp)
-                    .padding(end = 16.dp)
+                    .padding(top = 16.dp, start = 10.dp, end = 16.dp)
                     .then(Modifier.padding(0.dp)),
                 fontSize = 30.sp,
                 color = MaterialTheme.colorScheme.primary
@@ -165,7 +186,7 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 1.dp)
+                .padding(horizontal = 5.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -174,20 +195,22 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 28.dp)
+                        .padding(horizontal = horizontalBorder)
                 ) {
                     Text(
                         text = stringResource(id = R.string.p_username),
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.align(Alignment.CenterStart),
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = fontSize
                     )
                     Text(
                         text = "@" + currentUser?.username,
                         modifier = Modifier
                             .align(Alignment.CenterStart)
                             .padding(top = 42.dp),
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = fontSize
                     )
                     Text(
                         text = stringResource(id = R.string.p_gender),
@@ -195,7 +218,8 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
                         modifier = Modifier
                             .align(Alignment.CenterStart)
                             .padding(start = 190.dp),
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = fontSize
                     )
                     Text(
                         text = currentUser?.gender ?: "",
@@ -203,7 +227,8 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
                             .align(Alignment.CenterStart)
                             .padding(top = 42.dp)
                             .padding(start = 190.dp),
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = fontSize
                     )
 
                 }
@@ -217,20 +242,22 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 28.dp)
+                        .padding(horizontal = horizontalBorder + 5.dp)
                 ) {
                     Text(
                         text = stringResource(id = R.string.p_first_name),
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.align(Alignment.CenterStart),
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = fontSize
                     )
                     Text(
                         text = currentUser?.firstName ?: "",
                         modifier = Modifier
                             .align(Alignment.CenterStart)
                             .padding(top = 42.dp),
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = fontSize
                     )
                     Text(
                         text = stringResource(id = R.string.p_last_name),
@@ -238,7 +265,8 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
                         modifier = Modifier
                             .padding(start = 190.dp)
                             .align(Alignment.CenterStart),
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = fontSize
                     )
                     Text(
                         text = currentUser?.lastName ?: "",
@@ -246,7 +274,8 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
                             .align(Alignment.CenterStart)
                             .padding(start = 190.dp)
                             .padding(top = 42.dp),
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = fontSize
                     )
                 }
             }
@@ -259,20 +288,22 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 28.dp)
+                        .padding(horizontal = horizontalBorder)
                 ) {
                     Text(
                         text = stringResource(id = R.string.p_email),
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.align(Alignment.CenterStart),
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = fontSize
                     )
                     Text(
                         text = currentUser?.email ?: "",
                         modifier = Modifier
                             .align(Alignment.CenterStart)
                             .padding(top = 42.dp),
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = fontSize
                     )
                 }
             }
@@ -283,7 +314,7 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .align(Alignment.Start)
-                .padding(horizontal = 28.dp)
+                .padding(horizontal = horizontalBorder)
                 .padding(bottom = 8.dp, top = 30.dp),
             fontSize = 24.sp,
             color = MaterialTheme.colorScheme.primary
@@ -293,7 +324,8 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 40.dp).padding(bottom = 5.dp),
+                .padding(horizontal = 40.dp)
+                .padding(bottom = 5.dp),
         ) {
             Text(
                 text = stringResource(id = R.string.sound_title),
@@ -321,19 +353,24 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
             onClick = { showModeDialog = true },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 28.dp),
+                .padding(horizontal = horizontalBorder),
             colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val modeIcon: Painter = if(viewModel.uiState.listMode) painterResource(id = R.drawable.list_mode) else painterResource(id = R.drawable.detail_mode)
+                val modeIcon: Painter =
+                    if (viewModel.uiState.listMode) painterResource(id = R.drawable.list_mode) else painterResource(
+                        id = R.drawable.detail_mode
+                    )
                 Icon(modeIcon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 Text(
                     text = stringResource(id = R.string.mode_dialog_title) +
-                        if(viewModel.uiState.listMode) stringResource(id = R.string.list_mode) else stringResource(id = R.string.detail_mode),
+                            if (viewModel.uiState.listMode) stringResource(id = R.string.list_mode) else stringResource(
+                                id = R.string.detail_mode
+                            ),
                     modifier = Modifier.padding(start = 10.dp),
-                    color= MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
         }
@@ -342,17 +379,21 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
             onClick = { showShareDialog = true },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 28.dp),
+                .padding(horizontal = horizontalBorder),
             colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(Icons.Filled.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Icon(
+                    Icons.Filled.Info,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
                 Text(
                     text = stringResource(id = R.string.check_website_name),
                     modifier = Modifier.padding(start = 10.dp),
-                    color= MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
         }
@@ -362,13 +403,17 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp)
-                .padding(horizontal = 28.dp),
+                .padding(horizontal = horizontalBorder),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(imageVector = Icons.Default.ExitToApp , contentDescription = null, tint= Color.Red)
+                Icon(
+                    imageVector = Icons.Default.ExitToApp,
+                    contentDescription = null,
+                    tint = Color.Red
+                )
                 Text(
                     text = stringResource(id = R.string.logout_name),
                     modifier = Modifier.padding(start = 10.dp),
@@ -376,5 +421,7 @@ fun ProfileScreen(navController: NavController, viewModel: MainViewModel = viewM
                 )
             }
         }
+    }
+        Spacer(modifier = Modifier.padding(20.dp))
     }
 }

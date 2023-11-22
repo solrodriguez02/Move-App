@@ -60,6 +60,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.annotation.ExperimentalCoilApi
@@ -112,7 +113,7 @@ fun ExploreScreen(
 
     Box(
         modifier = Modifier.background(color = MaterialTheme.colorScheme.inversePrimary)
-            .padding( start = if (showNavRail(windowSizeClass, LocalConfiguration.current)) 65.dp else 0.dp)
+            .padding( start = if (showNavRail(windowSizeClass, LocalConfiguration.current)) 65.dp else 0.dp).fillMaxSize()
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -124,18 +125,12 @@ fun ExploreScreen(
 
             if (routineData?.isEmpty() == false) {
 
-                val isVertical = widthSizeClass == WindowWidthSizeClass.Compact
-                val columns = when (widthSizeClass) {
-                    WindowWidthSizeClass.Compact -> 2
-                    WindowWidthSizeClass.Medium -> 4
-                    WindowWidthSizeClass.Expanded -> 5
-                    else -> 1
-                }
+                val isVerticalPhone = widthSizeClass == WindowWidthSizeClass.Compact
 
                 LazyVerticalGrid(
                     horizontalArrangement = Arrangement.spacedBy(20.dp),
                     columns = GridCells.Adaptive(minSize = 160.dp),
-                    modifier = Modifier.padding(start = if (isVertical) 0.dp else 20.dp)
+                    modifier = Modifier.padding(horizontal = 20.dp)  //(start = if (isVertical) 0.dp else 20.dp)
                 ) {
 
                     for ((index, routine) in routineData.withIndex()) {
@@ -145,12 +140,12 @@ fun ExploreScreen(
                                 title = routine.name,
                                 time = 0,
                                 routineId = routine.id ?:0,
-                                leftSide = if (isVertical) index % 2 == 0 else false,
+                                //leftSide = if (isVertical) index % 2 == 0 else false,
                                 onNavigateToRoutine = onNavigateToRoutine
                             )
                         }
                     }
-                    for (i in 1..if (isVertical) 1 else 3) {
+                    for (i in 1..if (isVerticalPhone) 1 else 3) {
                         item {
                             /* empty item for spacer in odd routine count */
                         }
@@ -571,7 +566,7 @@ fun Header(title: String, onNavigateToProfile :(userId:Int)->Unit, isHome :Boole
 @Composable
 fun RoutinePreview(imageUrl: String, title: String, time: Int, routineId: Int, leftSide: Boolean = false, onNavigateToRoutine :(routineId:Int)->Unit,
                    viewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())) {    Column(
-        horizontalAlignment = if(leftSide) Alignment.End else Alignment.Start,
+        horizontalAlignment = Alignment.CenterHorizontally, //if(leftSide) Alignment.End else Alignment.Start,
         modifier = Modifier.padding(bottom = 20.dp)
     ) {
         Button(
@@ -621,6 +616,8 @@ fun RoutinePreview(imageUrl: String, title: String, time: Int, routineId: Int, l
 
                     Text(
                         text = title,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         color = MaterialTheme.colorScheme.primary,
                     )
 

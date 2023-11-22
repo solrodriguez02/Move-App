@@ -74,6 +74,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
@@ -206,6 +207,8 @@ fun RoutineScreen(
                         ) {
                             Text(
                                 text = cycle.key.name ?: "",
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(end = 10.dp)
@@ -256,8 +259,6 @@ fun RoutineScreen(
         )
         .padding(vertical = 25.dp, horizontal = 30.dp)
         .fillMaxWidth()
-    //colModifier = if ( isPhone  ) colModifier.fillMaxWidth() else colModifier.width(500.dp)
-
 
     @Composable
     fun RoutineDetail() {

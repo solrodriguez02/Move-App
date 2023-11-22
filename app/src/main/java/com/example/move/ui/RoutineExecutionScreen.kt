@@ -217,7 +217,7 @@ fun RoutineExecutionScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(if (isRestExercise && isDetailedMode) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.inversePrimary)
+                .background(if (isRestExercise && !newCycle && isDetailedMode) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.inversePrimary)
         ) {
             val state = rememberScrollState()
             LaunchedEffect(Unit) { state.animateScrollTo(100) }
@@ -998,7 +998,7 @@ fun HorizontalDetailedMode(onClose :() -> Unit, onRefresh :() -> Unit, onPlay :(
             }
             if (isTablet) {
                 Surface(
-                    color = MaterialTheme.colorScheme.tertiary,
+                    color = if(isRestExercise) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.tertiary,
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1192,15 +1192,7 @@ fun VerticalDetailedMode(currentExercise: CycleExercise, exerciseIndex :Int, exe
             )
         }
     } else {
-        /*
-        modifier = if ( isExpandedScreen)
-            modifier
-                .height(400.dp).widthIn(max = 400.dp)
-        else if (isTablet)
-            modifier
-                .height(230.dp).widthIn(max = 310.dp)
-        else
-            modifier.height(190.dp).fillMaxWidth() */
+
         Box(
             modifier = modifier.height(if (isExpandedScreen) 370.dp else if (isTablet) 260.dp else 190.dp).widthIn(max = if (isExpandedScreen) 410.dp else 320.dp)
         ) {

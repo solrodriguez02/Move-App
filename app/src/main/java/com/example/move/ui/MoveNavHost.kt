@@ -47,7 +47,7 @@ fun MoveNavHost(
             Screen.ProfileScreen.route,
             arguments = listOf(navArgument("id") {type = NavType.IntType}),
             ) {
-            ProfileScreen(navController = navController)
+            ProfileScreen(navController = navController, windowSizeClass = windowSizeClass)
         }
 
         composable(

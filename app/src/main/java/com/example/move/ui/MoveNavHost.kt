@@ -83,7 +83,8 @@ fun MoveNavHost(
         ) {
                 backStackEntry -> FinishedRoutineScreen(
                 onNavigateToHome = { navController.navigate("home") { popUpTo("explore") {inclusive = true} } },
-                routineId = backStackEntry.arguments?.getInt("id") ?: 0
+                routineId = backStackEntry.arguments?.getInt("id") ?: 0,
+                windowSizeClass = windowSizeClass
                 )
         }
 

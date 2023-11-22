@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -25,6 +26,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,6 +43,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,7 +56,8 @@ fun FinishedRoutineScreen(
     onNavigateToHome :() -> Unit,
     routineId :Int,
     mainViewModel: MainViewModel = viewModel(factory = getViewModelFactory()),
-    routineViewModel: RoutineViewModel = viewModel(factory = getViewModelFactory())
+    routineViewModel: RoutineViewModel = viewModel(factory = getViewModelFactory()),
+    windowSizeClass: WindowSizeClass
 ) {
     val options = getButtonsOptions()
     var score by remember { mutableIntStateOf (0) }
@@ -59,31 +65,34 @@ fun FinishedRoutineScreen(
     var rated by remember { mutableStateOf(false) }
     var liked by remember { mutableStateOf(routineViewModel.isRoutineInFavourites(routineId)) }
 
+    val hasCompactWidth = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
+    val hasExpandedHeight = windowSizeClass.heightSizeClass == WindowHeightSizeClass.Expanded
+    val fontSize = if ( windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact || windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact) 16.sp else 18.sp
     if(showShareDialog) {
         ShareDialog(onCancel = { showShareDialog = false }, id = routineId)
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.inversePrimary)
+        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.inversePrimary).padding(top = 10.dp)
     ) {
         val state = rememberScrollState()
-        LaunchedEffect(Unit) { state.animateScrollTo(100) }
+        LaunchedEffect(Unit) { state.animateScrollTo(0) }
 
         Column(
             modifier = Modifier
                 .verticalScroll(state)
                 .padding(20.dp)
-                .fillMaxSize()
+                .align(Alignment.Center)
+                .widthIn(max = 400.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             Text(
                 text = stringResource(id = R.string.finish_title),
                 modifier = Modifier.padding(top = 15.dp, bottom = 20.dp),
-                fontSize = 20.sp,
+                fontSize = if (hasExpandedHeight) 24.sp else 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
             )
 
             Button(
@@ -116,7 +125,8 @@ fun FinishedRoutineScreen(
                         modifier = Modifier.padding(end = 15.dp)
                     )
                     Text(
-                        text = if(liked) stringResource(id = R.string.already_liked) else options[0].label
+                        text = if(liked) stringResource(id = R.string.already_liked) else options[0].label,
+                        fontSize = fontSize
                     )
                 }
             }
@@ -145,7 +155,8 @@ fun FinishedRoutineScreen(
                         modifier = Modifier.padding(end = 15.dp)
                     )
                     Text(
-                        text = options[1].label
+                        text = options[1].label,
+                        fontSize = fontSize
                     )
                 }
             }
@@ -221,7 +232,7 @@ fun FinishedRoutineScreen(
             Button(
                 onClick = onNavigateToHome,
                 modifier = Modifier
-                    .padding(bottom = 15.dp)
+                    .padding(bottom = 25.dp)
                     .width(250.dp),
                 shape = RoundedCornerShape(30.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -232,13 +243,10 @@ fun FinishedRoutineScreen(
                 Text(
                     text = stringResource(id = R.string.continue_home),
                     modifier = Modifier.padding(vertical = 5.dp),
-                    color = Color.White
+                    color = Color.White,
+                    fontSize = fontSize
                 )
-                Icon(
-                    Icons.Filled.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = Color.White
-                )
+
             }
         }
     }

@@ -567,7 +567,7 @@ fun HomeScreen(onNavigateToProfile :(userId:Int)->Unit, onNavigateToRoutine :(ro
             ).padding(horizontal = 10.dp)
     ) {
         val state = rememberScrollState()
-        LaunchedEffect(Unit) { state.animateScrollTo(100) }
+        LaunchedEffect(Unit) { state.animateScrollTo(0) }
 
         Header(
             title = stringResource(R.string.home_name),
@@ -627,9 +627,9 @@ fun RoutinesCarousel(title :String, routineData :List<RoutinePreview>, onNavigat
             }
         }
     } else {
-        LazyRow {
+        LazyRow( modifier = Modifier.padding(end = 10.dp)) {
             items(routineData) { routine ->
-                Box(modifier = Modifier.padding(start = 15.dp, top = 10.dp)) {
+                Box(modifier = Modifier.padding(start = 20.dp, top = 10.dp)) {
                     RoutinePreview(
                         imageUrl = routine.detail ?: "",
                         title = routine.name,
